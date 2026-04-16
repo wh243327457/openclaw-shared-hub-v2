@@ -1,0 +1,5 @@
+version: 1
+shared_skills:
+  - foundation/shared-memory-bridge
+  - foundation/console-style-progress-report
+  - autonomous-ai-agents/claude-research-then-hermes-review

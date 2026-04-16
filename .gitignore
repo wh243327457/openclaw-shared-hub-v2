@@ -1,0 +1,6 @@
+# Runtime artifacts
+runtime/openclaw/dreams/
+compat/daily/.dreams/
+**/cache/
+**/index/
+*.jsonl
