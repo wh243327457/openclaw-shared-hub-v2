@@ -1,0 +1,10 @@
+version: 1
+purpose: capability-registry
+status: stage2-seed
+root: registry
+components:
+  capabilities: registry/capabilities/manifest.yaml
+notes:
+  - Capability manifests describe which protocol-facing abilities each agent may expose.
+  - This seed does not mirror v2 capabilities/ layout.
+  - Compatibility adapters live outside the v3 storage root.
