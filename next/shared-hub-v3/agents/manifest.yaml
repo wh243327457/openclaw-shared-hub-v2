@@ -1,0 +1,8 @@
+version: 1
+agents:
+  - id: hermes
+    path: agents/hermes/agent.yaml
+  - id: openclaw
+    path: agents/openclaw/agent.yaml
+  - id: future-agent
+    path: agents/future-agent/agent.yaml

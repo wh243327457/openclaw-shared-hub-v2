@@ -1,0 +1,11 @@
+agent_id: future-agent
+role: supervisor-or-worker
+mode: hybrid
+direct_truth_write: false
+truth_access: via-hermes
+sandbox_path: sandbox/future-agent
+allowed_operations:
+  - register
+  - read
+  - submit
+  - review

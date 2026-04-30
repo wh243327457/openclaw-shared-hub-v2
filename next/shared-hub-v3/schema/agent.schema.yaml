@@ -1,0 +1,40 @@
+version: 1
+name: shared-hub-v3-agent-schema
+applies_to: agents/*/agent.yaml
+required:
+  - agent_id
+  - role
+  - mode
+  - direct_truth_write
+  - truth_access
+  - sandbox_path
+  - allowed_operations
+enums:
+  role:
+    - orchestrator
+    - worker
+    - supervisor-or-worker
+  mode:
+    - supervisor
+    - worker
+    - hybrid
+  truth_access:
+    - mediated
+    - via-hermes
+constraints:
+  sandbox_path_prefix: sandbox/
+  orchestrator_agent_id: hermes
+  worker_direct_truth_write_must_be_false: true
+  allowed_operations_min_items: 1
+operation_sets:
+  hermes:
+    must_include:
+      - register
+      - read
+      - verify
+      - promote
+  workers_default:
+    must_include:
+      - register
+      - read
+      - submit
