@@ -1,0 +1,65 @@
+version: 2
+schema:
+  required_fields:
+    - id
+    - path
+    - version
+    - status
+    - agents
+    - owner
+    - last_reviewed
+shared_skills:
+  - id: foundation/shared-memory-bridge
+    path: foundation/shared-memory-bridge
+    version: "1.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: "2026-04-25"
+    description: 跨 Hermes / OpenClaw / future-agent 的共享中台 v2 入口与读写边界
+  - id: foundation/console-style-progress-report
+    path: foundation/console-style-progress-report
+    version: "1.0.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: "2026-04-25"
+    description: 总控台式进度汇报格式，避免把原始 todo / 日志直接倒给用户
+  - id: autonomous-ai-agents/claude-research-then-hermes-review
+    path: autonomous-ai-agents/claude-research-then-hermes-review
+    version: "1.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+    owner: shared-hub
+    last_reviewed: "2026-04-25"
+    description: 调研型任务先由 Claude Code 首轮调研，再由 Hermes 复核
+  - id: foundation/priority-backlog-clearance
+    path: foundation/priority-backlog-clearance
+    version: "1.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: "2026-04-25"
+    description: 按优先级依次收口积压任务的标准工作流
+  - id: research/github-hot-project-learning
+    path: research/github-hot-project-learning
+    version: "1.0.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: "2026-04-28"
+    description: GitHub 热门项目每日学习流水线：OpenClaw 首轮学习，Hermes 质量审计，结果落盘 Obsidian 并生成每日推送

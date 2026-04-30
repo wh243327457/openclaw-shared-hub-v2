@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "agent": "future-agent",
+  "purpose": "Shared Hub v2 canonical context prefill for future-agent onboarding.",
+  "read_order": [
+    "manifest.yaml",
+    "AGENTS.md",
+    "curated/memory/MEMORY.md",
+    "curated/memory/facts/",
+    "curated/memory/projects/",
+    "capabilities/manifests/shared-skills.yaml"
+  ],
+  "write_policy": {
+    "raw_notes": "inbox/future-agent/daily/YYYY-MM-DD.md",
+    "runtime_outputs": "runtime/future-agent/",
+    "stable_facts": "curated/memory/facts/ only after promotion review",
+    "project_status": "curated/memory/projects/ only after promotion review",
+    "shared_skills": "capabilities/skills/ only after shared skill promotion"
+  },
+  "promotion_policy": "Follow docs/promote-protocol.md. Automated scans may suggest candidates but must not directly write curated memory.",
+  "security": {
+    "no_plaintext_secrets": true,
+    "secret_placeholder": "[REDACTED]"
+  }
+}

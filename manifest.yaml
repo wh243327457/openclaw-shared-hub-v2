@@ -1,0 +1,68 @@
+version: 2
+name: shared-hub-v2
+roots:
+  host: /home/vany/openclaw-data/.openclaw/shared
+  container: /home/node/.openclaw/shared
+layers:
+  curated:
+    path: curated
+    role: cross-agent source of truth
+    children:
+      memory:
+        path: curated/memory
+        index: curated/memory/MEMORY.md
+        facts: curated/memory/facts
+        projects: curated/memory/projects
+  inbox:
+    path: inbox
+    role: per-agent raw daily writes and drafts
+    agents:
+      hermes: inbox/hermes/daily
+      openclaw: inbox/openclaw/daily
+      future-agent: inbox/future-agent/daily
+  runtime:
+    path: runtime
+    role: per-agent runtime artifacts
+    agents:
+      hermes: runtime/hermes
+      openclaw:
+        root: runtime/openclaw
+        dreams: runtime/openclaw/dreams
+      future-agent: runtime/future-agent
+  capabilities:
+    path: capabilities
+    role: shared capabilities registry
+    children:
+      skills: capabilities/skills
+      manifests: capabilities/manifests
+      versions: capabilities/versions
+  compat:
+    path: compat
+    role: legacy compatibility views for existing OpenClaw workspaces
+    children:
+      daily: compat/daily
+      dreams_alias: compat/daily/.dreams
+  legacy_memory:
+    path: memory
+    role: legacy compatibility entry for existing memory access
+    mappings:
+      MEMORY.md: ../curated/memory/MEMORY.md
+      facts: ../curated/memory/facts
+      projects: ../curated/memory/projects
+      daily: ../compat/daily
+  legacy_skills:
+    path: skills
+    role: legacy compatibility entry for shared skills loading
+    mappings:
+      skills: capabilities/skills
+  prefill:
+    path: prefill
+    role: agent prefill payloads
+    files:
+      hermes: prefill/hermes-shared-memory.json
+policies:
+  stable_truth: Only curated/memory is the cross-agent truth source.
+  raw_writes: New raw agent notes belong in inbox/<agent>/daily.
+  runtime_artifacts: Runtime artifacts belong in runtime/<agent> and must not be stored in curated memory.
+  legacy_compat: Keep memory/ and skills/ stable for existing Hermes/OpenClaw integrations.
+  secrets: Never write plaintext secrets into shared.
