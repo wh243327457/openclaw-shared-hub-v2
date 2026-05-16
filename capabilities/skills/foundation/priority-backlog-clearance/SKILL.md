@@ -48,6 +48,53 @@ category: foundation
 - 仍待闭环的事项
 - 下一步建议
 
+## 自我完善工作流（定期自主迭代）
+
+当用户说“自我完善 / 自我迭代 / 把系统优化一下”时，按以下顺序执行：
+
+### 第一步：审计
+1. 读 `runtime/hermes/autonomous-learning/state.json`
+2. 读 `runtime/hermes/autonomous-learning/learning-backlog.json`
+3. 读 `scripts/verify_bridge.py` 最新输出
+4. 读 `scripts/promoter.py --dry-run` 最新输出
+
+### 第二步：可安全自动处理的项（P0/P1）
+以下类型可以自主完成，不需要用户审批：
+- 旧 fact 缺 metadata frontmatter（LEGACY_FACT_METADATA_MISSING）
+- 脚本/测试一致性检查（验证测试覆盖是否与文档同步）
+- 结构完整性检查（verify_bridge 所有路径是否存在）
+- JSON 状态文件格式验证
+
+**禁止自动处理**（必须保留人工审批边界）：
+- curated 自动晋升
+- 事实裁决（conflict resolution）
+- secret 明文写入
+- 治理策略变更
+
+### 第三步：运行维护链路
+```bash
+# 顺序固定：测试 → dry-run → promoter apply → verify → governance scan
+python3 -m unittest tests/test_fact_governance.py
+python3 scripts/promoter.py --dry-run
+python3 scripts/promoter.py
+python3 scripts/verify_bridge.py
+python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 10
+```
+
+### 第四步：落盘
+- 写 `inbox/hermes/daily/YYYY-MM-DD.md`（原始记录）
+- 更新 `runtime/hermes/autonomous-learning/state.json`（状态变更）
+- 更新 `runtime/hermes/autonomous-learning/learning-backlog.json`（backlog 变更）
+
+### 第五步：汇报
+汇报格式：
+- 完成了哪些 / 失败了哪些
+- 当前系统状态（治理模式、健康检查结果）
+- 仍待闭环的项（需要用户审批）
+- 下一步建议
+
+---
+
 ## 当前使用场景
 
 - 共享中台 v2 运维

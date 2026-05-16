@@ -66,9 +66,48 @@ OpenClaw 旧路径兼容保留：
 ## 共享 skill 升格规则
 
 - 新沉淀的 skill，先判断它是“当前 agent 本地长期能力”还是“跨 agent 共享能力”
-- 若该 skill 会被 Hermes / OpenClaw / future-agent 复用，或属于共享中台、共享记忆、进度汇报、调研协作等横切能力，则同步到 `shared/capabilities/skills/`
+- 若该 skill 会被 Hermes / OpenClaw / future-agent 复用，或属于共享中台、共享记忆、进度汇报、调研协作、配置目标识别等横切能力，则同步到 `shared/capabilities/skills/`
 - 升格到 shared 时，除了复制完整 skill 目录（`SKILL.md`、`templates/`、`references/`、`scripts/`、`assets/`），还要更新 `shared/capabilities/manifests/shared-skills.yaml`
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
+
+## 配置目标识别
+
+配置类任务（配置、模型、provider、模型列表、gateway、tools、skills、auth、env、cron、streaming、fallback、profile、重启服务等）属于跨 agent 高风险任务，必须先识别目标系统，避免把 Hermes / OpenClaw / shared 中台混用。
+
+### 强制路由规则（必须遵守，违反即算错误）
+
+- 用户说“你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关”时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。
+- 只有用户**明确**说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
+- 用户提到“共享中台 / shared / 跨 agent / 共享记忆”时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
+- **如果目标不明确，必须先问：“这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。”**
+- 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。
+- 配置写入前必须声明目标系统和目标文件路径。
+
+### 配置写入前强制自检清单
+
+在读取或修改任何配置文件之前，先在回复中声明：
+
+```
+[配置目标识别]
+目标系统：Hermes / OpenClaw / shared
+目标文件：<实际路径>
+操作方式：读取 / 写入 / 修改
+```
+
+如果没做这一步就动手修改配置，属于流程违规，需要重新核对。
+
+### 常见触发词与预期目标
+
+| 用户说 | 默认目标 | 正确文件 |
+|---|---|---|
+| “你 / Hermes / 当前 agent / 这个 agent / 当前 CLI” | Hermes | `~/.hermes/config.yaml` |
+| “你 / Hermes 的模型 / 你用的模型” | Hermes | `~/.hermes/config.yaml` |
+| “Hermes gateway / 你的 gateway” | Hermes | `~/.hermes/hermes-agent/` |
+| “OpenClaw / openclaw 的配置” | OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` |
+| “shared / 共享中台 / 跨 agent” | shared 层 | `shared/` 根目录 |
+| 只有“改配置”且无上下文 | 必须先问 | — |
+
+共享版流程已沉淀到：`shared/capabilities/skills/foundation/config-target-routing/SKILL.md`，并登记在 `shared/capabilities/manifests/shared-skills.yaml`。
 
 ## 兼容入口
 
@@ -239,6 +278,58 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 
 经验结论：这种场景下，**本地 shared 文件才是真相源**，不要把"是否还记得昨天聊过什么"误解成只能靠 session_search；如果聊天检索没有命中，也应回到本地 `manifest.yaml / AGENTS.md / curated/memory/MEMORY.md` 取证。
 
+### 长任务落地的推荐文件组合
+
+当要把一个长期系统从讨论推进到可落地骨架时，优先采用四件套：
+
+- `curated/memory/projects/<project>.md`：正式架构和长期状态
+- `runtime/<agent>/<project>/implementation-plan.md`：执行计划和阶段状态
+- `runtime/<agent>/<project>/state.json`：机器可读状态机
+- `runtime/<agent>/<project>/templates/`：instruction / review / handoff 模板
+
+推荐顺序：
+1. 先建 plan，再建正式架构。
+2. 先写配置骨架，再写模板。
+3. 每完成一步，立刻更新 plan 的 status。
+4. 验证时固定跑：`json 解析 -> promoter --dry-run -> promoter -> verify_bridge`。
+5. 如果项目会跨会话延续，必须在 `curated/memory/MEMORY.md` 里加索引入口。
+
+### 长任务状态复核：不要只信 state.json
+
+当用户问“方案到什么地步 / 能否跑通 / 继续确认”时，除了读取 `state.json` 和 `implementation-plan.md`，还必须交叉检查实际产物目录：
+
+- `orchestrator-runs/<run_id>/run-state.json`
+- `agent-outputs/<executor>/<run_id>*.md`
+- `reviews/<run_id>-spec-review.md`
+- `reviews/<run_id>-quality-review.md`
+
+常见情况：真实产物已经完成 fallback + 双审，但 run-state 仍停在 `FALLBACK_OUTPUT_WRITTEN` 或 `PREPARED`。这种状态不一致时，先按产物事实判断，再只更新 runtime 状态文件收口；不得顺手写 curated、启用 cron 或升格 shared skill。
+
+收口后至少验证：
+
+```bash
+python3 - <<'PY'
+import json, pathlib
+base = pathlib.Path('/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/autonomous-learning')
+for p in [base/'state.json', base/'learning-backlog.json'] + list((base/'orchestrator-runs').glob('*/run-state.json')):
+    json.loads(p.read_text())
+print('json ok')
+PY
+cd /home/vany/openclaw-data/.openclaw/shared
+python3 scripts/promoter.py --dry-run
+python3 scripts/verify_bridge.py
+```
+
+更多 rollout 细节见：`references/autonomous-learning-rollout.md`。其中包含 Phase A/B/C、canary 目录结构、dry-run 边界、Claude Code stdout 捕获模式、执行 agent 禁止自审批等经验。
+
+状态不一致收口细节见：`references/orchestrator-state-reconciliation.md`。其中包含 run-state 与实际产物不一致时的审计顺序、只更新 runtime 的边界和最小验证命令。
+
+Further rollout detail is also captured in `references/autonomous-learning-semi-auto-candidate.md`: plan-only semi-auto candidate packets, explicit no-cron/no-curated gates, and Claude Code deep-dive granularity rules after repeated `max_turns_exhausted`.
+
+Fact freshness / conflict-resolution governance automation is captured in `references/fact-governance-warning-only-automation.md`: how to convert runtime policy drafts into a self-running warning-only loop via `promoter.py --dry-run --scan-promote-candidates`, `verify_bridge.py` fact_governance checks, `daily_maintenance.sh`, tests, and state/backlog updates while keeping curated auto-promotion disabled.
+
+### 运行与验证的最小闭环
+
 完成迁移或修复后，至少执行：
 
 ```bash
@@ -247,7 +338,7 @@ python3 /home/vany/openclaw-data/.openclaw/shared/scripts/promoter.py
 python3 /home/vany/openclaw-data/.openclaw/shared/scripts/verify_bridge.py
 ```
 
-期望结果：
+
 - `promoter.py` 能更新 `shared/curated/memory/MEMORY.md` 中的自动状态块
 - `verify_bridge.py` 返回 exit code 0，且 JSON 中 `ok: true`
 - Hermes 仍引用 `shared/skills` 与 `shared/prefill/hermes-shared-memory.json`

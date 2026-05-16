@@ -12,9 +12,10 @@ scripts/daily_maintenance.sh
 默认执行：
 
 1. `scripts/promoter.py` 刷新 `curated/memory/MEMORY.md` 自动状态块。
-2. `scripts/verify_bridge.py` 执行桥接健康检查。
-3. 记录磁盘使用、shared 目录大小、inbox backlog。
-4. 如未显式禁用，执行 `scripts/kb_git_sync.sh` 做本地知识库同步。
+2. `scripts/promoter.py --dry-run --scan-promote-candidates` 生成晋升候选治理扫描报告；只写日志，不写 curated。
+3. `scripts/verify_bridge.py` 执行桥接健康检查，并对 fact frontmatter / stale / disputed / active conflict 做 warning-only 检查。
+4. 记录磁盘使用、shared 目录大小、inbox backlog。
+5. 如未显式禁用，执行 `scripts/kb_git_sync.sh` 做本地知识库同步。
 
 ## 推荐模式
 
@@ -46,6 +47,7 @@ RUN_KB_SYNC=0 scripts/daily_maintenance.sh
 
 - 主日志：`runtime/hermes/cron.log`
 - promoter 日志：`runtime/hermes/promoter-cron.log`
+- 晋升治理扫描日志：`runtime/hermes/promotion-governance-cron.log`
 - verify 日志：`runtime/hermes/verify-cron.log`
 - KB sync 日志：`runtime/hermes/kb_sync.log`
 

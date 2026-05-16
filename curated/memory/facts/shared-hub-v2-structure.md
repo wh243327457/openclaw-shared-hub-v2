@@ -1,3 +1,33 @@
+---
+fact_id: shared-hub-v2-structure
+status: active
+freshness_class: static
+scope: shared-hub
+subject: shared-hub.v2
+attribute: directory_structure
+value_summary: "curated, inbox, runtime, capabilities, compat, memory and skills compatibility layers"
+created_at: 2026-05-16T02:58:05+08:00
+updated_at: 2026-05-16T02:58:05+08:00
+last_verified_at: 2026-05-16T02:58:05+08:00
+review_due_at: 2026-08-16T02:58:05+08:00
+source_refs:
+  - /home/vany/openclaw-data/.openclaw/shared/manifest.yaml
+  - /home/vany/openclaw-data/.openclaw/shared/AGENTS.md
+conflict:
+  status: none
+  type: null
+  conflicting_fact_ids: []
+  conflicting_candidate_refs: []
+  resolution: null
+  resolved_by: null
+  resolved_at: null
+supersedes: []
+superseded_by: null
+confidence: high
+authority: hermes-controller
+secret_checked: true
+---
+
 # 共享中台 v2 结构事实
 
 ## 核心分层

@@ -1,3 +1,33 @@
+---
+fact_id: shared-model-availability
+status: active
+freshness_class: static
+scope: shared-hub
+subject: model.availability
+attribute: configured_models
+value_summary: "gpt-5.4, kimi-for-coding, MiniMax-M2.7"
+created_at: 2026-05-16T02:58:05+08:00
+updated_at: 2026-05-16T02:58:05+08:00
+last_verified_at: 2026-05-16T02:58:05+08:00
+review_due_at: 2026-06-16T02:58:05+08:00
+source_refs:
+  - /root/.hermes/config.yaml
+  - /home/vany/openclaw-data/.openclaw/openclaw.json
+conflict:
+  status: none
+  type: null
+  conflicting_fact_ids: []
+  conflicting_candidate_refs: []
+  resolution: null
+  resolved_by: null
+  resolved_at: null
+supersedes: []
+superseded_by: null
+confidence: high
+authority: filesystem
+secret_checked: true
+---
+
 # 当前环境可用模型事实
 
 ## 已配置模型

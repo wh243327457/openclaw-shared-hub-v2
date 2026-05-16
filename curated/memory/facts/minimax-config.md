@@ -1,3 +1,33 @@
+---
+fact_id: minimax-provider-config
+status: active
+freshness_class: operational
+scope: openclaw
+subject: model.provider.minimax
+attribute: api_config
+value_summary: "Base URL https://api.minimax.chat/v1, API key via $MINIMAX_API_KEY"
+created_at: 2026-05-16T02:58:05+08:00
+updated_at: 2026-05-16T02:58:05+08:00
+last_verified_at: 2026-05-16T02:58:05+08:00
+review_due_at: 2026-06-16T02:58:05+08:00
+source_refs:
+  - /home/vany/openclaw-data/.openclaw/openclaw.json
+  - /home/vany/openclaw-data/.openclaw/.env
+conflict:
+  status: none
+  type: null
+  conflicting_fact_ids: []
+  conflicting_candidate_refs: []
+  resolution: null
+  resolved_by: null
+  resolved_at: null
+supersedes: []
+superseded_by: null
+confidence: high
+authority: filesystem
+secret_checked: true
+---
+
 # MiniMax 配置事实
 
 ## 已确认的配置

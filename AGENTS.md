@@ -117,6 +117,17 @@ shared/
   3. 如涉及长期协作约束，再同步更新 `prefill/` 或 `curated/memory/` 的对应说明
 - 如果明确只保留本地，不进入共享层，则需要在结果里说清楚：当前仅为 agent 本地长期能力，不是 shared 长期能力
 
+## 配置目标识别规则
+
+当用户提出配置类任务（配置、模型、provider、模型列表、gateway、tools、skills、auth、env、cron、streaming、fallback、profile、重启服务等）时，所有 agent 必须先识别目标系统，再读取或修改文件。
+
+- 用户说“你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关”时，默认目标是 Hermes，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。
+- 只有用户明确说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
+- 用户提到“共享中台 / shared / 跨 agent / 共享记忆”时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
+- 如果目标不明确，必须先问：“这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。”
+- 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。
+- 配置写入前必须声明目标系统和目标文件路径。
+
 ## 推荐读取顺序
 
 1. `shared/manifest.yaml`

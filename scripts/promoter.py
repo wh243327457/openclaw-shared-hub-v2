@@ -423,6 +423,35 @@ def classify_candidate(text: str, source_path: Path) -> tuple[str, str, str]:
     return "review", "", "no strong promotion signal; keep for manual review"
 
 
+def suggest_freshness(text: str) -> str:
+    """Suggest a lightweight freshness class for a promotion candidate."""
+    if re.search(r"(?i)(临时|temporary|一次性|blocked|阻塞|失败|error|503)", text):
+        return "volatile"
+    if re.search(r"(?i)(cron|服务|运行|当前|启用|配置|provider|model|模型|auth|gateway|写入|指向)", text):
+        return "operational"
+    if re.search(r"(?i)(项目|计划|阶段|协议|治理|规范|workflow|流程)", text):
+        return "slow_changing"
+    return "static"
+
+
+def suggest_conflict(text: str, decision: str) -> dict[str, Any]:
+    """Suggest warning-only conflict metadata for a promotion candidate."""
+    possible_conflict = bool(re.search(r"(?i)(冲突|矛盾|替代|覆盖|supersede|旧|新|仍|不一致|不同)", text))
+    conflict_type = None
+    recommended_state = "candidate" if decision == "candidate" else "deferred"
+    if possible_conflict:
+        conflict_type = "temporal" if re.search(r"(?i)(替代|旧|新|supersede|过期)", text) else "direct"
+        recommended_state = "supersede_pending" if conflict_type == "temporal" else "conflict_detected"
+    elif decision == "blocked":
+        conflict_type = "secret_sensitive"
+        recommended_state = "rejected"
+    return {
+        "possible_conflict": possible_conflict,
+        "conflict_type_suggestion": conflict_type,
+        "recommended_state": recommended_state,
+    }
+
+
 def extract_candidate_lines(file_path: Path, max_per_file: int) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     try:
@@ -446,6 +475,7 @@ def extract_candidate_lines(file_path: Path, max_per_file: int) -> list[dict[str
             continue
         if text.startswith(("- ", "* ", "#", "##")) or any(pattern.search(text) for pattern in (SECRET_PATTERN, LOW_CONFIDENCE_PATTERN, PROJECT_PATTERN, FACT_PATTERN)):
             decision, suggested_target, reason = classify_candidate(text, file_path)
+            governance = suggest_conflict(text, decision)
             candidates.append(
                 {
                     "line": line_number,
@@ -453,6 +483,13 @@ def extract_candidate_lines(file_path: Path, max_per_file: int) -> list[dict[str
                     "decision": decision,
                     "suggested_target": suggested_target,
                     "reason": reason,
+                    "freshness_suggestion": suggest_freshness(text),
+                    "review_due_at_suggestion": None,
+                    "stale_risk": "high" if suggest_freshness(text) in {"operational", "volatile"} else "medium",
+                    "possible_supersedes": [],
+                    **governance,
+                    "matched_existing_fact_ids": [],
+                    "evidence_needed": ["read_file", "terminal"] if governance["possible_conflict"] else [],
                 }
             )
         if len(candidates) >= max_per_file:
