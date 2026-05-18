@@ -96,8 +96,8 @@ readlink compat/daily/.dreams
 
 | 阶段 | 目标 | 风险 | 状态 |
 |---|---|---:|---|
-| Phase 0 | 建立瘦身计划与基线 | 低 | ⏳ 进行中 |
-| Phase 1 | Git 跟踪边界收口：raw/runtime 不再扩大 | 中 | ⏳ 待开始 |
+| Phase 0 | 建立瘦身计划与基线 | 低 | ✅ 已完成 |
+| Phase 1 | Git 跟踪边界收口：raw/runtime 不再扩大 | 中 | ✅ 已完成 |
 | Phase 2 | compat 薄化：只做兼容入口 | 中 | ⏳ 待开始 |
 | Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ⏳ 待开始 |
 | Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ⏳ 待开始 |
@@ -202,6 +202,15 @@ compat/daily/.dreams/
 - 新增 raw/dreaming 不会被 `git status` 默认显示为待提交。
 - 现有兼容入口不变。
 - `verify_bridge.py` 通过。
+
+**执行记录（2026-05-18）：**
+
+- 当前 `inbox` / `compat` / `runtime` 已被 Git 跟踪的历史文件数：167。
+- 已确认 `compat/daily/dreaming/**` 与 `inbox/openclaw/daily/dreaming/**` 是主要 tracked bulk 来源。
+- 已修改 `.gitignore`，防止新增 `inbox/**/daily/dreaming/`、`compat/daily/dreaming/`、`inbox/**/daily/.dreams/`、`compat/daily/.dreams/` 进入待提交面。
+- 已在 `AGENTS.md` 增加 Git 跟踪边界：core 可审查，bulk 默认不进 main。
+- 已在 `docs/runtime-retention.md` 增加 Git 主线边界与后续 `git rm --cached` 分阶段处理口径。
+- 本阶段不删除、不移动、不 `git rm --cached` 任何历史 bulk；历史 tracked bulk 留到 Phase 2 / Phase 4 单独 PR 处理。
 
 ---
 

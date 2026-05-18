@@ -10,6 +10,14 @@ runtime/
 *.pyc
 *.pyo
 
+# Raw / bulk histories should not grow in Git by default.
+# Existing tracked files are handled in later slimming phases; these rules
+# prevent new dreaming/.dreams bulk from entering the review surface.
+inbox/**/daily/dreaming/
+compat/daily/dreaming/
+inbox/**/daily/.dreams/
+compat/daily/.dreams/
+
 # Logs and generated diagnostics
 *.log
 logs/

@@ -85,6 +85,22 @@ shared/
 
 **不要**把运行时产物直接落到 `curated/` 或 `compat/` 的真实目录里。
 
+### 3.1) Git 跟踪边界：core 可审查，bulk 默认不进 main
+
+共享中台 live 目录可以是 Git 仓库，但 Git 主线不是运行日志仓库。默认可进入 main 的内容是：
+
+- core 真相层：`curated/`、`capabilities/`、`manifest.yaml`、`AGENTS.md`、`README.md`
+- 治理与工具：核心 `docs/`、核心 `scripts/`、`tests/`
+- 兼容入口：`memory/` symlink、`skills` symlink、必要的 `prefill/`
+
+默认不应继续扩大 Git 跟踪面的内容是：
+
+- `runtime/` 下任何运行时产物、日志、cache、index
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/bulk 历史
+- `compat/daily/dreaming/`、`compat/daily/.dreams/` 等兼容层 bulk 数据
+
+如果 raw/bulk 中出现需要长期复用的信息，应先人工摘录为摘要或事实，再晋升到 `curated/memory/facts/` 或 `curated/memory/projects/`；不要把全文日志当作跨 agent 真相源提交。
+
 ### 4) Legacy compatibility：保留旧入口
 为了不破坏现有 Hermes / OpenClaw 接入：
 - `shared/skills` 保留为兼容入口，实际指向 `capabilities/skills`

@@ -23,6 +23,28 @@
 - verify 只报告 runtime 各 agent 目录大小。
 - daily maintenance 只记录 shared 总体大小。
 - 默认不删除任何文件。
+- Git 主线默认不继续新增 runtime / dreams / cache / index / log 等 bulk 文件；如需长期保留，应先摘录成 curated facts/projects 或 docs 摘要。
+
+## Git 跟踪边界
+
+`runtime/` 是本地运行态，默认永不进入 Git 主线；`inbox/` 是 raw 写入入口，默认也不应承载无限增长的 dreaming/raw bulk；`compat/` 是兼容视图，默认只保留薄入口和说明。
+
+允许进入 Git 主线的内容：
+
+- `curated/` 下经过验证的长期事实与项目状态。
+- `capabilities/` 下跨 agent 共享 skill 与 manifest。
+- 核心 `docs/`、`scripts/`、`tests/`。
+- 必要的 symlink 兼容入口与 `prefill/`。
+
+不应继续新增进入 Git 主线的内容：
+
+- `runtime/**`
+- `inbox/**/daily/dreaming/**`
+- `inbox/**/daily/.dreams/**`
+- `compat/daily/dreaming/**`
+- `compat/daily/.dreams/**`
+
+历史上已经被跟踪的 bulk 文件在瘦身迭代中分阶段处理：先加 ignore 防新增，再单独 PR 用 `git rm --cached` 从跟踪层移除并保留本地文件。
 
 ## 建议保留周期
 
