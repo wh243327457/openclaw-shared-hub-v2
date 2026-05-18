@@ -19,8 +19,8 @@
 - 计划时间：`30 8 * * *`，时区 `Asia/Shanghai`。
 - 2026-05-01 08:30 已运行，OpenClaw 状态为 `ok`。
 - 2026-05-01 运行 summary 存在于：
-  - `/home/vany/openclaw-data/.openclaw/cron/runs/7aa310ea-b264-40c8-b23a-ed655c565a69.jsonl`
-  - 对应 session：`/home/vany/openclaw-data/.openclaw/agents/main/sessions/927091d0-e03d-42b2-8d70-127ac7e5a244.jsonl`
+  - `/home/vany/agent/.openclaw/cron/runs/7aa310ea-b264-40c8-b23a-ed655c565a69.jsonl`
+  - 对应 session：`/home/vany/agent/.openclaw/agents/main/sessions/927091d0-e03d-42b2-8d70-127ac7e5a244.jsonl`
 - 但当天没有生成这些规范文件：
   - `shared/inbox/openclaw/daily/2026-05-01.md`
   - `GitHub 热门项目学习档案/每日学习/2026-05-01-GitHub热门项目学习日报.md`
@@ -71,23 +71,23 @@ OpenClaw **生成成功**，但输出只停留在 OpenClaw cron/session 内部�
 
 ### 新增/修改文件
 
-- Create: `/home/vany/openclaw-data/.openclaw/shared/scripts/openclaw_github_learning_bridge.py`
-- Create: `/home/vany/openclaw-data/.openclaw/shared/scripts/github_learning_healthcheck.py`
-- Modify: `/home/vany/openclaw-data/.openclaw/shared/scripts/daily_maintenance.sh`
+- Create: `<shared-root>/scripts/openclaw_github_learning_bridge.py`
+- Create: `<shared-root>/scripts/github_learning_healthcheck.py`
+- Modify: `<shared-root>/scripts/daily_maintenance.sh`
 - Modify: Hermes cron job `2a82c752d86a` prompt or wrapper behavior
 - Modify: Hermes cron job `c489f1a5dfde` prompt or wrapper behavior if needed
-- Modify: `/home/vany/openclaw-data/.openclaw/shared/curated/memory/projects/github-hot-project-learning.md`
-- Modify: `/home/vany/openclaw-data/.openclaw/shared/curated/memory/MEMORY.md`
+- Modify: `<shared-root>/curated/memory/projects/github-hot-project-learning.md`
+- Modify: `<shared-root>/curated/memory/MEMORY.md`
 
 ### 运行时文件
 
-- Create/Update: `/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/github-hot-project-learning/status.json`
-- Create/Update: `/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/github-hot-project-learning/healthcheck-YYYY-MM-DD.json`
-- Append log: `/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/github-hot-project-learning/bridge.log`
+- Create/Update: `<shared-root>/runtime/hermes/github-hot-project-learning/status.json`
+- Create/Update: `<shared-root>/runtime/hermes/github-hot-project-learning/healthcheck-YYYY-MM-DD.json`
+- Append log: `<shared-root>/runtime/hermes/github-hot-project-learning/bridge.log`
 
 ### 产物文件
 
-- Create/Update: `/home/vany/openclaw-data/.openclaw/shared/inbox/openclaw/daily/YYYY-MM-DD.md`
+- Create/Update: `<shared-root>/inbox/openclaw/daily/YYYY-MM-DD.md`
 - Create/Update: `/mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案/每日学习/YYYY-MM-DD-GitHub热门项目学习日报.md`
 - Create/Update: `/mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案/质量审计/YYYY-MM-DD-质量审计.md`
 
@@ -117,8 +117,8 @@ python3 scripts/openclaw_github_learning_bridge.py
 常量默认值：
 
 ```python
-SHARED_ROOT = Path('/home/vany/openclaw-data/.openclaw/shared')
-OPENCLAW_ROOT = Path('/home/vany/openclaw-data/.openclaw')
+SHARED_ROOT = Path('<shared-root>')
+OPENCLAW_ROOT = Path('/home/vany/agent/.openclaw')
 JOB_ID = '7aa310ea-b264-40c8-b23a-ed655c565a69'
 RUNS_FILE = OPENCLAW_ROOT / 'cron' / 'runs' / f'{JOB_ID}.jsonl'
 STATE_FILE = OPENCLAW_ROOT / 'cron' / 'jobs-state.json'
@@ -127,7 +127,7 @@ STATE_FILE = OPENCLAW_ROOT / 'cron' / 'jobs-state.json'
 **Verification:**
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd <shared-root>
 python3 scripts/openclaw_github_learning_bridge.py --date 2026-05-01 --dry-run
 ```
 
@@ -298,7 +298,7 @@ python3 scripts/github_learning_healthcheck.py --date 2026-05-01
 **Recommended command:**
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared && python3 scripts/openclaw_github_learning_bridge.py >> runtime/hermes/github-hot-project-learning/bridge.log 2>&1
+cd <shared-root> && python3 scripts/openclaw_github_learning_bridge.py >> runtime/hermes/github-hot-project-learning/bridge.log 2>&1
 ```
 
 **Verification:**
@@ -333,7 +333,7 @@ cd /home/vany/openclaw-data/.openclaw/shared && python3 scripts/openclaw_github_
 **Command:**
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd <shared-root>
 python3 scripts/openclaw_github_learning_bridge.py --date 2026-05-01
 ```
 
@@ -402,7 +402,7 @@ grep -n "2026-05-01" "/mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热
 **Commands:**
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd <shared-root>
 python3 scripts/promoter.py --dry-run
 python3 scripts/promoter.py
 python3 scripts/verify_bridge.py
@@ -422,7 +422,7 @@ python3 scripts/verify_bridge.py
 **Commands:**
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd <shared-root>
 python3 scripts/github_learning_healthcheck.py --date 2026-05-01 --json
 python3 scripts/github_learning_healthcheck.py --date 2026-05-01
 ```

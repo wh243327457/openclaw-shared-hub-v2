@@ -11,8 +11,8 @@ updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
 review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
-  - /home/vany/openclaw-data/.openclaw/openclaw.json
-  - /home/vany/openclaw-data/.openclaw/.env
+  - /home/vany/agent/.openclaw/openclaw.json
+  - /home/vany/agent/.openclaw/.env
 conflict:
   status: none
   type: null
@@ -34,8 +34,8 @@ secret_checked: true
 - Provider: minimax
 - Base URL: https://api.minimax.chat/v1
 - API Key: 环境变量 `$MINIMAX_API_KEY`
-- 配置文件: /home/vany/openclaw-data/.openclaw/openclaw.json
-- .env 文件: /home/vany/openclaw-data/.openclaw/.env
+- 配置文件: /home/vany/agent/.openclaw/openclaw.json
+- .env 文件: /home/vany/agent/.openclaw/.env
 
 ## 可用模型
 - MiniMax-M2.7: contextWindow 256k, maxTokens 8k

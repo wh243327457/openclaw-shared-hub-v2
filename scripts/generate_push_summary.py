@@ -203,6 +203,6 @@ if __name__ == '__main__':
         16,
         ['包含今日结论', '包含深读项目'],
         Path('/mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案'),
-        Path('/home/vany/openclaw-data/.openclaw/shared')
+        Path(__file__).resolve().parents[1]
     )
     print(summary)

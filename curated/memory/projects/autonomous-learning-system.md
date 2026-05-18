@@ -322,3 +322,56 @@ v0.1 先做“可恢复、可审计、可配置”的骨架，不立即做完全
 - Agent 健康状态：`shared/runtime/hermes/autonomous-learning/agent-health.json`
 - 阻塞任务：`shared/runtime/hermes/autonomous-learning/blocked-tasks.json`
 - 模板目录：`shared/runtime/hermes/autonomous-learning/templates/`
+
+
+## 16. 已晋升的长期模式（2026-05-18）
+
+本节记录已由用户确认从 runtime learning 晋升到 curated 的长期规则。原始产物仍保留在 runtime；本节只沉淀稳定可复用结论。
+
+| 模式 | 来源候选 | 沉淀文件 | 对系统的作用 |
+|---|---|---|---|
+| 多 agent 编排模式 | `2026-05-17-anthropic-multi-agent-research` | `curated/memory/facts/autonomous-learning-multi-agent-orchestration-patterns.md` | 校准 Hermes 主控、bounded subagent、终态审计和外部记忆交接 |
+| Skill-as-contract / Subagent 四状态 | `2026-05-17-superpowers-deep-analysis` | `curated/memory/facts/autonomous-learning-skill-as-contract-pattern.md` | 改进 shared skills、执行 agent 汇报状态、双审 gate |
+| Verification-first agent 工程实践 | `non-github-learning-2026-05-17-claude-code-engineering-practices` | `curated/memory/facts/agent-engineering-verification-first-practices.md` | 强化先验收后执行、权限先于自治、hooks/MCP 可观测边界 |
+
+## 17. 未本轮晋升的候选处理
+
+用户本轮确认按 Hermes 建议晋升前三个长期事实；其余高分候选暂留 runtime/pending 队列：`ds4`、`zero` 两条、`opensquilla`、`opencode`。其中 `zero` 两条建议合并为观察卡，项目仍太新；`ds4` 偏推理优化，当前与自主学习主线距离较远。
+
+
+## 18. OpenSquilla 架构观察（2026-05-18）
+
+OpenSquilla 是本轮自主学习系统非常值得保留的工程参考：它把 `TurnRunner`、provider 适配、skill loader、memory manager、sandbox、channel adapter 和 scheduler 放在同一套微内核运行时里，且把记忆压缩、技能注入、并发控制与安全隔离都做成了可独立治理的层。
+
+### 为什么晋升
+- 对 Hermes / shared hub 的分层设计有直接参考价值。
+- 对“共享技能注册表、上下文压缩、权限边界、记忆层分离”这些长期规则有明确启发。
+- 不是只看一个功能点，而是看完整运行时架构。
+
+### 长期可复用点
+1. `TurnRunner` 作为所有入口收敛点，适合类比到 Hermes 的主控/审计入口。
+2. provider-neutral adapter boundary，便于后续模型替换。
+3. skill loader + injector 让技能成为一等公民，而不是散落的 prompt 文本。
+4. memory snapshot / turn snapshot 对防止上下文漂移很有帮助。
+5. sandbox + tool policy 说明自治必须先有权限边界。
+
+### 边界
+- 这是架构学习样本，不代表要直接复刻实现。
+- 它更适合作为“运行时架构参考卡”，不是单独 product roadmap。
+
+
+## 19. ds4 推理优化事实（2026-05-18）
+
+`antirez/ds4` 是本轮值得长期保留的推理优化样本。它的价值不是“某个模型能直接用”，而是提供了三类对自主学习系统和代码 agent 都有参考意义的设计点：
+
+1. **非对称 MoE 量化**：优先量化 routed experts，而不是把所有路径一刀切压缩。
+2. **磁盘 KV cache**：适合长上下文/重复预填充场景，能降低 agent 重跑成本。
+3. **tool-call replay**：适合审计、debug、回放与 repair，和我们的执行/审计闭环契合。
+
+### 边界
+- 这是推理系统优化样本，不是可直接复制的生产方案。
+- 适合提炼方法论，不适合照搬具体实现。
+
+### 对当前系统的意义
+- 继续关注长上下文复用、回放、压缩和检索效率。
+- 将来若做推理层优化或本地 model orchestration，这条观察卡可以直接作为参考入口。

@@ -11,7 +11,7 @@ agent: hermes, openclaw, future
 
 ## 共享根目录
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared/`
+- 宿主：`<shared-root>/`
 - 容器：`/home/node/.openclaw/shared/`
 
 ## 新分层
@@ -76,10 +76,10 @@ OpenClaw 旧路径兼容保留：
 
 ### 强制路由规则（必须遵守，违反即算错误）
 
-- 用户说“你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关”时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。
-- 只有用户**明确**说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
-- 用户提到“共享中台 / shared / 跨 agent / 共享记忆”时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
-- **如果目标不明确，必须先问：“这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。”**
+- 用户说"你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关"时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。**即使记忆中 OpenClaw 配置路径更显眼，也不能作为默认操作 OpenClaw 的理由。**
+- 只有用户**明确**说 OpenClaw，或提供 `/home/vany/agent/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
+- 用户提到"共享中台 / shared / 跨 agent / 共享记忆"时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
+- **如果目标不明确，必须先问："这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。"**
 - 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。
 - 配置写入前必须声明目标系统和目标文件路径。
 
@@ -103,7 +103,7 @@ OpenClaw 旧路径兼容保留：
 | “你 / Hermes / 当前 agent / 这个 agent / 当前 CLI” | Hermes | `~/.hermes/config.yaml` |
 | “你 / Hermes 的模型 / 你用的模型” | Hermes | `~/.hermes/config.yaml` |
 | “Hermes gateway / 你的 gateway” | Hermes | `~/.hermes/hermes-agent/` |
-| “OpenClaw / openclaw 的配置” | OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` |
+| “OpenClaw / openclaw 的配置” | OpenClaw | `/home/vany/agent/.openclaw/openclaw.json` |
 | “shared / 共享中台 / 跨 agent” | shared 层 | `shared/` 根目录 |
 | 只有“改配置”且无上下文 | 必须先问 | — |
 
@@ -152,12 +152,13 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 当用户问“共享中台有没有 Git / 远端 / 推送”时，必须区分两层，不要只检查 live shared 后就下绝对结论：
 
 1. **live shared 运行目录**
-   - 路径：`/home/vany/openclaw-data/.openclaw/shared`
+   - 路径：`<shared-root>`
    - 这是 OpenClaw / Hermes 实际读取和写入的共享中台目录
    - 可能不是 Git 仓库；若没有 `.git`、remote、branch，只能说明 live 目录没有直接 Git 化
+   - 若它本身已经是 Git 仓库，用户说“提交一下本次修改”时可直接在 live shared 仓库内提交；先做 `git diff --check`、差异范围复核和 secret 关键词扫描，提交后汇报 hash、分支、工作区状态、是否已 push。详见 `references/shared-live-commit-checklist.md`。
 
 2. **runtime staging Git 仓库**
-   - 典型路径：`/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
+   - 典型路径：`<shared-root>/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
    - 这是把 shared 可审阅内容整理成 GitHub PR / 备份快照的 staging repo
    - 需要单独检查：`git -C <staging> remote -v`、branch、HEAD、PR 状态
 
@@ -216,12 +217,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 2. **修改 workspace/memory symlink**
    ```bash
    # 检查当前指向
-   readlink /home/vany/openclaw-data/.openclaw/workspace/memory
+   readlink /home/vany/agent/.openclaw/workspace/memory
    # 应该是 ../shared/memory/daily（即 compat/daily）
 
    # 更新到 inbox
-   rm /home/vany/openclaw-data/.openclaw/workspace/memory
-   ln -s ../shared/inbox/openclaw/daily /home/vany/openclaw-data/.openclaw/workspace/memory
+   rm /home/vany/agent/.openclaw/workspace/memory
+   ln -s ../shared/inbox/openclaw/daily /home/vany/agent/.openclaw/workspace/memory
    ```
 
 3. **验证**
@@ -237,7 +238,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
    cat > shared/scripts/daily_maintenance.sh << 'EOF'
    #!/bin/bash
    set -e
-   cd /home/vany/openclaw-data/.openclaw/shared
+   cd <shared-root>
    python3 scripts/promoter.py >> runtime/hermes/promoter-cron.log 2>&1 || true
    python3 scripts/verify_bridge.py >> runtime/hermes/verify-cron.log 2>&1 || true
    echo "[$(date -Iseconds)] daily maintenance done" >> runtime/hermes/cron.log
@@ -247,10 +248,20 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 
 2. **注册 cron**
    ```bash
-   (crontab -l 2>/dev/null; echo "0 6 * * * /home/vany/openclaw-data/.openclaw/shared/scripts/daily_maintenance.sh") | crontab -
+   (crontab -l 2>/dev/null; echo "0 6 * * * <shared-root>/scripts/daily_maintenance.sh") | crontab -
    ```
 
 ## 运行与验证
+
+### 外部机制类项目本地化
+
+当用户要深度学习一个外部项目/文章并判断能否集成到系统中时，若结论是“机制值得借鉴，但不应直接依赖其源码/服务”，优先落成三层产物，而不是只输出调研报告：
+
+1. `curated/memory/projects/<project>.md`：跨 agent 真相源，写机制、边界、接入价值、禁止事项。
+2. `runtime/<agent>/<project>/`：实施计划、状态、架构、POC 模板和可恢复执行记录。
+3. Obsidian 风格知识库：面向人类的学习入口和分章节文档。
+
+边界：GPL/外部项目只作为机制样板时，不复制源码进核心；runtime/cache/sqlite/chunks 不晋升 curated；需要 Hermes review 后再把结论写入 curated。参考会话细节见 `references/openhuman-mechanism-localization-session.md`。
 
 ### 当用户要"按当前情况和进度重新整理一版"时
 
@@ -310,12 +321,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 ```bash
 python3 - <<'PY'
 import json, pathlib
-base = pathlib.Path('/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/autonomous-learning')
+base = pathlib.Path('<shared-root>/runtime/hermes/autonomous-learning')
 for p in [base/'state.json', base/'learning-backlog.json'] + list((base/'orchestrator-runs').glob('*/run-state.json')):
     json.loads(p.read_text())
 print('json ok')
 PY
-cd /home/vany/openclaw-data/.openclaw/shared
+cd <shared-root>
 python3 scripts/promoter.py --dry-run
 python3 scripts/verify_bridge.py
 ```
@@ -324,18 +335,26 @@ python3 scripts/verify_bridge.py
 
 状态不一致收口细节见：`references/orchestrator-state-reconciliation.md`。其中包含 run-state 与实际产物不一致时的审计顺序、只更新 runtime 的边界和最小验证命令。
 
-Further rollout detail is also captured in `references/autonomous-learning-semi-auto-candidate.md`: plan-only semi-auto candidate packets, explicit no-cron/no-curated gates, and Claude Code deep-dive granularity rules after repeated `max_turns_exhausted`.
+落地优先级与 runtime-only 脚手架经验见：`references/landing-prioritization-runtime-scaffold.md`。其中包含如何区分 learned vs landed、按共享治理→现有流水线→自主学习→新采集系统→本地代码探索能力的落地顺序，以及新系统最小 runtime 文件包与 CodeGraph shared 候选判断口径。
 
-Fact freshness / conflict-resolution governance automation is captured in `references/fact-governance-warning-only-automation.md`: how to convert runtime policy drafts into a self-running warning-only loop via `promoter.py --dry-run --scan-promote-candidates`, `verify_bridge.py` fact_governance checks, `daily_maintenance.sh`, tests, and state/backlog updates while keeping curated auto-promotion disabled.
+CodeGraph / 本地代码上下文索引候选规则见：`references/codegraph-context-index-candidate.md`。要点：先把代码结构索引成 runtime 图谱，再让 agent 通过自然语言/MCP 查询 symbol/file/edge；缓存不进 curated；本地 POC 通过前不要升格 shared skill。
+
+
+
+Semi-auto discovery execution detail is captured in `references/autonomous-learning-semi-auto-discovery-execution.md`: how to execute exactly one approved low-risk OpenClaw discovery run from a plan-only candidate, preserve runtime/inbox-only boundaries, save stdout/stderr evidence, run Hermes spec/quality review, and avoid treating transient GitHub fetch failures as durable tool limitations.
+
+Effect-check run pattern is captured in `references/autonomous-learning-semi-auto-effect-check.md`: when the user asks to “run one version and see effect”, generate a runtime-only semi-auto candidate bundle with explicit gates, three bounded draft runs, validation commands, and report language that does not imply full automation.
+
+Self-healing / global inspection agent scaffolding is captured in `references/self-healing-agent-scaffold.md`: runtime-first plan shape, safety gates, finding taxonomy, approval boundaries, and verification commands for building a self-repair loop without premature auto-fixing.
 
 ### 运行与验证的最小闭环
 
 完成迁移或修复后，至少执行：
 
 ```bash
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/promoter.py --dry-run
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/promoter.py
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/verify_bridge.py
+python3 <shared-root>/scripts/promoter.py --dry-run
+python3 <shared-root>/scripts/promoter.py
+python3 <shared-root>/scripts/verify_bridge.py
 ```
 
 

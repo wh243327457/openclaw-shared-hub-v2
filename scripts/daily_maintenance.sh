@@ -2,7 +2,9 @@
 # Daily shared hub maintenance + self-monitoring
 set -e
 
-cd /home/vany/openclaw-data/.openclaw/shared
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHARED_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$SHARED_ROOT"
 LOG_DIR="runtime/hermes"
 mkdir -p "$LOG_DIR"
 
@@ -11,6 +13,7 @@ DRY_RUN="${DRY_RUN:-0}"
 SHARED_ONLY="${SHARED_ONLY:-0}"
 RUN_KB_SYNC="${RUN_KB_SYNC:-1}"
 RUN_GITHUB_LEARNING="${RUN_GITHUB_LEARNING:-1}"
+RUN_MEMORY_TREE_LOCALIZATION="${RUN_MEMORY_TREE_LOCALIZATION:-1}"
 GITHUB_LEARNING_DATE="${GITHUB_LEARNING_DATE:-$(TZ=Asia/Shanghai date -d '1 day ago' +%F)}"
 GITHUB_LEARNING_LOG_DIR="$LOG_DIR/github-hot-project-learning"
 mkdir -p "$GITHUB_LEARNING_LOG_DIR"
@@ -22,36 +25,36 @@ if [ "$DRY_RUN" = "1" ]; then
   RUN_KB_SYNC=0
 fi
 
-echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING github_learning_date=$GITHUB_LEARNING_DATE" >> "$LOG_DIR/cron.log"
+echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING run_memory_tree_localization=$RUN_MEMORY_TREE_LOCALIZATION github_learning_date=$GITHUB_LEARNING_DATE" >> "$LOG_DIR/cron.log"
 
 # 1. Promoter - refresh auto-state block, or dry-run without writing curated memory.
 if [ "$DRY_RUN" = "1" ]; then
-  python3 scripts/promoter.py --dry-run --scan-promote-candidates >> "$LOG_DIR/promoter-cron.log" 2>&1 || {
+  python3 "$SCRIPT_DIR/promoter.py" --dry-run --scan-promote-candidates >> "$LOG_DIR/promoter-cron.log" 2>&1 || {
       echo "[$TIMESTAMP] promoter dry-run failed" >> "$LOG_DIR/cron.log"
   }
 else
-  python3 scripts/promoter.py >> "$LOG_DIR/promoter-cron.log" 2>&1 || {
+  python3 "$SCRIPT_DIR/promoter.py" >> "$LOG_DIR/promoter-cron.log" 2>&1 || {
       echo "[$TIMESTAMP] promoter failed" >> "$LOG_DIR/cron.log"
   }
 fi
 
 # 2. Promotion governance candidate scan (report-only; never writes curated memory).
-python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 20 --max-candidates-per-file 10 >> "$LOG_DIR/promotion-governance-cron.log" 2>&1 || {
+python3 "$SCRIPT_DIR/promoter.py" --dry-run --scan-promote-candidates --recent-limit 20 --max-candidates-per-file 10 >> "$LOG_DIR/promotion-governance-cron.log" 2>&1 || {
     echo "[$TIMESTAMP] promotion governance scan failed" >> "$LOG_DIR/cron.log"
 }
 
 # 3. GitHub hot project learning bridge + healthcheck.
 if [ "$RUN_GITHUB_LEARNING" = "1" ]; then
   if [ "$DRY_RUN" = "1" ]; then
-    python3 scripts/openclaw_github_learning_bridge.py --date "$GITHUB_LEARNING_DATE" --dry-run >> "$GITHUB_LEARNING_LOG_DIR/bridge-cron.log" 2>&1 || {
+    python3 "$SCRIPT_DIR/openclaw_github_learning_bridge.py" --date "$GITHUB_LEARNING_DATE" --dry-run >> "$GITHUB_LEARNING_LOG_DIR/bridge-cron.log" 2>&1 || {
         echo "[$TIMESTAMP] github learning bridge dry-run failed" >> "$LOG_DIR/cron.log"
     }
   else
-    python3 scripts/openclaw_github_learning_bridge.py --date "$GITHUB_LEARNING_DATE" >> "$GITHUB_LEARNING_LOG_DIR/bridge-cron.log" 2>&1 || {
+    python3 "$SCRIPT_DIR/openclaw_github_learning_bridge.py" --date "$GITHUB_LEARNING_DATE" >> "$GITHUB_LEARNING_LOG_DIR/bridge-cron.log" 2>&1 || {
         echo "[$TIMESTAMP] github learning bridge failed" >> "$LOG_DIR/cron.log"
     }
   fi
-  python3 scripts/github_learning_healthcheck.py --date "$GITHUB_LEARNING_DATE" >> "$GITHUB_LEARNING_LOG_DIR/healthcheck-cron.log" 2>&1 || {
+  python3 "$SCRIPT_DIR/github_learning_healthcheck.py" --date "$GITHUB_LEARNING_DATE" >> "$GITHUB_LEARNING_LOG_DIR/healthcheck-cron.log" 2>&1 || {
       echo "[$TIMESTAMP] github learning healthcheck non-green" >> "$LOG_DIR/cron.log"
   }
 else
@@ -59,7 +62,7 @@ else
 fi
 
 # 4. Verify bridge health.
-python3 scripts/verify_bridge.py >> "$LOG_DIR/verify-cron.log" 2>&1 || {
+python3 "$SCRIPT_DIR/verify_bridge.py" >> "$LOG_DIR/verify-cron.log" 2>&1 || {
     echo "[$TIMESTAMP] verify failed" >> "$LOG_DIR/cron.log"
 }
 
@@ -80,11 +83,26 @@ echo "[$TIMESTAMP] inbox backlog: hermes=$HERMES_COUNT, openclaw=$OPENCLAW_COUNT
 # 8. Knowledge base git auto-sync (optional; disabled by SHARED_ONLY=1 or DRY_RUN=1).
 if [ "$RUN_KB_SYNC" = "1" ]; then
   echo "[$TIMESTAMP] kb sync:" >> "$LOG_DIR/cron.log"
-  bash /home/vany/openclaw-data/.openclaw/shared/scripts/kb_git_sync.sh >> "$LOG_DIR/kb_sync.log" 2>&1 || {
+  bash "$SCRIPT_DIR/kb_git_sync.sh" >> "$LOG_DIR/kb_sync.log" 2>&1 || {
       echo "[$TIMESTAMP] kb sync failed" >> "$LOG_DIR/cron.log"
   }
 else
   echo "[$TIMESTAMP] kb sync skipped" >> "$LOG_DIR/cron.log"
+fi
+
+# 9. Memory tree localization runner.
+if [ "$RUN_MEMORY_TREE_LOCALIZATION" = "1" ]; then
+  if [ "$DRY_RUN" = "1" ]; then
+    bash "$SCRIPT_DIR/memory_tree_localization_runner.sh" DRY_RUN=1 >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+      echo "[$TIMESTAMP] memory-tree-localization dry-run failed" >> "$LOG_DIR/cron.log"
+    }
+  else
+    bash "$SCRIPT_DIR/memory_tree_localization_runner.sh" >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+      echo "[$TIMESTAMP] memory-tree-localization failed" >> "$LOG_DIR/cron.log"
+    }
+  fi
+else
+  echo "[$TIMESTAMP] memory-tree-localization skipped (RUN_MEMORY_TREE_LOCALIZATION=$RUN_MEMORY_TREE_LOCALIZATION)" >> "$LOG_DIR/cron.log"
 fi
 
 echo "[$TIMESTAMP] === daily maintenance done ===" >> "$LOG_DIR/cron.log"

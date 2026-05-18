@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 # 常量
-DEFAULT_SHARED_ROOT = Path('/home/vany/openclaw-data/.openclaw/shared')
+DEFAULT_SHARED_ROOT = Path(__file__).resolve().parents[1]
 PIPELINE = 'github-hot-project-learning'
 TZ = timezone(timedelta(hours=8))
 TEMPLATE_PATH = 'capabilities/skills/research/github-hot-project-learning/templates/daily-instruction.md'

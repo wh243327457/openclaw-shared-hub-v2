@@ -51,6 +51,6 @@
 ## 验收命令
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 python3 scripts/verify_bridge.py
 ```

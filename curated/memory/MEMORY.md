@@ -4,7 +4,7 @@
 
 ## 根路径
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared`
+- 宿主：`/home/vany/agent/.openclaw/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 作用范围
@@ -22,8 +22,15 @@
 - **项目状态目录**：`curated/memory/projects/`
 - **当前项目条目**：`curated/memory/projects/shared-hub-v2.md`
 - **自主学习系统**：`curated/memory/projects/autonomous-learning-system.md`
+- **OpenHuman 机制本地化**：`curated/memory/projects/openhuman-mechanism-localization.md`
+- **OpenClaw 网页/公众号采集系统**：`curated/memory/projects/openclaw-web-watch.md`
+- **Self-Healing Agent / 全局巡查自我修复**：`curated/memory/projects/self-healing-agent.md`
 - **共享技能清单**：`capabilities/manifests/shared-skills.yaml`
 - **配置目标识别规则**：`capabilities/skills/foundation/config-target-routing/SKILL.md`
+- **自主学习多 agent 编排模式**：`curated/memory/facts/autonomous-learning-multi-agent-orchestration-patterns.md`
+- **Skill-as-contract / Subagent 四状态协议**：`curated/memory/facts/autonomous-learning-skill-as-contract-pattern.md`
+- **Agent 工程 Verification-first 实践**：`curated/memory/facts/agent-engineering-verification-first-practices.md`
+- **ds4 推理优化长期事实**：`curated/memory/facts/autonomous-learning-ds4-inference-patterns.md`
 - **旧 OpenClaw daily 兼容视图**：`compat/daily/`（可通过 `memory/daily/` 访问）
 - **agent 原始写入**：`inbox/<agent>/daily/`
 - **运行时产物**：`runtime/<agent>/`
@@ -40,28 +47,32 @@
 - `shared-hub-v2` 项目状态已沉淀到 `curated/memory/projects/shared-hub-v2.md`
 - `capabilities/manifests/shared-skills.yaml` 已建立，用于声明常驻 shared 的共享技能
 - `foundation/config-target-routing` 已升格为共享 skill，用于约束 Hermes / OpenClaw / future-agent 在配置类任务前先识别目标系统，避免混改配置
-- `curated/memory/facts/` 目前仍为空，后续可按需补充稳定事实条目
+- `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程与配置治理等稳定事实条目
 - 后续新增长期记忆时，请同时更新本索引
 - `autonomous-learning-system` 已进入 v0.1 骨架落地阶段，正式架构在 `curated/memory/projects/autonomous-learning-system.md`，runtime 配置与模板在 `runtime/hermes/autonomous-learning/`
+- 已按用户确认晋升 3 条自主学习长期模式：多 agent 编排、skill-as-contract/subagent 四状态、verification-first agent 工程实践。
+- `openhuman-mechanism-localization` 已进入 planned 阶段：将 OpenHuman 的 Memory Tree / Obsidian Wiki / Auto-fetch sync_state / Trigger triage / Token compression 思路本地化到 Hermes + OpenClaw + shared hub v2 + Obsidian 工作流；不依赖 OpenHuman 后端，不复用 GPL 源码，先做 runtime/实验区 POC。
+- `self-healing-agent` 已创建 v0.1 runtime 脚手架：定位为全局巡查、自我纠错、自我修复迭代机制；当前只做手动 baseline 和 runtime 产物，不启用 cron、不自动改配置。
+- `autonomous-learning-system` 继续吸纳架构参考：OpenSquilla 的 TurnRunner / provider-neutral / skill loader / memory snapshot / sandbox 分层已作为长期观察卡记入项目说明。
 
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-16T10:53:15+08:00`
-- 共享根目录: `/home/vany/openclaw-data/.openclaw/shared`
-- runtime 位置提示: `/home/vany/openclaw-data/.openclaw/shared/runtime`
-- facts 文件数: 6
-- projects 文件数: 3
+- 生成时间: `2026-05-18T18:37:22+08:00`
+- 共享根目录: `/home/vany/agent/.openclaw/shared`
+- runtime 位置提示: `/home/vany/agent/.openclaw/shared/runtime`
+- facts 文件数: 10
+- projects 文件数: 6
 - 最近 daily 文件:
-  - `inbox/hermes/daily/2026-05-16.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-05-16.md` (inbox/openclaw/daily)
-  - `inbox/openclaw/daily/2026-05-15.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-05-15.md` (inbox/hermes/daily)
-  - `compat/daily/dreaming/deep/2026-05-15.md` (compat/daily)
+  - `inbox/hermes/daily/2026-05-18.md` (inbox/hermes/daily)
+  - `compat/daily/dreaming/deep/2026-05-18.md` (compat/daily)
+  - `compat/daily/dreaming/rem/2026-05-18.md` (compat/daily)
+  - `compat/daily/dreaming/light/2026-05-18.md` (compat/daily)
+  - `inbox/openclaw/daily/dreaming/deep/2026-05-18.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 23
-  - `openclaw`: 68
+  - `hermes`: 25
+  - `openclaw`: 80
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## Promoted From Short-Term Memory (2026-05-04)
@@ -117,6 +128,53 @@
 - | 项目 | 值 | |---|---| | **主要查询 URL** | `https://api.github.com/search/repositories?q=stars:>500+created:>2025-01-01&sort=stars&order=desc&per_page=20` | | **辅助数据源** | `https://github.com/trending` (今日热榜 HTML) | [score=0.817 recalls=0 avg=0.620 source=memory/2026-05-09.md:28-31]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-09.md:39:42 -->
 - | # | owner/repo | source_url | stars | language | license | created_at | pushed_at | why_selected | |---|---|---|---|---|---|---|---|---| [score=0.809 recalls=0 avg=0.620 source=memory/2026-05-09.md:39-40]
+
+
+
+
+
+
+
+
+## Promoted From Short-Term Memory (2026-05-16)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-09.md:6:7 -->
+- run_ts: '1778296684130' needs_hermes_audit: true [score=0.849 recalls=0 avg=0.620 source=memory/2026-05-09.md:6-7]
+
+
+
+
+## Promoted From Short-Term Memory (2026-05-17)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-10.md:2:5 -->
+- source: openclaw-cron pipeline: github-hot-project-learning job_id: 7aa310ea-b264-40c8-b23a-ed655c565a69 run_status: ok [score=0.866 recalls=0 avg=0.620 source=memory/2026-05-10.md:2-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-10.md:26:27 -->
+- **日期：** 2026-05-10 01:12 UTC **报告：** `memory/github-daily-2026-05-10.md` [score=0.866 recalls=0 avg=0.620 source=memory/2026-05-10.md:26-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-10.md:20:20 -->
+- 已按规则完成报告并写入 memory。 [score=0.856 recalls=0 avg=0.620 source=memory/2026-05-10.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-10.md:6:7 -->
+- run_ts: '1778375731265' needs_hermes_audit: true [score=0.836 recalls=0 avg=0.620 source=memory/2026-05-10.md:6-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:11:12 -->
+- | **筛选算法** | GitHub Trending 每日榜抓取，取热榜项目真实 API 数据交叉验证 | | **口径说明** | trending 页面文本 + GitHub REST API 双重校验；stars/language/license/created_at/pushed_at 均来自 `api.github.com/repos/{owner}/{repo}` | [score=0.823 recalls=0 avg=0.620 source=memory/2026-05-12.md:11-12]
+
+
+
+
+
+## Promoted From Short-Term Memory (2026-05-18)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:7:10 -->
+- | 字段 | 值 | |------|-----| | **查询 URL（Trending）** | `https://github.com/trending?since=daily` | | **抓取时间** | 2026-05-13T01:27 UTC | [score=0.894 recalls=0 avg=0.620 source=memory/2026-05-12.md:7-10]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:18:21 -->
+- | # | owner/repo | source_url | stars | language | license | created_at | pushed_at | why_selected | |---|---|---|---|---|---|---|---|---| [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-12.md:18-19]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:22:25 -->
+- | 3 | yikart/AiToEarn | https://github.com/yikart/AiToEarn | 11,895 | TypeScript | MIT License | 2025-02-24 | 2026-05-12 | 今日热榜 1,282⭐，AI-to-Earn 工具集，聚合40+provider，含多语言内容生成+商业化模板 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-12.md:22-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:26:26 -->
+- | 7 | rasbt/LLMs-from-scratch | https://github.com/rasbt/LLMs-from-scratch | 93,811 | Jupyter Notebook | Other | 2023-07-23 | 2026-05-11 | 今日热榜 772⭐，从零实现ChatGPT-like LLM的PyTorch教程，14.4K forks，学术界与工业界经典教程 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-12.md:26-26]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-12.md:32:32 -->
+- > **选读理由**：今日Trending第2位，1,048⭐日增量，专注解决AI编码Agent的长期记忆痛点，内建OpenClaw官方集成，技能可迁移性高。 [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-12.md:32-32]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:34:36 -->
+- | **抓取时间** | 2026-05-13T11:03~11:06 UTC | | **筛选算法** | trending 今日星标增速 × AI/Agent 相关性 × 代码质量评估，三维打分取 Top | | **备注** | trending "今日星标" 数据来自 `github.com/trending` 页面直接展示；API 查询使用 `created:>2025-05-01` 过滤新项目 | [score=0.844 recalls=0 avg=0.620 source=memory/2026-05-13.md:34-36]
 
 
 

@@ -1,7 +1,7 @@
 # 共享中台 v2 优化落地 Plan
 
 - 计划创建时间: 2026-04-25 02:19:01 +0800
-- 共享根目录: `/home/vany/openclaw-data/.openclaw/shared`
+- 共享根目录: `<shared-root>`
 - 当前阶段: 第一轮治理优化已完成，进入复核 / 收口
 - 总体策略: 不继续大改目录结构；优先补齐“晋升协议、治理校验、future-agent 接入包、shared skills 元数据、维护脚本隔离、状态一致性、runtime 留存策略”。
 - 安全边界: 禁止写入明文 secret；所有长期事实必须进入 curated；原始记录进入 inbox；运行时产物进入 runtime。

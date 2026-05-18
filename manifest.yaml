@@ -1,7 +1,8 @@
 version: 2
 name: shared-hub-v2
 roots:
-  host: /home/vany/openclaw-data/.openclaw/shared
+  host: /home/vany/agent/.openclaw/shared
+  host_legacy: /home/vany/openclaw-data/.openclaw/shared
   container: /home/node/.openclaw/shared
 layers:
   curated:

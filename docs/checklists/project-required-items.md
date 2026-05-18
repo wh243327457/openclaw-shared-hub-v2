@@ -2,7 +2,7 @@
 
 - 创建时间: 2026-04-25
 - 适用项目: shared-hub-v2 / 跨 Agent 共享中台
-- 维护位置: `/home/vany/openclaw-data/.openclaw/shared/docs/checklists/project-required-items.md`
+- 维护位置: `<shared-root>/docs/checklists/project-required-items.md`
 - 作用: 只做“必须项定义 + 各 agent 清单入口”，不在这里混写 Hermes / OpenClaw / future-agent 的完成标记。
 - 状态规则: 本总览不承载 agent 完成状态；完成状态必须写入对应 agent 自己的清单。
 - 安全边界: 禁止写入明文 secret；只记录变量名、路径、验证命令和状态。

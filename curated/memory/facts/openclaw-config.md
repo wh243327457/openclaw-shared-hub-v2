@@ -11,7 +11,7 @@ updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
 review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
-  - /home/vany/openclaw-data/.openclaw/openclaw.json
+  - /home/vany/agent/.openclaw/openclaw.json
 conflict:
   status: none
   type: null
@@ -33,7 +33,7 @@ secret_checked: true
 - Base URL: https://aixj.vip/v1
 - API Key: 环境变量 `$OPENCLAW_API_KEY`
 - 默认模型: gpt-5.4 + xhigh thinking
-- 配置文件: /home/vany/openclaw-data/.openclaw/openclaw.json
+- 配置文件: /home/vany/agent/.openclaw/openclaw.json
 - 后台地址: http://localhost:18789
 
 ## 稳定约束

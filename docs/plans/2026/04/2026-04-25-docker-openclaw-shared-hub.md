@@ -8,7 +8,7 @@
 
 在 Docker 中启动一个 OpenClaw 实例，复用宿主共享中台：
 
-- 宿主 shared：`/home/vany/openclaw-data/.openclaw/shared`
+- 宿主 shared：`<shared-root>`
 - 容器 shared：`/home/node/.openclaw/shared`
 
 验证完整流程中的：
@@ -70,11 +70,11 @@ docker run --rm \
   --user 0:0 \
   -e HOME=/home/node \
   -p 18790:18789 \
-  -v /home/vany/openclaw-data/.openclaw:/home/node/.openclaw:rw \
-  -v /home/vany/openclaw-data/.openclaw/shared:/home/node/.openclaw/shared:ro \
-  -v /home/vany/openclaw-data/.openclaw/shared/inbox/openclaw/daily:/home/node/.openclaw/shared/inbox/openclaw/daily:rw \
-  -v /home/vany/openclaw-data/.openclaw/shared/runtime/openclaw:/home/node/.openclaw/shared/runtime/openclaw:rw \
-  -v /home/vany/openclaw-data/.openclaw/shared/compat/daily:/home/node/.openclaw/shared/compat/daily:rw \
+  -v /home/vany/agent/.openclaw:/home/node/.openclaw:rw \
+  -v <shared-root>:/home/node/.openclaw/shared:ro \
+  -v <shared-root>/inbox/openclaw/daily:/home/node/.openclaw/shared/inbox/openclaw/daily:rw \
+  -v <shared-root>/runtime/openclaw:/home/node/.openclaw/shared/runtime/openclaw:rw \
+  -v <shared-root>/compat/daily:/home/node/.openclaw/shared/compat/daily:rw \
   ghcr.io/openclaw/openclaw:latest
 ```
 
@@ -131,7 +131,7 @@ OpenClaw 旧路径可能写 `shared/memory/daily`，canonical 路径应写 `shar
 
 ```bash
 docker run --rm --entrypoint sh \
-  -v /home/vany/openclaw-data/.openclaw/shared:/home/node/.openclaw/shared:ro \
+  -v <shared-root>:/home/node/.openclaw/shared:ro \
   ghcr.io/openclaw/openclaw:latest \
   -lc 'set -eu; id; test -r /home/node/.openclaw/shared/manifest.yaml; test -r /home/node/.openclaw/shared/AGENTS.md; test -r /home/node/.openclaw/shared/memory/MEMORY.md; test -d /home/node/.openclaw/shared/memory/daily; test -d /home/node/.openclaw/shared/skills; echo OK'
 ```
@@ -140,10 +140,10 @@ docker run --rm --entrypoint sh \
 
 ```bash
 docker run --rm --entrypoint sh \
-  -v /home/vany/openclaw-data/.openclaw/shared:/home/node/.openclaw/shared:ro \
-  -v /home/vany/openclaw-data/.openclaw/shared/inbox/openclaw/daily:/home/node/.openclaw/shared/inbox/openclaw/daily:rw \
-  -v /home/vany/openclaw-data/.openclaw/shared/runtime/openclaw:/home/node/.openclaw/shared/runtime/openclaw:rw \
-  -v /home/vany/openclaw-data/.openclaw/shared/compat/daily:/home/node/.openclaw/shared/compat/daily:rw \
+  -v <shared-root>:/home/node/.openclaw/shared:ro \
+  -v <shared-root>/inbox/openclaw/daily:/home/node/.openclaw/shared/inbox/openclaw/daily:rw \
+  -v <shared-root>/runtime/openclaw:/home/node/.openclaw/shared/runtime/openclaw:rw \
+  -v <shared-root>/compat/daily:/home/node/.openclaw/shared/compat/daily:rw \
   ghcr.io/openclaw/openclaw:latest \
   -lc 'set -eu; for p in /home/node/.openclaw/shared/inbox/openclaw/daily /home/node/.openclaw/shared/runtime/openclaw /home/node/.openclaw/shared/compat/daily; do if [ -w "$p" ]; then echo "WRITABLE $p"; else echo "NOT_WRITABLE $p"; fi; done'
 ```

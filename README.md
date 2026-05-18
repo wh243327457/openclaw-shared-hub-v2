@@ -4,7 +4,7 @@
 
 ## 共享根目录
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared/`
+- 宿主：`/home/vany/agent/.openclaw/shared/`
 - 容器：`/home/node/.openclaw/shared/`
 
 ## 关键目录

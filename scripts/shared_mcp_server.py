@@ -4,7 +4,7 @@ Minimal MCP server providing read_file, write_file, list_files tools.
 Zero external dependencies — stdlib only.
 
 Usage:
-    python3 /home/vany/openclaw-data/.openclaw/shared/scripts/shared_mcp_server.py
+    python3 scripts/shared_mcp_server.py
 """
 import json
 import sys
@@ -12,7 +12,7 @@ import os
 from pathlib import Path
 from typing import Any
 
-SHARED_ROOT = Path("/home/vany/openclaw-data/.openclaw/shared")
+SHARED_ROOT = Path(os.environ.get("SHARED_ROOT", str(Path(__file__).resolve().parents[1])))
 INBOX_DIR = SHARED_ROOT / "inbox" / "openclaw" / "daily"
 
 
