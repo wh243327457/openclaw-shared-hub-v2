@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -400,6 +401,141 @@ def collect_inbox_counts(inbox_root: Path) -> dict[str, int]:
     return counts
 
 
+SECRET_PATTERN = re.compile(
+    r"(?i)(api[_-]?key|token|secret|password|passwd|cookie|private[_-]?key|authorization)"
+)
+LOW_CONFIDENCE_PATTERN = re.compile(r"(?i)(dream|dreams|reflection|light sleep|hypothesis|maybe|猜测|可能|反思)")
+PROJECT_PATTERN = re.compile(r"(?i)(project|plan|roadmap|status|milestone|项目|计划|状态|阶段|验收)")
+FACT_PATTERN = re.compile(r"(?i)(fact|confirmed|verified|路径|目录|配置|规则|规范|兼容|入口|已确认)")
+
+
+def classify_candidate(text: str, source_path: Path) -> tuple[str, str, str]:
+    """Return decision, suggested target, reason for one candidate snippet."""
+    lowered_path = str(source_path).lower()
+    if SECRET_PATTERN.search(text):
+        return "blocked", "", "possible secret-like keyword; requires manual redaction before promotion"
+    if LOW_CONFIDENCE_PATTERN.search(text) or any(part in lowered_path for part in ("dream", "reflection")):
+        return "review", "", "low-confidence/reflection-like content; manual evidence required"
+    if PROJECT_PATTERN.search(text):
+        return "candidate", "curated/memory/projects/", "project/status-like content"
+    if FACT_PATTERN.search(text):
+        return "candidate", "curated/memory/facts/", "stable fact/rule-like content"
+    return "review", "", "no strong promotion signal; keep for manual review"
+
+
+def suggest_freshness(text: str) -> str:
+    """Suggest a lightweight freshness class for a promotion candidate."""
+    if re.search(r"(?i)(临时|temporary|一次性|blocked|阻塞|失败|error|503)", text):
+        return "volatile"
+    if re.search(r"(?i)(cron|服务|运行|当前|启用|配置|provider|model|模型|auth|gateway|写入|指向)", text):
+        return "operational"
+    if re.search(r"(?i)(项目|计划|阶段|协议|治理|规范|workflow|流程)", text):
+        return "slow_changing"
+    return "static"
+
+
+def suggest_conflict(text: str, decision: str) -> dict[str, Any]:
+    """Suggest warning-only conflict metadata for a promotion candidate."""
+    possible_conflict = bool(re.search(r"(?i)(冲突|矛盾|替代|覆盖|supersede|旧|新|仍|不一致|不同)", text))
+    conflict_type = None
+    recommended_state = "candidate" if decision == "candidate" else "deferred"
+    if possible_conflict:
+        conflict_type = "temporal" if re.search(r"(?i)(替代|旧|新|supersede|过期)", text) else "direct"
+        recommended_state = "supersede_pending" if conflict_type == "temporal" else "conflict_detected"
+    elif decision == "blocked":
+        conflict_type = "secret_sensitive"
+        recommended_state = "rejected"
+    return {
+        "possible_conflict": possible_conflict,
+        "conflict_type_suggestion": conflict_type,
+        "recommended_state": recommended_state,
+    }
+
+
+def extract_candidate_lines(file_path: Path, max_per_file: int) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+    try:
+        lines = file_path.read_text(encoding="utf-8", errors="replace").splitlines()
+    except OSError as exc:
+        return [
+            {
+                "line": None,
+                "evidence": f"failed to read file: {exc}",
+                "decision": "blocked",
+                "suggested_target": "",
+                "reason": "read error",
+            }
+        ]
+
+    for line_number, raw_line in enumerate(lines, start=1):
+        text = raw_line.strip()
+        if not text or text.startswith(("```", "<!--")):
+            continue
+        if len(text) < 12:
+            continue
+        if text.startswith(("- ", "* ", "#", "##")) or any(pattern.search(text) for pattern in (SECRET_PATTERN, LOW_CONFIDENCE_PATTERN, PROJECT_PATTERN, FACT_PATTERN)):
+            decision, suggested_target, reason = classify_candidate(text, file_path)
+            governance = suggest_conflict(text, decision)
+            candidates.append(
+                {
+                    "line": line_number,
+                    "evidence": text[:240],
+                    "decision": decision,
+                    "suggested_target": suggested_target,
+                    "reason": reason,
+                    "freshness_suggestion": suggest_freshness(text),
+                    "review_due_at_suggestion": None,
+                    "stale_risk": "high" if suggest_freshness(text) in {"operational", "volatile"} else "medium",
+                    "possible_supersedes": [],
+                    **governance,
+                    "matched_existing_fact_ids": [],
+                    "evidence_needed": ["read_file", "terminal"] if governance["possible_conflict"] else [],
+                }
+            )
+        if len(candidates) >= max_per_file:
+            break
+    return candidates
+
+
+def scan_promote_candidates(shared_root: Path, inbox_root: Path, recent_limit: int, max_per_file: int) -> dict[str, Any]:
+    files: list[Path] = []
+    if inbox_root.exists() and inbox_root.is_dir():
+        for agent_dir in sorted(path for path in inbox_root.iterdir() if path.is_dir() and not path.name.startswith(".")):
+            daily_dir = agent_dir / "daily"
+            files.extend(iter_visible_files(daily_dir))
+    files.sort(key=lambda path: (daily_rank(path)[0], daily_rank(path)[1], path.stat().st_mtime, str(path)), reverse=True)
+    files = files[:recent_limit]
+
+    records: list[dict[str, Any]] = []
+    counts_by_decision: dict[str, int] = {}
+    for file_path in files:
+        try:
+            rel_path = file_path.relative_to(shared_root)
+            agent = rel_path.parts[1] if len(rel_path.parts) >= 3 and rel_path.parts[0] == "inbox" else None
+        except ValueError:
+            rel_path = file_path
+            agent = None
+        candidates = extract_candidate_lines(file_path, max_per_file=max_per_file)
+        for item in candidates:
+            counts_by_decision[item["decision"]] = counts_by_decision.get(item["decision"], 0) + 1
+        records.append(
+            {
+                "path": str(rel_path),
+                "agent": agent,
+                "candidate_count": len(candidates),
+                "candidates": candidates,
+            }
+        )
+
+    return {
+        "policy": "dry-run candidate scan only; never writes curated memory",
+        "files_scanned": len(files),
+        "max_candidates_per_file": max_per_file,
+        "counts_by_decision": counts_by_decision,
+        "records": records,
+    }
+
+
 def build_status_block(summary: dict[str, Any]) -> str:
     lines = [
         MARKER_START,
@@ -473,7 +609,7 @@ def ensure_directories(required_dirs: list[Path], dry_run: bool) -> list[dict[st
     return actions
 
 
-def run(shared_root: Path, dry_run: bool, recent_limit: int) -> tuple[int, dict[str, Any]]:
+def run(shared_root: Path, dry_run: bool, recent_limit: int, scan_promote_candidates_enabled: bool, max_candidates_per_file: int) -> tuple[int, dict[str, Any]]:
     manifest_path = shared_root / "manifest.yaml"
     try:
         manifest = load_manifest(manifest_path)
@@ -538,6 +674,13 @@ def run(shared_root: Path, dry_run: bool, recent_limit: int) -> tuple[int, dict[
         },
         "stats": summary,
     }
+    if scan_promote_candidates_enabled:
+        result["promotion_candidates"] = scan_promote_candidates(
+            shared_root,
+            paths["inbox"],
+            recent_limit=recent_limit,
+            max_per_file=max_candidates_per_file,
+        )
     return 0, result
 
 
@@ -559,6 +702,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=5,
         help="状态块中保留的最近 daily 文件数量，默认 5",
     )
+    parser.add_argument(
+        "--scan-promote-candidates",
+        action="store_true",
+        help="扫描 inbox daily 中的候选晋升条目；只输出报告，不写 curated",
+    )
+    parser.add_argument(
+        "--max-candidates-per-file",
+        type=int,
+        default=8,
+        help="候选扫描时每个文件最多输出的条目数，默认 8",
+    )
     return parser
 
 
@@ -567,8 +721,16 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.recent_limit <= 0:
         parser.error("--recent-limit must be > 0")
+    if args.max_candidates_per_file <= 0:
+        parser.error("--max-candidates-per-file must be > 0")
 
-    exit_code, payload = run(Path(args.shared_root).expanduser().resolve(), args.dry_run, args.recent_limit)
+    exit_code, payload = run(
+        Path(args.shared_root).expanduser().resolve(),
+        args.dry_run,
+        args.recent_limit,
+        args.scan_promote_candidates,
+        args.max_candidates_per_file,
+    )
     print(json_dump(payload))
     return exit_code
 

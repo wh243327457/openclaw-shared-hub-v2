@@ -1,6 +1,53 @@
-# Runtime artifacts
-runtime/openclaw/dreams/
-compat/daily/.dreams/
+# Shared hub v2 git safety ignore
+# Runtime / agent-local artifacts
+runtime/
+**/.dreams/
 **/cache/
-**/index/
-*.jsonl
+**/.cache/
+**/tmp/
+**/temp/
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Logs and generated diagnostics
+*.log
+logs/
+*.trace
+*.dump
+
+# Environment and credentials - never commit plaintext secrets
+.env
+.env.*
+*.key
+*.pem
+*.token
+*.crt
+*.p12
+*.pfx
+*secret*
+*secrets*
+*credential*
+*credentials*
+*password*
+credentials/
+secrets/
+
+# Local databases / indexes
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+index/
+indexes/
+
+# Nested staging repos and local VCS artifacts
+runtime/hermes/pr-staging/
+.git/modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

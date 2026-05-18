@@ -1,0 +1,1 @@
+../curated/memory/MEMORY.md
