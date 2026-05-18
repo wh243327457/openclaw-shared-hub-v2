@@ -74,3 +74,14 @@ shared_skills:
     owner: shared-hub
     last_reviewed: "2026-05-15"
     description: 配置类任务先识别目标系统，避免把 Hermes / OpenClaw / shared 中台配置混用
+  - id: autonomous-learning/orchestrator-protocol
+    path: autonomous-learning/orchestrator-protocol
+    version: "1.0"
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: "2026-05-17"
+    description: 自主学习系统编排协议 — 状态机驱动的多 agent 学习任务编排，含 review gates、fallback、approval 闸门
