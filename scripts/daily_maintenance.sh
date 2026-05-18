@@ -11,6 +11,7 @@ DRY_RUN="${DRY_RUN:-0}"
 SHARED_ONLY="${SHARED_ONLY:-0}"
 RUN_KB_SYNC="${RUN_KB_SYNC:-1}"
 RUN_GITHUB_LEARNING="${RUN_GITHUB_LEARNING:-1}"
+RUN_MEMORY_TREE_LOCALIZATION="${RUN_MEMORY_TREE_LOCALIZATION:-1}"
 GITHUB_LEARNING_DATE="${GITHUB_LEARNING_DATE:-$(TZ=Asia/Shanghai date -d '1 day ago' +%F)}"
 GITHUB_LEARNING_LOG_DIR="$LOG_DIR/github-hot-project-learning"
 mkdir -p "$GITHUB_LEARNING_LOG_DIR"
@@ -22,7 +23,7 @@ if [ "$DRY_RUN" = "1" ]; then
   RUN_KB_SYNC=0
 fi
 
-echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING github_learning_date=$GITHUB_LEARNING_DATE" >> "$LOG_DIR/cron.log"
+echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING run_memory_tree_localization=$RUN_MEMORY_TREE_LOCALIZATION github_learning_date=$GITHUB_LEARNING_DATE" >> "$LOG_DIR/cron.log"
 
 # 1. Promoter - refresh auto-state block, or dry-run without writing curated memory.
 if [ "$DRY_RUN" = "1" ]; then
@@ -85,6 +86,21 @@ if [ "$RUN_KB_SYNC" = "1" ]; then
   }
 else
   echo "[$TIMESTAMP] kb sync skipped" >> "$LOG_DIR/cron.log"
+fi
+
+# 9. Memory tree localization runner.
+if [ "$RUN_MEMORY_TREE_LOCALIZATION" = "1" ]; then
+  if [ "$DRY_RUN" = "1" ]; then
+    bash /home/vany/openclaw-data/.openclaw/shared/scripts/memory_tree_localization_runner.sh DRY_RUN=1 >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+      echo "[$TIMESTAMP] memory-tree-localization dry-run failed" >> "$LOG_DIR/cron.log"
+    }
+  else
+    bash /home/vany/openclaw-data/.openclaw/shared/scripts/memory_tree_localization_runner.sh >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+      echo "[$TIMESTAMP] memory-tree-localization failed" >> "$LOG_DIR/cron.log"
+    }
+  fi
+else
+  echo "[$TIMESTAMP] memory-tree-localization skipped (RUN_MEMORY_TREE_LOCALIZATION=$RUN_MEMORY_TREE_LOCALIZATION)" >> "$LOG_DIR/cron.log"
 fi
 
 echo "[$TIMESTAMP] === daily maintenance done ===" >> "$LOG_DIR/cron.log"
