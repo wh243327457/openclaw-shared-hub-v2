@@ -191,7 +191,7 @@ OpenClaw 实际：
 
 ```yaml
 # 共享根目录
-SHARED_ROOT: /home/vany/openclaw-data/.openclaw/shared
+SHARED_ROOT: /home/vany/agent/.openclaw/shared
 
 # 学习指令（Hermes 生成，OpenClaw 读取）
 INSTRUCTION_FILE: ${SHARED_ROOT}/runtime/hermes/github-hot-project-learning/instruction.md

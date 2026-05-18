@@ -9,7 +9,7 @@ scope: cross-agent
 system_integration:
   runner_version: "1.1.0"
   daily_maintenance_step: 9
-  entrypoint: /home/vany/openclaw-data/.openclaw/shared/scripts/memory_tree_localization_runner.sh
+  entrypoint: /home/vany/agent/.openclaw/shared/scripts/memory_tree_localization_runner.sh
   topic_summary_chain: complete
 source:
   - /mnt/d/system/selfSystem/03-学习/技术实践/OpenHuman 调研档案/2026-05-17-OpenHuman项目深度学习与集成评估.md

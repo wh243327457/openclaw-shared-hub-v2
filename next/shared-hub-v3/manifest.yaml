@@ -5,7 +5,7 @@ status: stage3
 layout: protocol-first
 root_model: minimal-kernel
 roots:
-  host: /home/vany/openclaw-data/.openclaw/shared.v3
+  host: /home/vany/agent/.openclaw/shared.v3
   container: /home/node/.openclaw/shared.v3
   note: stage3 seed is incubated inside next/shared-hub-v3/ in the current v2 staging repo
 kernel:

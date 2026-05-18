@@ -4,7 +4,7 @@
 
 **Goal:** 在不回流 v2 storage layout 到 v3 根目录的前提下，为 `next/shared-hub-v3/` 增加一个最小可执行的 `v2 -> v3 migration layer`，先把 v2 的长期真相源安全导入到 v3 `truth/`。
 
-**Architecture:** stage4 不改造现有 `/home/vany/openclaw-data/.openclaw/shared`，也不把 `compat/`、`memory/`、`skills/` 重新带回 v3。新增一个仅由 Hermes 触发的 migration executor，读取 v2 `manifest.yaml + AGENTS.md + curated/memory/`，经过 preflight 后把稳定内容复制到 v3 `truth/memory/`，并写入独立的 `truth/migration-logs/` 审计记录与 `truth/memory/MEMORY.md` 的受托管迁移索引块。
+**Architecture:** stage4 不改造现有 `/home/vany/agent/.openclaw/shared`，也不把 `compat/`、`memory/`、`skills/` 重新带回 v3。新增一个仅由 Hermes 触发的 migration executor，读取 v2 `manifest.yaml + AGENTS.md + curated/memory/`，经过 preflight 后把稳定内容复制到 v3 `truth/memory/`，并写入独立的 `truth/migration-logs/` 审计记录与 `truth/memory/MEMORY.md` 的受托管迁移索引块。
 
 **Tech Stack:** Python 3 标准库、Markdown frontmatter、现有 `scripts/verify_v3.sh` / `tools/shared_v3_verify.py` 校验链路。
 
@@ -243,7 +243,7 @@ stage4 不做复杂回滚系统，采用“两段式安全策略”：
 
 ### Task 2: 建自包含 v2 demo fixture
 
-**Objective:** 让 verifier 不依赖真实本机 `/home/vany/openclaw-data/.openclaw/shared`，可在 staging repo 内自测。
+**Objective:** 让 verifier 不依赖真实本机 `/home/vany/agent/.openclaw/shared`，可在 staging repo 内自测。
 
 **Files:**
 - Create: `next/shared-hub-v3/fixtures/v2-demo-shared/manifest.yaml`

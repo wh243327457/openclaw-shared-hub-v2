@@ -4,7 +4,7 @@
 
 ## 根路径
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared`
+- 宿主：`/home/vany/agent/.openclaw/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 作用范围
@@ -58,9 +58,9 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-18T12:13:46+08:00`
-- 共享根目录: `/home/vany/openclaw-data/.openclaw/shared`
-- runtime 位置提示: `/home/vany/openclaw-data/.openclaw/shared/runtime`
+- 生成时间: `2026-05-18T18:27:43+08:00`
+- 共享根目录: `/home/vany/agent/.openclaw/shared`
+- runtime 位置提示: `/home/vany/agent/.openclaw/shared/runtime`
 - facts 文件数: 10
 - projects 文件数: 6
 - 最近 daily 文件:
@@ -175,6 +175,8 @@
 - > **选读理由**：今日Trending第2位，1,048⭐日增量，专注解决AI编码Agent的长期记忆痛点，内建OpenClaw官方集成，技能可迁移性高。 [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-12.md:32-32]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:34:36 -->
 - | **抓取时间** | 2026-05-13T11:03~11:06 UTC | | **筛选算法** | trending 今日星标增速 × AI/Agent 相关性 × 代码质量评估，三维打分取 Top | | **备注** | trending "今日星标" 数据来自 `github.com/trending` 页面直接展示；API 查询使用 `created:>2025-05-01` 过滤新项目 | [score=0.844 recalls=0 avg=0.620 source=memory/2026-05-13.md:34-36]
+
+
 
 
 

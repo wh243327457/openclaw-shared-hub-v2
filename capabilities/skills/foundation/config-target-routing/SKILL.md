@@ -41,7 +41,7 @@ metadata:
 2. 再看路径证据。
    - `~/.hermes/`、`/root/.hermes/`：Hermes。
    - `/home/vany/openclaw-data/.openclaw/openclaw.json`、`/home/node/.openclaw/`：OpenClaw。
-   - `/home/vany/openclaw-data/.openclaw/shared/`：shared 中台。
+   - `/home/vany/agent/.openclaw/shared/`：shared 中台。
 
 3. 如果目标仍不明确，先问：
 
@@ -57,7 +57,7 @@ metadata:
 |---|---|---|---|
 | Hermes | `~/.hermes/config.yaml` | `~/.hermes/.env`, `~/.hermes/auth.json` | `~/.hermes/logs/`, `~/.hermes/gateway_state.json` |
 | OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` | OpenClaw 自己的 agentDir / credential 文件 | `/home/vany/openclaw-data/.openclaw/` 下 runtime/workspace |
-| shared 中台 | `/home/vany/openclaw-data/.openclaw/shared/manifest.yaml`, `AGENTS.md` | 禁止写入明文 secret | `shared/runtime/<agent>/` |
+| shared 中台 | `/home/vany/agent/.openclaw/shared/manifest.yaml`, `AGENTS.md` | 禁止写入明文 secret | `shared/runtime/<agent>/` |
 
 ## Required Pre-Write Announcement
 

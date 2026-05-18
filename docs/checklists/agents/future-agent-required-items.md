@@ -2,7 +2,7 @@
 
 - 创建时间: 2026-04-25
 - Agent: future-agent
-- 维护位置: `/home/vany/openclaw-data/.openclaw/shared/docs/checklists/agents/future-agent-required-items.md`
+- 维护位置: `/home/vany/agent/.openclaw/shared/docs/checklists/agents/future-agent-required-items.md`
 - 状态规则: `[x]` = future-agent 已完成并有证据；`[ ]` = future-agent 未完成或待验证；`[~]` = future-agent 已部分完成但仍需审计/修复
 - 边界: 这里只标记 future-agent 自己的完成状态，不替 Hermes / OpenClaw 标记。
 

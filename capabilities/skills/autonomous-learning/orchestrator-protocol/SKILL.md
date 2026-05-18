@@ -58,7 +58,7 @@ EXECUTOR_FAILED
 ### Step 1：准备 run
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 python3 runtime/hermes/autonomous-learning/scripts/manual_runtime_orchestrator.py \
   --run-id "$(date +%Y-%m-%d)-<topic-slug>" \
   --topic "<学习主题>" \

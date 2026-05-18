@@ -52,7 +52,7 @@ After validating the script on at least one real run:
 3. Verify:
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 python3 - <<'PY'
 import json, pathlib
 base=pathlib.Path('runtime/hermes/autonomous-learning')

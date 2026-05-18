@@ -26,7 +26,7 @@ while `run-state.json` still says `FALLBACK_OUTPUT_WRITTEN` or `PREPARED`.
 From shared root:
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 ```
 
 Read:

@@ -6,7 +6,8 @@
 
 ## 根目录
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared`
+- 宿主 canonical：`/home/vany/agent/.openclaw/shared`
+- 宿主 legacy 兼容：`/home/vany/agent/.openclaw/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 核心分层
@@ -122,7 +123,7 @@ shared/
 当用户提出配置类任务（配置、模型、provider、模型列表、gateway、tools、skills、auth、env、cron、streaming、fallback、profile、重启服务等）时，所有 agent 必须先识别目标系统，再读取或修改文件。
 
 - 用户说“你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关”时，默认目标是 Hermes，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。
-- 只有用户明确说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
+- 只有用户明确说 OpenClaw，或提供 `/home/vany/agent/.openclaw/`、`/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
 - 用户提到“共享中台 / shared / 跨 agent / 共享记忆”时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
 - 如果目标不明确，必须先问：“这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。”
 - 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。

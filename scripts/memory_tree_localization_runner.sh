@@ -3,7 +3,7 @@
 # Keeps all generated artifacts under shared/runtime/hermes/memory-tree-localization.
 set -euo pipefail
 
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 
 RUNTIME_ROOT="runtime/hermes/memory-tree-localization"
 LOG_DIR="$RUNTIME_ROOT/system-runs"
@@ -14,8 +14,8 @@ RUN_ID="$(date -u +%Y-%m-%d-%H%M%S)"
 DRY_RUN="${DRY_RUN:-0}"
 POC_MODE="${MEMORY_TREE_POC_MODE:-all}"
 INPUT_FILE="${MEMORY_TREE_INPUT_FILE:-}"
-RUNNER="/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/memory-tree-localization/runner.py"
-VERIFY="/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/memory-tree-localization/verify_setup.py"
+RUNNER="/home/vany/agent/.openclaw/shared/runtime/hermes/memory-tree-localization/runner.py"
+VERIFY="/home/vany/agent/.openclaw/shared/runtime/hermes/memory-tree-localization/verify_setup.py"
 LOG_FILE="$LOG_DIR/$RUN_ID.log"
 
 {

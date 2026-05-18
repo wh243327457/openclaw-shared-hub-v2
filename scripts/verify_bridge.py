@@ -174,15 +174,42 @@ def verify_shared_skills_manifest(shared_root: Path, paths: dict[str, Path]) -> 
     return record
 
 
+def _equivalent_existing_paths(path: Path) -> list[str]:
+    """Return string forms that should be accepted for the same existing path.
+
+    During the host root rename, /home/vany/agent may be a symlink to the legacy
+    /home/vany/openclaw-data directory. Configs may intentionally use either the
+    canonical symlink path or the resolved legacy path while migration is in
+    progress.
+    """
+    candidates = [str(path)]
+    try:
+        resolved = str(path.resolve())
+        if resolved not in candidates:
+            candidates.append(resolved)
+    except OSError:
+        pass
+
+    # If verification runs from the symlinked canonical root, Path.resolve()
+    # normalizes everything back to the legacy physical path. Keep accepting the
+    # canonical literal spelling too so configs can move to /home/vany/agent.
+    for item in list(candidates):
+        if item.startswith("/home/vany/openclaw-data/"):
+            canonical = item.replace("/home/vany/openclaw-data/", "/home/vany/agent/", 1)
+            if canonical not in candidates:
+                candidates.append(canonical)
+    return candidates
+
+
 def verify_hermes_config(config_path: Path, paths: dict[str, Path]) -> dict[str, Any]:
-    expected_skills = str(paths["legacy_skills"])
-    expected_prefill = str(paths["prefill_file"])
+    expected_skills_refs = _equivalent_existing_paths(paths["legacy_skills"])
+    expected_prefill_refs = _equivalent_existing_paths(paths["prefill_file"])
     record: dict[str, Any] = {
         "path": str(config_path),
         "exists": config_path.exists(),
         "expected_refs": {
-            "skills": expected_skills,
-            "prefill": expected_prefill,
+            "skills": expected_skills_refs,
+            "prefill": expected_prefill_refs,
         },
     }
     if not config_path.exists():
@@ -196,8 +223,8 @@ def verify_hermes_config(config_path: Path, paths: dict[str, Path]) -> dict[str,
         record["error"] = f"failed to read config: {exc}"
         return record
 
-    record["has_skills_ref"] = expected_skills in text
-    record["has_prefill_ref"] = expected_prefill in text
+    record["has_skills_ref"] = any(ref in text for ref in expected_skills_refs)
+    record["has_prefill_ref"] = any(ref in text for ref in expected_prefill_refs)
     record["ok"] = record["has_skills_ref"] and record["has_prefill_ref"]
     return record
 

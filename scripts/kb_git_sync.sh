@@ -7,7 +7,7 @@
 set -e
 
 KB_DIR="/mnt/d/system/selfSystem"
-LOG_DIR="/home/vany/openclaw-data/.openclaw/shared/runtime/hermes"
+LOG_DIR="/home/vany/agent/.openclaw/shared/runtime/hermes"
 mkdir -p "$LOG_DIR"
 
 TIMESTAMP=$(date -Iseconds)

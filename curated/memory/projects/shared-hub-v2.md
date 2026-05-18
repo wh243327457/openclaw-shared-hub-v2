@@ -111,7 +111,7 @@
 ### Git 同步现状
 当前已确认：
 
-- `/home/vany/openclaw-data/.openclaw/shared` 不是 git 仓库
+- `/home/vany/agent/.openclaw/shared` 不是 git 仓库
 - `/home/vany/openclaw-data/.openclaw`、`/home/vany/openclaw-data`、`/home/vany` 也都不是 git 仓库
 - 远端仓库已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2`
 - PR 已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2/pull/1`

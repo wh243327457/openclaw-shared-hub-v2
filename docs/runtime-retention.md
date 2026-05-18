@@ -44,7 +44,7 @@
 ## 推荐 dry-run 命令
 
 ```bash
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 find runtime -type f -mtime +90 -print
 ```
 

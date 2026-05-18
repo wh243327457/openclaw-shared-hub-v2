@@ -2,7 +2,7 @@
 # Daily shared hub maintenance + self-monitoring
 set -e
 
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 LOG_DIR="runtime/hermes"
 mkdir -p "$LOG_DIR"
 
@@ -81,7 +81,7 @@ echo "[$TIMESTAMP] inbox backlog: hermes=$HERMES_COUNT, openclaw=$OPENCLAW_COUNT
 # 8. Knowledge base git auto-sync (optional; disabled by SHARED_ONLY=1 or DRY_RUN=1).
 if [ "$RUN_KB_SYNC" = "1" ]; then
   echo "[$TIMESTAMP] kb sync:" >> "$LOG_DIR/cron.log"
-  bash /home/vany/openclaw-data/.openclaw/shared/scripts/kb_git_sync.sh >> "$LOG_DIR/kb_sync.log" 2>&1 || {
+  bash /home/vany/agent/.openclaw/shared/scripts/kb_git_sync.sh >> "$LOG_DIR/kb_sync.log" 2>&1 || {
       echo "[$TIMESTAMP] kb sync failed" >> "$LOG_DIR/cron.log"
   }
 else
@@ -91,11 +91,11 @@ fi
 # 9. Memory tree localization runner.
 if [ "$RUN_MEMORY_TREE_LOCALIZATION" = "1" ]; then
   if [ "$DRY_RUN" = "1" ]; then
-    bash /home/vany/openclaw-data/.openclaw/shared/scripts/memory_tree_localization_runner.sh DRY_RUN=1 >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+    bash /home/vany/agent/.openclaw/shared/scripts/memory_tree_localization_runner.sh DRY_RUN=1 >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
       echo "[$TIMESTAMP] memory-tree-localization dry-run failed" >> "$LOG_DIR/cron.log"
     }
   else
-    bash /home/vany/openclaw-data/.openclaw/shared/scripts/memory_tree_localization_runner.sh >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
+    bash /home/vany/agent/.openclaw/shared/scripts/memory_tree_localization_runner.sh >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {
       echo "[$TIMESTAMP] memory-tree-localization failed" >> "$LOG_DIR/cron.log"
     }
   fi

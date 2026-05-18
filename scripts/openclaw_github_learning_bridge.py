@@ -15,7 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-DEFAULT_SHARED_ROOT = Path('/home/vany/openclaw-data/.openclaw/shared')
+DEFAULT_SHARED_ROOT = Path('/home/vany/agent/.openclaw/shared')
 DEFAULT_OPENCLAW_ROOT = Path('/home/vany/openclaw-data/.openclaw')
 DEFAULT_JOB_ID = '7aa310ea-b264-40c8-b23a-ed655c565a69'
 PIPELINE = 'github-hot-project-learning'

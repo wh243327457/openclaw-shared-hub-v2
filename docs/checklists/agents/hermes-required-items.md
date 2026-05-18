@@ -2,7 +2,7 @@
 
 - 创建时间: 2026-04-25
 - Agent: Hermes
-- 维护位置: `/home/vany/openclaw-data/.openclaw/shared/docs/checklists/agents/hermes-required-items.md`
+- 维护位置: `/home/vany/agent/.openclaw/shared/docs/checklists/agents/hermes-required-items.md`
 - 状态规则: `[x]` = Hermes 已完成并有证据；`[ ]` = Hermes 未完成或待验证；`[~]` = Hermes 已部分完成但仍需审计/修复
 - 边界: 这里只标记 Hermes 自己的完成状态，不替 OpenClaw / future-agent 标记。
 

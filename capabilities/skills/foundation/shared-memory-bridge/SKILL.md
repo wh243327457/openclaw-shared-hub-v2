@@ -11,7 +11,7 @@ agent: hermes, openclaw, future
 
 ## 共享根目录
 
-- 宿主：`/home/vany/openclaw-data/.openclaw/shared/`
+- 宿主：`/home/vany/agent/.openclaw/shared/`
 - 容器：`/home/node/.openclaw/shared/`
 
 ## 新分层
@@ -152,12 +152,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 当用户问“共享中台有没有 Git / 远端 / 推送”时，必须区分两层，不要只检查 live shared 后就下绝对结论：
 
 1. **live shared 运行目录**
-   - 路径：`/home/vany/openclaw-data/.openclaw/shared`
+   - 路径：`/home/vany/agent/.openclaw/shared`
    - 这是 OpenClaw / Hermes 实际读取和写入的共享中台目录
    - 可能不是 Git 仓库；若没有 `.git`、remote、branch，只能说明 live 目录没有直接 Git 化
 
 2. **runtime staging Git 仓库**
-   - 典型路径：`/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
+   - 典型路径：`/home/vany/agent/.openclaw/shared/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
    - 这是把 shared 可审阅内容整理成 GitHub PR / 备份快照的 staging repo
    - 需要单独检查：`git -C <staging> remote -v`、branch、HEAD、PR 状态
 
@@ -237,7 +237,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
    cat > shared/scripts/daily_maintenance.sh << 'EOF'
    #!/bin/bash
    set -e
-   cd /home/vany/openclaw-data/.openclaw/shared
+   cd /home/vany/agent/.openclaw/shared
    python3 scripts/promoter.py >> runtime/hermes/promoter-cron.log 2>&1 || true
    python3 scripts/verify_bridge.py >> runtime/hermes/verify-cron.log 2>&1 || true
    echo "[$(date -Iseconds)] daily maintenance done" >> runtime/hermes/cron.log
@@ -247,7 +247,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 
 2. **注册 cron**
    ```bash
-   (crontab -l 2>/dev/null; echo "0 6 * * * /home/vany/openclaw-data/.openclaw/shared/scripts/daily_maintenance.sh") | crontab -
+   (crontab -l 2>/dev/null; echo "0 6 * * * /home/vany/agent/.openclaw/shared/scripts/daily_maintenance.sh") | crontab -
    ```
 
 ## 运行与验证
@@ -320,12 +320,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 ```bash
 python3 - <<'PY'
 import json, pathlib
-base = pathlib.Path('/home/vany/openclaw-data/.openclaw/shared/runtime/hermes/autonomous-learning')
+base = pathlib.Path('/home/vany/agent/.openclaw/shared/runtime/hermes/autonomous-learning')
 for p in [base/'state.json', base/'learning-backlog.json'] + list((base/'orchestrator-runs').glob('*/run-state.json')):
     json.loads(p.read_text())
 print('json ok')
 PY
-cd /home/vany/openclaw-data/.openclaw/shared
+cd /home/vany/agent/.openclaw/shared
 python3 scripts/promoter.py --dry-run
 python3 scripts/verify_bridge.py
 ```
@@ -351,9 +351,9 @@ Self-healing / global inspection agent scaffolding is captured in `references/se
 完成迁移或修复后，至少执行：
 
 ```bash
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/promoter.py --dry-run
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/promoter.py
-python3 /home/vany/openclaw-data/.openclaw/shared/scripts/verify_bridge.py
+python3 /home/vany/agent/.openclaw/shared/scripts/promoter.py --dry-run
+python3 /home/vany/agent/.openclaw/shared/scripts/promoter.py
+python3 /home/vany/agent/.openclaw/shared/scripts/verify_bridge.py
 ```
 
 
