@@ -98,7 +98,7 @@ readlink compat/daily/.dreams
 |---|---|---:|---|
 | Phase 0 | 建立瘦身计划与基线 | 低 | ✅ 已完成 |
 | Phase 1 | Git 跟踪边界收口：raw/runtime 不再扩大 | 中 | ✅ 已完成 |
-| Phase 2 | compat 薄化：只做兼容入口 | 中 | ⏳ 待开始 |
+| Phase 2 | compat 薄化：只做兼容入口 | 中 | ✅ 已完成 |
 | Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ⏳ 待开始 |
 | Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ⏳ 待开始 |
 | Phase 5 | shared skills references 合并与升格门槛 | 低-中 | ⏳ 待开始 |
@@ -266,6 +266,17 @@ docs/archives/compat-daily-dreaming-summary-2026-05.md
 - `compat/daily/.dreams` 仍指向 runtime dreams。
 - OpenClaw 旧入口不被破坏。
 - Git 主线不再承载 compat dreaming bulk。
+
+**执行记录（2026-05-18）：**
+
+- 已确认 `compat/daily/` 中 Git 跟踪 bulk 包括 54 个 `dreaming/**` 文件与 5 个旧 daily snapshot。
+- 已执行 `git rm --cached -r compat/daily/dreaming`，并对 5 个旧 daily snapshot 执行 `git rm --cached`；本地文件保留，兼容读取不受影响。
+- 已更新 `compat/daily/README.md`，明确其只是 legacy entry，不是真相源。
+- 已在 `.gitignore` 增加 `compat/daily/20*.md`，避免旧 daily snapshot 被再次误加。
+- 验证后 Git 跟踪的 compat 入口只剩：`compat/daily/.dreams` 与 `compat/daily/README.md`。
+- 本地 legacy 仍存在：5 个旧 daily 文件、54 个 dreaming 文件；这些只作本地兼容，不进入主线快照。
+- 已验证 `compat/daily/.dreams -> ../../runtime/openclaw/dreams`，`memory/daily` 仍由 `verify_bridge.py` 判定正常。
+- 已运行 `git diff --check`、`python3 scripts/promoter.py --dry-run`、`python3 scripts/verify_bridge.py`；结构验证 `ok: true`。
 
 ---
 

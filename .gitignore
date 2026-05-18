@@ -15,6 +15,7 @@ runtime/
 # prevent new dreaming/.dreams bulk from entering the review surface.
 inbox/**/daily/dreaming/
 compat/daily/dreaming/
+compat/daily/20*.md
 inbox/**/daily/.dreams/
 compat/daily/.dreams/
 

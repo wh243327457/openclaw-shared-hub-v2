@@ -69,6 +69,8 @@ OpenClaw 旧路径兼容保留：
 - 若该 skill 会被 Hermes / OpenClaw / future-agent 复用，或属于共享中台、共享记忆、进度汇报、调研协作、配置目标识别等横切能力，则同步到 `shared/capabilities/skills/`
 - 升格到 shared 时，除了复制完整 skill 目录（`SKILL.md`、`templates/`、`references/`、`scripts/`、`assets/`），还要更新 `shared/capabilities/manifests/shared-skills.yaml`
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
+- 如果某个阶段需要保留推理轨迹，优先在本 skill 下新增简短 `references/<topic>.md`，不要继续膨胀主 `SKILL.md`。
+- 共享中台瘦身流程与 phase gates 见：`references/shared-hub-slimming-iteration.md`
 
 ## 配置目标识别
 
