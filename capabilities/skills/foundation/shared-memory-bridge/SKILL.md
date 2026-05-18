@@ -155,6 +155,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
    - 路径：`<shared-root>`
    - 这是 OpenClaw / Hermes 实际读取和写入的共享中台目录
    - 可能不是 Git 仓库；若没有 `.git`、remote、branch，只能说明 live 目录没有直接 Git 化
+   - 若它本身已经是 Git 仓库，用户说“提交一下本次修改”时可直接在 live shared 仓库内提交；先做 `git diff --check`、差异范围复核和 secret 关键词扫描，提交后汇报 hash、分支、工作区状态、是否已 push。详见 `references/shared-live-commit-checklist.md`。
 
 2. **runtime staging Git 仓库**
    - 典型路径：`<shared-root>/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
