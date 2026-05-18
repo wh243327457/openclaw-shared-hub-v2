@@ -89,36 +89,38 @@ compat/daily/        -> legacy evidence       -> 不直接晋升全文          
 
 ## 4. 周期性治理节奏
 
-### Daily：轻量扫描，不写 curated
+### Daily：每日总结，不写 curated
 
 每天只做：
 
-1. `promoter.py --dry-run --scan-promote-candidates` 生成候选。
+1. `promoter.py --dry-run --scan-promote-candidates` 生成候选池。
 2. `verify_bridge.py` 输出 `slimming_metrics` 和 fact governance warnings。
 3. 记录 backlog：inbox 文件数、runtime 大小、MEMORY 行数、shared skill references 数。
-4. 不自动晋升、不自动删除。
+4. 生成 `runtime/hermes/governance/daily/YYYY-MM-DD.md`，总结昨日活动、候选长期信息、风险和需要用户决策项。
+5. 不自动晋升、不自动删除、不修改 active facts。
 
-### Weekly：总控压缩审查
+### Weekly：每周复盘，晋升核心记忆
 
-每周做一次人工/总控审查：
+每周做一次人工/总控复盘，这是常规内容晋升到核心记忆的唯一触发点：
 
-1. 读取最近 7 天候选。
-2. 按 score 分组：accept / defer / reject / duplicate / disputed。
-3. 对 accepted 候选写入 facts/projects/skills。
+1. 读取最近 7 天 daily summaries 与候选扫描。
+2. 按 score 与五门准入分组：accept / defer / reject / duplicate / disputed。
+3. 对 accepted 候选写入 `curated/memory/facts/`、`curated/memory/projects/` 或 `capabilities/skills/`。
 4. 对 duplicate 候选更新已有条目或不处理。
 5. 对 disputed 候选写 conflict metadata，不覆盖旧事实。
-6. 生成一份 `runtime/hermes/governance-reviews/YYYY-WW.md` 审查报告。
+6. 生成 `runtime/hermes/governance/weekly/YYYY-WW.md` 周复盘报告。
 7. 跑 verify，确认 warning 可解释。
 
-### Monthly：结构瘦身
+### Monthly：每月结构体检
 
-每月做一次结构治理：
+每月只做结构治理，不作为常规内容晋升主入口：
 
 1. `MEMORY.md` 是否超过 150 行；超过则迁移到 archive 或项目页。
 2. 单个 shared skill references 是否超过 15；超过则合并主题 reference。
 3. runtime 是否超过 100MB；超过则生成清理候选，人工确认后清理。
 4. Git 是否跟踪 raw/bulk；若是，单独 PR `git rm --cached`。
-5. facts 是否有 stale/disputed/superseded 未处理项。
+5. facts 是否有 stale/disputed/superseded 堆积。
+6. 生成 `runtime/hermes/governance/monthly/YYYY-MM.md` 结构健康报告。
 
 ---
 
@@ -154,7 +156,7 @@ secret_checked: true
 - 下一次 review：...
 ```
 
-### 5.3 Weekly review 报告结构
+### 5.3 Weekly review 报告结构（核心记忆晋升）
 
 ```markdown
 # Governance Review YYYY-WW
@@ -184,7 +186,7 @@ secret_checked: true
 - 统计大小、行数、文件数。
 - 扫描候选、生成 score 和建议目标。
 - 检测 secret 关键词、冲突、stale facts、reference 超阈值。
-- 生成 weekly review 草稿。
+- 生成 daily summary、weekly review、monthly health review 草稿。
 - 刷新 `MEMORY.md` 自动状态块。
 
 禁止默认自动化：
@@ -206,4 +208,4 @@ secret_checked: true
 - 每条新 fact 都有 frontmatter、review_due_at、secret_checked。
 - shared skill references 超阈值时有明确 review 动作。
 - raw/inbox 可以保留证据，但不会污染 Git 主线和 curated 真相源。
-- 每周 review 能回答：哪些该晋升、哪些该拒绝、哪些该压缩、哪些该清理。
+- 每日总结能看见候选与风险；每周复盘能回答哪些该晋升到核心记忆、哪些该拒绝、哪些该暂缓；每月体检能回答 shared 是否变胖以及如何瘦身。

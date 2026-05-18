@@ -198,17 +198,17 @@ conflict:
 | runtime 总量 | `<=50MB` | `50-100MB` | `>100MB` | 红：生成清理候选 |
 | tracked dreaming bulk | `0` | `>0` | `>0 且增长` | 必须 `git rm --cached` 方案 |
 | 单 skill references | `<=10` | `11-15` | `>15` | 黄：合并计划；红：必须 review |
-| stale facts | `0` | `1-5` | `>5` | weekly review 处理 |
+| stale facts | `0` | `1-5` | `>5` | 每周复盘处理 |
 | disputed facts | `0` | `1-3` | `>3` | 需要人工裁决 |
-| inbox backlog days | `<=7` | `8-30` | `>30` | 周/月度筛选 |
+| inbox backlog days | `<=7` | `8-30` | `>30` | 每周复盘筛选；每月只看结构压力 |
 
 ---
 
 ## 7. 标准节奏
 
-### Daily 标准
+### Daily Summary 标准
 
-必须做：
+每日只做“总结与候选池”，不做长期晋升：
 
 ```bash
 cd <shared-root>
@@ -216,33 +216,63 @@ python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 1
 python3 scripts/verify_bridge.py
 ```
 
-产物：候选扫描日志、verify JSON、warning 列表。
+产物：
 
-禁止：daily 自动写 curated、自动删除 raw。
+- `runtime/hermes/governance/daily/YYYY-MM-DD.md`
+- 候选扫描日志、verify JSON、warning 列表
 
-### Weekly 标准
+每日总结必须回答：
+
+1. 昨天 Hermes / OpenClaw / future-agent 分别发生了什么？
+2. 哪些信息可能有长期价值，但需要周复盘再判断？
+3. 是否出现 secret / verify fail / slimming warning / 用户决策项？
+4. 是否有内容明显应拒绝进入核心记忆？
+
+禁止：daily 自动写 curated、自动删除 raw、自动修改 active facts。
+
+### Weekly Review 标准：核心记忆晋升触发点
+
+每周复盘是唯一常规内容晋升节点。每周从最近 7 天 daily summaries 和候选扫描中筛选，决定哪些进入核心记忆。
 
 每周必须回答：
 
-1. 哪些候选 accepted？为什么？写到哪里？
-2. 哪些 deferred？缺什么证据？
-3. 哪些 rejected？原因是什么？
+1. 哪些候选 accepted？为什么？写到 `facts/`、`projects/` 还是 `capabilities/skills/`？
+2. 哪些 deferred？缺什么证据？下周是否继续观察？
+3. 哪些 rejected？原因是什么？是否可直接忽略？
 4. 哪些 duplicate/disputed？对应哪个既有事实？
-5. 当前 shared 是否变胖？膨胀源是什么？
+5. 本周 shared 是否变胖？膨胀源是什么？
 6. 是否需要用户决策？
 
-产物：`runtime/hermes/governance-reviews/YYYY-WW.md`。
+允许：
 
-### Monthly 标准
+- 写入 `curated/memory/facts/`
+- 更新 `curated/memory/projects/`
+- 更新 `curated/memory/MEMORY.md` 索引入口
+- 升格/更新 shared skill
+- 标记 facts 为 `superseded` / `disputed`
 
-每月必须做结构审查：
+禁止：
+
+- 无证据自动写 active fact
+- 把 daily/raw 全文复制进 curated
+- 在未确认路径时删除 raw/runtime
+
+产物：`runtime/hermes/governance/weekly/YYYY-WW.md`。
+
+### Monthly Health Review 标准：结构治理节点
+
+每月只做结构健康复盘，不作为常规内容晋升主入口。它检查 shared 是否因为长期运行而变胖、变乱或失控。
+
+每月必须做：
 
 1. `MEMORY.md` 压缩审查。
-2. facts stale/disputed/superseded 审查。
+2. facts stale/disputed/superseded 总量审查。
 3. shared skill references 合并审查。
 4. runtime size 清理候选。
 5. Git tracked raw/bulk 审查。
 6. 更新项目页治理状态。
+
+产物：`runtime/hermes/governance/monthly/YYYY-MM.md`。
 
 ---
 
@@ -272,5 +302,5 @@ git diff --check
 
 - version: `2026-05-18.v1`
 - owner: `shared-hub governance`
-- review cadence: monthly
+- review cadence: daily summary + weekly core-memory review + monthly health review
 - next review due: `2026-06-18`

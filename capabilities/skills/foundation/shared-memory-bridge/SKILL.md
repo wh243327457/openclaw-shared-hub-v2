@@ -75,10 +75,12 @@ OpenClaw 旧路径兼容保留：
 
 共享中台的筛选总结必须按 `docs/shared-governance-standard.md` 执行：
 
+- `references/shared-governance-standard.md` condenses the standard into a concise reference for future screening, scoring, promotion, and compression work.
+
 - **状态流**：`RAW_CAPTURED -> CANDIDATE_EXTRACTED -> SCREENED -> DECIDED_* -> CURATED_WRITTEN/LEFT_IN_INBOX -> VERIFIED`。
 - **五门准入**：长期价值、跨 agent 价值、可验证证据、去重/冲突、脱敏安全；任一失败不得写入 curated active fact。
 - **决策表**：单次 PR/commit/任务进度默认不进长期记忆；日志/cache/.dreams 默认只做 runtime 证据；项目状态压缩写 projects；跨 agent 工作流写 shared skill。
-- **节奏**：daily 只扫描告警；weekly 总控审查 accepted/deferred/rejected/duplicate/disputed；monthly 做 MEMORY、runtime、skill references、tracked raw bulk 结构瘦身。
+- **节奏**：daily 只做每日总结和候选池；weekly 是常规内容晋升核心记忆的唯一触发点；monthly 只做 MEMORY、runtime、skill references、tracked raw bulk 结构体检和瘦身。
 - **验收**：治理改动后跑 `python3 -m unittest tests/test_fact_governance.py`、`python3 scripts/promoter.py --dry-run`、`python3 scripts/verify_bridge.py`、`git diff --check`。
 
 机制解释见 `docs/governance-summary-mechanism.md`；强制口径以标准文档为准。
