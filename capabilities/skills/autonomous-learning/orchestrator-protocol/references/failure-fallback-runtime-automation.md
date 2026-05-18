@@ -78,7 +78,7 @@ Run normal Spec Review and Quality Review on fallback output. Low evidence fallb
 Run a simulated timeout canary:
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 runtime/hermes/autonomous-learning/scripts/handle_failure_fallback.py \
   --run-id 2026-05-18-node06-fallback-simulation \
   --task-id node06-simulated-delegate-timeout \

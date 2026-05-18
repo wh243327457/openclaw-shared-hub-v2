@@ -6,8 +6,10 @@
 
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SHARED_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 KB_DIR="/mnt/d/system/selfSystem"
-LOG_DIR="/home/vany/agent/.openclaw/shared/runtime/hermes"
+LOG_DIR="$SHARED_ROOT/runtime/hermes"
 mkdir -p "$LOG_DIR"
 
 TIMESTAMP=$(date -Iseconds)

@@ -27,7 +27,7 @@ For scheduled autonomous-learning systems, add a runtime-only operations layer:
 ## Verification checklist
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 runtime/hermes/autonomous-learning/scripts/cron_hardening_guard.py --mode delivery --write-state
 python3 runtime/hermes/autonomous-learning/scripts/build_pending_promotion_queue.py --recent-limit 20 --min-score 15
 python3 runtime/hermes/autonomous-learning/scripts/build_pending_promotion_summary.py --limit 5

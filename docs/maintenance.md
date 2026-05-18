@@ -5,7 +5,7 @@
 ## 默认行为
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 scripts/daily_maintenance.sh
 ```
 

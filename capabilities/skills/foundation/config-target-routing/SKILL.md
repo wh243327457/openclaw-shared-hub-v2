@@ -40,8 +40,8 @@ metadata:
 
 2. 再看路径证据。
    - `~/.hermes/`、`/root/.hermes/`：Hermes。
-   - `/home/vany/openclaw-data/.openclaw/openclaw.json`、`/home/node/.openclaw/`：OpenClaw。
-   - `/home/vany/agent/.openclaw/shared/`：shared 中台。
+   - `/home/vany/agent/.openclaw/openclaw.json`、`/home/node/.openclaw/`：OpenClaw。
+   - `<shared-root>/`：shared 中台。
 
 3. 如果目标仍不明确，先问：
 
@@ -56,8 +56,8 @@ metadata:
 | Target | Main config | Secrets / auth | Logs / runtime |
 |---|---|---|---|
 | Hermes | `~/.hermes/config.yaml` | `~/.hermes/.env`, `~/.hermes/auth.json` | `~/.hermes/logs/`, `~/.hermes/gateway_state.json` |
-| OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` | OpenClaw 自己的 agentDir / credential 文件 | `/home/vany/openclaw-data/.openclaw/` 下 runtime/workspace |
-| shared 中台 | `/home/vany/agent/.openclaw/shared/manifest.yaml`, `AGENTS.md` | 禁止写入明文 secret | `shared/runtime/<agent>/` |
+| OpenClaw | `/home/vany/agent/.openclaw/openclaw.json` | OpenClaw 自己的 agentDir / credential 文件 | `/home/vany/agent/.openclaw/` 下 runtime/workspace |
+| shared 中台 | `<shared-root>/manifest.yaml`, `AGENTS.md` | 禁止写入明文 secret | `shared/runtime/<agent>/` |
 
 ## Required Pre-Write Announcement
 
@@ -70,7 +70,7 @@ metadata:
 或：
 
 ```text
-这次目标是 OpenClaw，我会修改 /home/vany/openclaw-data/.openclaw/openclaw.json。
+这次目标是 OpenClaw，我会修改 /home/vany/agent/.openclaw/openclaw.json。
 ```
 
 如果不能明确这句话，就不能写配置，必须先问用户。

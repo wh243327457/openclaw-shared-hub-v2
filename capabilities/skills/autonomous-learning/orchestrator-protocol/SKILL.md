@@ -58,7 +58,7 @@ EXECUTOR_FAILED
 ### Step 1：准备 run
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 runtime/hermes/autonomous-learning/scripts/manual_runtime_orchestrator.py \
   --run-id "$(date +%Y-%m-%d)-<topic-slug>" \
   --topic "<学习主题>" \
@@ -232,5 +232,5 @@ docker exec openclaw-main agent --local --agent main \
 - `references/2026-05-18-notification-canary-closure.md` — node-07/08 收口经验：可扫读 notification 生成器与 linter 的最小检查、Spec review PASS 格式兼容、以及用完整链路证据验收低风险 canary 的标准。
 - `references/2026-05-18-cron-hardening-closure.md` — node-09 收口经验：scheduled autonomous-learning 的 policy/guard/prompt 三件套、现有 cron 更新策略、Weixin 限流边界、preflight/postrun 验证清单。
 - `references/2026-05-18-promotion-candidate-triage.md` — pending promotion queue 分流经验：批准项进 curated，未批准高分候选重新分类，重复主题合并观察卡，用户汇报只暴露需要拍板项。
-- `references/promotion-queue-lesson.md` — 本轮候选晋升分流、去重、元数据与验证收口规则；用于未来处理重复候选、18/20 晋升与 legacy warning。
+- `references/2026-05-18-progress-review-status-sources.md` — 用户询问“最近自主学习进度”时的状态源优先级与汇报口径：以 `state.json` + `health-dashboard.json` 交叉验证真实阶段，识别 plan 文档滞后，并把 pending promotion 决策单独列出。
 

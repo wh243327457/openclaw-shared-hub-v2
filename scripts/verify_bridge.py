@@ -13,7 +13,7 @@ from promoter import ManifestError, json_dump, load_manifest, resolve_bridge_pat
 
 EXPECTED_OPENCLAW_SKILLS_REF = "/home/node/.openclaw/shared/skills"
 DEFAULT_HERMES_CONFIG = "/root/.hermes/config.yaml"
-DEFAULT_OPENCLAW_CONFIG = "/home/vany/openclaw-data/.openclaw/openclaw.json"
+DEFAULT_OPENCLAW_CONFIG = "/home/vany/agent/.openclaw/openclaw.json"
 DEFAULT_WORKSPACES = ["workspace", "workspace-friend-001", "workspace-friend-002"]
 DEFAULT_SHARED_SKILLS_MANIFEST = "capabilities/manifests/shared-skills.yaml"
 

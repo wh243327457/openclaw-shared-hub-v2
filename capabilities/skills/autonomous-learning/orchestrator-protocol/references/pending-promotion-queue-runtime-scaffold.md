@@ -46,7 +46,7 @@ If both human review and deterministic auto review exist for the same candidate,
 Run:
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 runtime/hermes/autonomous-learning/scripts/build_pending_promotion_queue.py --recent-limit 20 --min-score 15
 python3 - <<'PY'
 import json

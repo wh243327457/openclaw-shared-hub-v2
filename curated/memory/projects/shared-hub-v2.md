@@ -112,7 +112,7 @@
 当前已确认：
 
 - `/home/vany/agent/.openclaw/shared` 不是 git 仓库
-- `/home/vany/openclaw-data/.openclaw`、`/home/vany/openclaw-data`、`/home/vany` 也都不是 git 仓库
+- `/home/vany/agent/.openclaw`、`/home/vany/openclaw-data`、`/home/vany` 也都不是 git 仓库
 - 远端仓库已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2`
 - PR 已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2/pull/1`
 - 分支：`main` （基础）、`feat/shared-memory-v2` （待合并）
@@ -163,9 +163,9 @@
 - 状态：绿 / 已备份、已写入、已验证
 - 人话结论：OpenClaw 的 MiniMax provider 已统一为 `https://api.minimaxi.com/v1`，凭据引用改为环境变量占位 `${MINIMAX_CN_API_KEY}`；没有向 shared 写入明文 secret。
 - 已更新文件：
-  - `/home/vany/openclaw-data/.openclaw/openclaw.json`
-  - `/home/vany/openclaw-data/.openclaw/agents/main/agent/models.json`
-- 备份位置：`/home/vany/openclaw-data/.openclaw/backups/model-config-minimax/`
+  - `/home/vany/agent/.openclaw/openclaw.json`
+  - `/home/vany/agent/.openclaw/agents/main/agent/models.json`
+- 备份位置：`/home/vany/agent/.openclaw/backups/model-config-minimax/`
 - 已验证：JSON 可解析、MiniMax 模型条目存在、`MINIMAX_CN_API_KEY` 在 Hermes env 文件加载后可用、`scripts/verify_bridge.py` 返回 `ok: true`。
 
 ## Hermes 流式请求硬性要求收口

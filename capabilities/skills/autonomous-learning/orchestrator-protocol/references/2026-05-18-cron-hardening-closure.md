@@ -33,7 +33,7 @@ For autonomous-learning cron hardening, add three runtime-only artifacts before 
 For an existing autonomous-learning cron job, update rather than duplicate it:
 
 - Keep schedule conservative: `0 */12 * * *` unless user approves faster cadence.
-- Set `workdir` to `/home/vany/agent/.openclaw/shared` so relative runtime paths and AGENTS context resolve correctly.
+- Set `workdir` to `<shared-root>` so relative runtime paths and AGENTS context resolve correctly.
 - Restrict toolsets to the minimum needed: `terminal`, `file`, `skills`, `web`, `delegation`.
 - Attach only the governing class skill: `autonomous-learning/orchestrator-protocol`.
 - Preserve Weixin delivery if that is the intended channel, but require compact report format.
@@ -52,7 +52,7 @@ If previous delivery has `ret=-2` / rate-limited:
 Before marking node-09 done:
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 - <<'PY'
 import json, pathlib
 base=pathlib.Path('runtime/hermes/autonomous-learning')

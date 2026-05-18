@@ -73,7 +73,7 @@ IDLE
 ## Minimal verification
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 runtime/hermes/self-healing-agent/scripts/baseline_scan.py
 python3 runtime/hermes/self-healing-agent/scripts/classify_findings.py
 python3 - <<'PY'

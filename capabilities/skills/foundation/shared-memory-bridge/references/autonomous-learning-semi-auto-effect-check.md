@@ -60,7 +60,7 @@ Recommend executing only the first low-risk discovery run if the user approves t
 After runtime-only changes, run at minimum:
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 - <<'PY'
 import json, pathlib
 base = pathlib.Path('runtime/hermes/autonomous-learning')

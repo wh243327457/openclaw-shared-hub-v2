@@ -11,7 +11,7 @@ agent: hermes, openclaw, future
 
 ## 共享根目录
 
-- 宿主：`/home/vany/agent/.openclaw/shared/`
+- 宿主：`<shared-root>/`
 - 容器：`/home/node/.openclaw/shared/`
 
 ## 新分层
@@ -77,7 +77,7 @@ OpenClaw 旧路径兼容保留：
 ### 强制路由规则（必须遵守，违反即算错误）
 
 - 用户说"你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关"时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。**即使记忆中 OpenClaw 配置路径更显眼，也不能作为默认操作 OpenClaw 的理由。**
-- 只有用户**明确**说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
+- 只有用户**明确**说 OpenClaw，或提供 `/home/vany/agent/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
 - 用户提到"共享中台 / shared / 跨 agent / 共享记忆"时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
 - **如果目标不明确，必须先问："这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。"**
 - 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。
@@ -103,7 +103,7 @@ OpenClaw 旧路径兼容保留：
 | “你 / Hermes / 当前 agent / 这个 agent / 当前 CLI” | Hermes | `~/.hermes/config.yaml` |
 | “你 / Hermes 的模型 / 你用的模型” | Hermes | `~/.hermes/config.yaml` |
 | “Hermes gateway / 你的 gateway” | Hermes | `~/.hermes/hermes-agent/` |
-| “OpenClaw / openclaw 的配置” | OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` |
+| “OpenClaw / openclaw 的配置” | OpenClaw | `/home/vany/agent/.openclaw/openclaw.json` |
 | “shared / 共享中台 / 跨 agent” | shared 层 | `shared/` 根目录 |
 | 只有“改配置”且无上下文 | 必须先问 | — |
 
@@ -152,12 +152,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 当用户问“共享中台有没有 Git / 远端 / 推送”时，必须区分两层，不要只检查 live shared 后就下绝对结论：
 
 1. **live shared 运行目录**
-   - 路径：`/home/vany/agent/.openclaw/shared`
+   - 路径：`<shared-root>`
    - 这是 OpenClaw / Hermes 实际读取和写入的共享中台目录
    - 可能不是 Git 仓库；若没有 `.git`、remote、branch，只能说明 live 目录没有直接 Git 化
 
 2. **runtime staging Git 仓库**
-   - 典型路径：`/home/vany/agent/.openclaw/shared/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
+   - 典型路径：`<shared-root>/runtime/hermes/pr-staging/openclaw-shared-memory-v2/`
    - 这是把 shared 可审阅内容整理成 GitHub PR / 备份快照的 staging repo
    - 需要单独检查：`git -C <staging> remote -v`、branch、HEAD、PR 状态
 
@@ -216,12 +216,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 2. **修改 workspace/memory symlink**
    ```bash
    # 检查当前指向
-   readlink /home/vany/openclaw-data/.openclaw/workspace/memory
+   readlink /home/vany/agent/.openclaw/workspace/memory
    # 应该是 ../shared/memory/daily（即 compat/daily）
 
    # 更新到 inbox
-   rm /home/vany/openclaw-data/.openclaw/workspace/memory
-   ln -s ../shared/inbox/openclaw/daily /home/vany/openclaw-data/.openclaw/workspace/memory
+   rm /home/vany/agent/.openclaw/workspace/memory
+   ln -s ../shared/inbox/openclaw/daily /home/vany/agent/.openclaw/workspace/memory
    ```
 
 3. **验证**
@@ -237,7 +237,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
    cat > shared/scripts/daily_maintenance.sh << 'EOF'
    #!/bin/bash
    set -e
-   cd /home/vany/agent/.openclaw/shared
+   cd <shared-root>
    python3 scripts/promoter.py >> runtime/hermes/promoter-cron.log 2>&1 || true
    python3 scripts/verify_bridge.py >> runtime/hermes/verify-cron.log 2>&1 || true
    echo "[$(date -Iseconds)] daily maintenance done" >> runtime/hermes/cron.log
@@ -247,7 +247,7 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 
 2. **注册 cron**
    ```bash
-   (crontab -l 2>/dev/null; echo "0 6 * * * /home/vany/agent/.openclaw/shared/scripts/daily_maintenance.sh") | crontab -
+   (crontab -l 2>/dev/null; echo "0 6 * * * <shared-root>/scripts/daily_maintenance.sh") | crontab -
    ```
 
 ## 运行与验证
@@ -320,12 +320,12 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 ```bash
 python3 - <<'PY'
 import json, pathlib
-base = pathlib.Path('/home/vany/agent/.openclaw/shared/runtime/hermes/autonomous-learning')
+base = pathlib.Path('<shared-root>/runtime/hermes/autonomous-learning')
 for p in [base/'state.json', base/'learning-backlog.json'] + list((base/'orchestrator-runs').glob('*/run-state.json')):
     json.loads(p.read_text())
 print('json ok')
 PY
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 scripts/promoter.py --dry-run
 python3 scripts/verify_bridge.py
 ```
@@ -351,9 +351,9 @@ Self-healing / global inspection agent scaffolding is captured in `references/se
 完成迁移或修复后，至少执行：
 
 ```bash
-python3 /home/vany/agent/.openclaw/shared/scripts/promoter.py --dry-run
-python3 /home/vany/agent/.openclaw/shared/scripts/promoter.py
-python3 /home/vany/agent/.openclaw/shared/scripts/verify_bridge.py
+python3 <shared-root>/scripts/promoter.py --dry-run
+python3 <shared-root>/scripts/promoter.py
+python3 <shared-root>/scripts/verify_bridge.py
 ```
 
 

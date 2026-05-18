@@ -2,7 +2,7 @@
 
 - 创建时间: 2026-04-25
 - Agent: OpenClaw
-- 维护位置: `/home/vany/agent/.openclaw/shared/docs/checklists/agents/openclaw-required-items.md`
+- 维护位置: `<shared-root>/docs/checklists/agents/openclaw-required-items.md`
 - 状态规则: `[x]` = OpenClaw 已完成并有证据；`[ ]` = OpenClaw 未完成或待验证；`[~]` = OpenClaw 已部分完成但仍需审计/修复
 - 边界: 这里只标记 OpenClaw 自己的完成状态，不替 Hermes / future-agent 标记。
 

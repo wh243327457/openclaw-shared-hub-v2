@@ -101,7 +101,7 @@ python3 scripts/github_learning_orchestrator.py --trigger-only --date YYYY-MM-DD
 docker exec openclaw sh -lc 'openclaw cron list'
 
 # 检查 orchestrator 是否在预期位置生成了 inbox
-ls -la /home/vany/agent/.openclaw/shared/inbox/openclaw/daily/YYYY-MM-DD.md
+ls -la <shared-root>/inbox/openclaw/daily/YYYY-MM-DD.md
 ```
 
 ### ⚠️ OpenClaw 输出格式不匹配（2026-05-13 发现）
@@ -418,9 +418,9 @@ Obsidian：
 
 shared：
 
-- 计划：`/home/vany/agent/.openclaw/shared/docs/plans/YYYY/MM/YYYY-MM-DD-github-hot-project-learning-pipeline.md`
-- shared skill：`/home/vany/agent/.openclaw/shared/capabilities/skills/research/github-hot-project-learning/`
-- runtime：`/home/vany/agent/.openclaw/shared/runtime/hermes/github-hot-project-learning/`
+- 计划：`<shared-root>/docs/plans/YYYY/MM/YYYY-MM-DD-github-hot-project-learning-pipeline.md`
+- shared skill：`<shared-root>/capabilities/skills/research/github-hot-project-learning/`
+- runtime：`<shared-root>/runtime/hermes/github-hot-project-learning/`
 
 ## 每日推送格式（v3 - 学习复盘型日报）
 
@@ -446,7 +446,7 @@ shared：
 改动推送模板后必须跑一次历史日报自测，避免“文档已升级但脚本仍旧格式”：
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-DD
 cat runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt
 ```
@@ -537,7 +537,7 @@ curl -s https://token-plan-cn.xiaomimimo.com/v1/models -H "Authorization: Bearer
 ## 验证命令
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 scripts/verify_bridge.py
 ```
 

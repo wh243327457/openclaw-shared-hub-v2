@@ -43,7 +43,7 @@
 ## 验证命令
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 tests/test_fact_governance.py -v
 python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 10 --max-candidates-per-file 5 > runtime/hermes/promotion-governance-final.json
 python3 scripts/promoter.py --dry-run > runtime/hermes/promoter-final-dry-run.json

@@ -57,7 +57,7 @@ After two `max_turns_exhausted` attempts in the same run family, save failure ev
 ## Required validation after runtime-only changes
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd <shared-root>
 python3 - <<'PY'
 import json, pathlib
 base = pathlib.Path('runtime/hermes/autonomous-learning')

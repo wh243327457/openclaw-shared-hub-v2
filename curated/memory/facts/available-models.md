@@ -12,7 +12,7 @@ last_verified_at: 2026-05-16T02:58:05+08:00
 review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
   - /root/.hermes/config.yaml
-  - /home/vany/openclaw-data/.openclaw/openclaw.json
+  - /home/vany/agent/.openclaw/openclaw.json
 conflict:
   status: none
   type: null
