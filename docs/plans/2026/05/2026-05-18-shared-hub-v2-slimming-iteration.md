@@ -484,13 +484,21 @@ references/config-routing-governance.md
 
 **Step 6.3：测试 warning 输出**
 
-新增测试确保 warning 不会误判核心 symlink。
+新增测试确保膨胀信号只进入 warning，不影响 `ok`；覆盖 MEMORY 超行数、tracked dreaming bulk、单 skill references 超阈值。
 
 **Acceptance:**
 
 - `verify_bridge.py` 可以一眼看出膨胀源。
 - 默认 report/warning，不自动删除。
 - CI 或人工审查可用。
+
+**执行记录（2026-05-18）：**
+
+- 已在 `scripts/verify_bridge.py` 新增 `slimming_metrics`，输出 top-level entries/bytes、tracked inbox dreaming、tracked compat dreaming、runtime size、MEMORY.md 行数、shared skill reference 数量。
+- slimming 阈值全部为 warning-only：MEMORY >150 行、tracked dreaming bulk >0、runtime >100MB、单 shared skill references >15。
+- 已补 `tests/test_fact_governance.py::test_collect_slimming_metrics_reports_warning_only_growth_signals`，验证膨胀信号进入 warning 且 `ok=True`。
+- 已更新 `docs/runtime-retention.md` 与 `docs/maintenance.md`，说明 `verify_bridge.py` 的自动膨胀告警和处理原则。
+- 本轮实测：`slimming_metrics.memory_lines=82`、`runtime_size_bytes=3357489`、tracked dreaming count 均为 0、无 slimming warning。
 
 ---
 

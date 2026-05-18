@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -353,6 +354,11 @@ def directory_size_bytes(path: Path) -> int:
     total = 0
     if not path.exists():
         return total
+    if path.is_file():
+        try:
+            return path.stat().st_size
+        except OSError:
+            return total
     for item in path.rglob("*"):
         try:
             if item.is_file() and not item.is_symlink():
@@ -360,6 +366,106 @@ def directory_size_bytes(path: Path) -> int:
         except OSError:
             continue
     return total
+
+
+def count_text_lines(path: Path) -> int:
+    if not path.exists() or not path.is_file():
+        return 0
+    return len(read_text(path).splitlines())
+
+
+def list_tracked_files(shared_root: Path) -> list[str]:
+    result = subprocess.run(
+        ["git", "ls-files"],
+        cwd=shared_root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return []
+    return [line.strip() for line in result.stdout.splitlines() if line.strip()]
+
+
+def count_top_level_entries(shared_root: Path) -> int:
+    if not shared_root.exists() or not shared_root.is_dir():
+        return 0
+    return sum(1 for item in shared_root.iterdir() if not item.name.startswith(".git"))
+
+
+def collect_slimming_metrics(
+    shared_root: Path,
+    paths: dict[str, Path],
+    tracked_paths: list[str] | None = None,
+) -> dict[str, Any]:
+    tracked = tracked_paths if tracked_paths is not None else list_tracked_files(shared_root)
+    tracked_inbox_dreaming = [path for path in tracked if path.startswith("inbox/") and "/dreaming/" in path]
+    tracked_inbox_dot_dreams = [path for path in tracked if path.startswith("inbox/") and "/.dreams/" in path]
+    tracked_compat_dreaming = [path for path in tracked if path.startswith("compat/daily/dreaming/")]
+    tracked_compat_dot_dreams = [path for path in tracked if path.startswith("compat/daily/.dreams/")]
+    runtime_size = directory_size_bytes(paths["runtime"])
+    memory_path = paths.get("memory_index") or paths.get("memory_file") or paths["curated_memory"] / "MEMORY.md"
+    memory_lines = count_text_lines(memory_path)
+
+    skill_reference_records = []
+    skills_root = paths["capabilities_skills"]
+    if skills_root.exists() and skills_root.is_dir():
+        for skill_dir in sorted([item for item in skills_root.iterdir() if item.is_dir() and not item.name.startswith(".")]):
+            references_dir = skill_dir / "references"
+            reference_count = 0
+            if references_dir.exists() and references_dir.is_dir():
+                reference_count = sum(1 for item in references_dir.rglob("*") if item.is_file())
+            skill_reference_records.append(
+                {
+                    "skill": skill_dir.name,
+                    "references_dir": str(references_dir),
+                    "reference_count": reference_count,
+                    "ok": reference_count <= 15,
+                }
+            )
+
+    warnings: list[str] = []
+    if memory_lines > 150:
+        warnings.append(f"SLIMMING_MEMORY_TOO_LONG: curated/memory/MEMORY.md has {memory_lines} lines > 150")
+    if tracked_inbox_dreaming or tracked_inbox_dot_dreams:
+        warnings.append(
+            "SLIMMING_TRACKED_INBOX_DREAMING: "
+            f"{len(tracked_inbox_dreaming) + len(tracked_inbox_dot_dreams)} tracked files"
+        )
+    if tracked_compat_dreaming or tracked_compat_dot_dreams:
+        warnings.append(
+            "SLIMMING_TRACKED_COMPAT_DREAMING: "
+            f"{len(tracked_compat_dreaming) + len(tracked_compat_dot_dreams)} tracked files"
+        )
+    if runtime_size > 100 * 1024 * 1024:
+        warnings.append(f"SLIMMING_RUNTIME_TOO_LARGE: runtime has {runtime_size} bytes > 104857600")
+    for item in skill_reference_records:
+        if not item["ok"]:
+            warnings.append(
+                f"SLIMMING_SKILL_REFERENCES_TOO_MANY: {item['skill']} has {item['reference_count']} references > 15"
+            )
+
+    return {
+        "policy": "warning-only; no deletion",
+        "thresholds": {
+            "memory_lines": 150,
+            "runtime_bytes": 100 * 1024 * 1024,
+            "skill_reference_files_per_skill": 15,
+        },
+        "top_level_entries": count_top_level_entries(shared_root),
+        "top_level_bytes": directory_size_bytes(shared_root),
+        "tracked_inbox_dreaming_count": len(tracked_inbox_dreaming) + len(tracked_inbox_dot_dreams),
+        "tracked_compat_dreaming_count": len(tracked_compat_dreaming) + len(tracked_compat_dot_dreams),
+        "tracked_samples": {
+            "inbox_dreaming": (tracked_inbox_dreaming + tracked_inbox_dot_dreams)[:10],
+            "compat_dreaming": (tracked_compat_dreaming + tracked_compat_dot_dreams)[:10],
+        },
+        "runtime_size_bytes": runtime_size,
+        "memory_lines": memory_lines,
+        "skill_reference_records": skill_reference_records,
+        "warnings": warnings,
+        "ok": True,
+    }
 
 
 def parse_frontmatter(text: str) -> dict[str, Any]:
@@ -591,6 +697,7 @@ def main(argv: list[str] | None = None) -> int:
     promotion_backlog = collect_promotion_backlog(paths)
     future_agent_readiness = collect_future_agent_readiness(shared_root, paths)
     runtime_retention = collect_runtime_retention_report(paths)
+    slimming_metrics = collect_slimming_metrics(shared_root, paths)
     fact_governance = collect_fact_governance_checks(paths["facts"])
     shared_skills_record = verify_shared_skills_manifest(shared_root, paths)
     hermes_record = verify_hermes_config(hermes_config, paths)
@@ -612,6 +719,9 @@ def main(argv: list[str] | None = None) -> int:
         errors.append("future_agent_readiness")
     if not runtime_retention["ok"]:
         errors.append("runtime_retention")
+    if not slimming_metrics["ok"]:
+        errors.append("slimming_metrics")
+    warnings.extend(slimming_metrics.get("warnings", []))
     if not fact_governance["ok"]:
         errors.append("fact_governance")
     warnings.extend(fact_governance.get("warnings", []))
@@ -636,6 +746,7 @@ def main(argv: list[str] | None = None) -> int:
         "promotion_backlog": promotion_backlog,
         "future_agent_readiness": future_agent_readiness,
         "runtime_retention": runtime_retention,
+        "slimming_metrics": slimming_metrics,
         "fact_governance": fact_governance,
         "shared_skills_manifest": shared_skills_record,
         "hermes_config": hermes_record,

@@ -20,7 +20,7 @@
 
 ## 默认策略
 
-- verify 只报告 runtime 各 agent 目录大小。
+- verify 只报告 runtime 各 agent 目录大小；`scripts/verify_bridge.py` 还会输出 `slimming_metrics.runtime_size_bytes` 并在 runtime 总量超过 100MB 时给出 warning-only 告警。
 - daily maintenance 只记录 shared 总体大小。
 - 默认不删除任何文件。
 - Git 主线默认不继续新增 runtime / dreams / cache / index / log 等 bulk 文件；如需长期保留，应先摘录成 curated facts/projects 或 docs 摘要。
