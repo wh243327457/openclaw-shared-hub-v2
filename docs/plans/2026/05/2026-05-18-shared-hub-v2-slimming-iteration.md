@@ -99,7 +99,7 @@ readlink compat/daily/.dreams
 | Phase 0 | 建立瘦身计划与基线 | 低 | ✅ 已完成 |
 | Phase 1 | Git 跟踪边界收口：raw/runtime 不再扩大 | 中 | ✅ 已完成 |
 | Phase 2 | compat 薄化：只做兼容入口 | 中 | ✅ 已完成 |
-| Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ⏳ 待开始 |
+| Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ✅ 已完成 |
 | Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ⏳ 待开始 |
 | Phase 5 | shared skills references 合并与升格门槛 | 低-中 | ⏳ 待开始 |
 | Phase 6 | 自动化守护：verify 增加膨胀告警 | 中 | ⏳ 待开始 |
@@ -330,6 +330,14 @@ curated/memory/archives/promoted-legacy-2026-05.md
 - 读取前 100 行即可获得共享中台真实入口。
 - promoted 历史如需保留，有 archive 链接。
 - promoter dry-run 通过。
+
+**执行记录（2026-05-18）：**
+
+- 审计前 `curated/memory/MEMORY.md` 共 184 行，其中 78 行以后为 7 个 `Promoted From Short-Term Memory` 历史块。
+- 已确认 `scripts/promoter.py` 只替换 `<!-- SHARED-BRIDGE-STATE:START/END -->` 标记块，不会继续自动追加 promoted 明细。
+- 已将旧 promoted 明细迁到：`curated/memory/archives/promoted-legacy-2026-05.md`。
+- 主索引只保留一段“历史 promoted 归档”链接说明，长期事实仍要求进入 `facts/` 或 `projects/`。
+- 迁移后 `MEMORY.md` 降至 81 行；前 100 行即可读完共享中台入口、状态块和归档指针。
 
 ---
 
