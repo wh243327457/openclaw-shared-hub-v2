@@ -67,6 +67,15 @@
    - `python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 10`
    - `python3 scripts/verify_bridge.py`
 
+## Raw 保留与 Git 跟踪边界
+
+`inbox/<agent>/daily/` 是 raw 写入入口，不等于 Git 主线审查面。
+
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/`、cache、index、临时摘要默认只保留在本地运行目录，不进入 Git 主线。
+- 对已经误入 Git 的 raw bulk，优先使用 `git rm --cached -r <path>` 从 Git index 移除，同时保留本地文件。
+- 如 raw 中有长期价值，先提炼摘要或稳定事实，再写入 `curated/memory/facts/` 或 `curated/memory/projects/`。
+- 不把整段 raw、score/source 噪声或单次运行日志直接追加到 `curated/memory/MEMORY.md`。
+
 ## 自动化边界
 
 `promoter.py` 可以：

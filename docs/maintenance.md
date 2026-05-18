@@ -43,6 +43,12 @@ DRY_RUN=1 scripts/daily_maintenance.sh
 RUN_KB_SYNC=0 scripts/daily_maintenance.sh
 ```
 
+## Raw retention / Git 主线边界
+
+- `inbox/**/daily/dreaming/` 与 `inbox/**/daily/.dreams/` 是 raw/runtime-like 资料，默认只做本地保留。
+- 日常维护脚本可以统计它们的数量和大小，但不应自动删除、不应自动晋升 curated。
+- Git 主线只保留必要 README、稳定摘要或人工确认后的 curated fact/project；raw bulk 如需清理 Git 跟踪，用 `git rm --cached`，不要物理删除运行目录文件。
+
 ## 日志位置
 
 - 主日志：`runtime/hermes/cron.log`

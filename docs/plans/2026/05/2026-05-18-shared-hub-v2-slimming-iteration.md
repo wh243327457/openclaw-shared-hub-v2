@@ -100,7 +100,7 @@ readlink compat/daily/.dreams
 | Phase 1 | Git 跟踪边界收口：raw/runtime 不再扩大 | 中 | ✅ 已完成 |
 | Phase 2 | compat 薄化：只做兼容入口 | 中 | ✅ 已完成 |
 | Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ✅ 已完成 |
-| Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ⏳ 待开始 |
+| Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ✅ 已完成 |
 | Phase 5 | shared skills references 合并与升格门槛 | 低-中 | ⏳ 待开始 |
 | Phase 6 | 自动化守护：verify 增加膨胀告警 | 中 | ⏳ 待开始 |
 | Phase 7 | 收口 PR、删除已合并分支、更新长期状态 | 低 | ⏳ 待开始 |
@@ -385,6 +385,14 @@ inbox/openclaw/daily/.dreams/
 - inbox 仍可写入。
 - main 不再因 dreaming raw 快速膨胀。
 - curated 中有必要摘要，不丢关键长期事实。
+
+**执行记录（2026-05-18）：**
+
+- 审计前 `inbox/**` 共 106 个 Git tracked 文件，其中 `inbox/openclaw/daily/dreaming/**` 为 54 个 tracked raw bulk；`inbox/openclaw/daily/.dreams/**` 已未被跟踪。
+- 已执行 `git rm --cached -r inbox/openclaw/daily/dreaming`，仅从 Git index 移除，保留本地运行目录文件。
+- 验证后 `git ls-files 'inbox/openclaw/daily/dreaming/**'` 为 0，本地 `find inbox/openclaw/daily/dreaming -type f -name '*.md'` 仍为 54。
+- 已更新 `docs/promote-protocol.md`，明确 raw 保留与 Git 跟踪边界：raw bulk 不进 Git 主线，长期价值需先提炼到 facts/projects。
+- 已更新 `docs/maintenance.md`，明确日常维护可统计 raw，但不得自动删除或自动晋升 curated。
 
 ---
 
