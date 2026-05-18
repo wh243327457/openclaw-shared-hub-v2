@@ -190,6 +190,15 @@
 - 验证命令：`cd /root/.hermes/hermes-agent && venv/bin/python -m pytest tests/agent/test_auxiliary_client.py tests/agent/test_stream_collection.py tests/test_openai_stream_enforcement.py tests/test_trajectory_compressor.py tests/test_trajectory_compressor_async.py tests/test_mini_swe_runner.py tests/tools/test_mixture_of_agents_tool.py -q`
 - 验证结果：`144 passed in 9.06s`
 
+## 治理总结机制状态
+
+- 最近更新时间：`2026-05-18T22:30:00+08:00`
+- 状态：黄绿 / 机制已设计并接入入口文档，后续应补自动候选评分与 weekly review 草稿生成
+- 人话结论：共享中台已经能跑，下一阶段重点不是继续堆内容，而是按 `docs/shared-governance-standard.md` 和 `docs/governance-summary-mechanism.md` 执行“raw 宽进、curated 严出”的筛选总结机制。
+- 已确立规则：候选进入 curated 前必须经过跨会话价值、跨 agent 价值、可验证证据、去重、脱敏检查；自动化只生成候选、score、warning 和 review 草稿，不默认写 curated 或删除 raw。
+- 周期节奏：daily 只扫描和告警；weekly 做总控审查与压缩晋升；monthly 做 MEMORY、runtime、skill references、tracked raw bulk 的结构瘦身。
+- 当前 GitHub 状态：治理与瘦身改动已进入 PR `https://github.com/wh243327457/openclaw-shared-hub-v2/pull/5`；旧已合并远端分支 `docs/shared-live-commit-checklist`、`feat/shared-memory-v2` 已删除；`live/shared-sync` 暂不删除，等待确认 main 承载最新 live 状态。
+
 ## 下一步建议
 
 shared-hub-v2 已收口，后续仅需：

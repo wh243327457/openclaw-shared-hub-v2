@@ -71,6 +71,18 @@ OpenClaw 旧路径兼容保留：
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
 - `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/runtime-like 资料只做本地保留；如果已进 Git，用 `git rm --cached -r` 清出主线，并在 `docs/promote-protocol.md` / `docs/maintenance.md` 写清不得自动删除或自动晋升。
 
+### shared governance standard
+
+共享中台的筛选总结必须按 `docs/shared-governance-standard.md` 执行：
+
+- **状态流**：`RAW_CAPTURED -> CANDIDATE_EXTRACTED -> SCREENED -> DECIDED_* -> CURATED_WRITTEN/LEFT_IN_INBOX -> VERIFIED`。
+- **五门准入**：长期价值、跨 agent 价值、可验证证据、去重/冲突、脱敏安全；任一失败不得写入 curated active fact。
+- **决策表**：单次 PR/commit/任务进度默认不进长期记忆；日志/cache/.dreams 默认只做 runtime 证据；项目状态压缩写 projects；跨 agent 工作流写 shared skill。
+- **节奏**：daily 只扫描告警；weekly 总控审查 accepted/deferred/rejected/duplicate/disputed；monthly 做 MEMORY、runtime、skill references、tracked raw bulk 结构瘦身。
+- **验收**：治理改动后跑 `python3 -m unittest tests/test_fact_governance.py`、`python3 scripts/promoter.py --dry-run`、`python3 scripts/verify_bridge.py`、`git diff --check`。
+
+机制解释见 `docs/governance-summary-mechanism.md`；强制口径以标准文档为准。
+
 ### shared hub slimming workflow
 
 当 shared 目录开始变重时，优先按阶段瘦身，而不是一次性大改：

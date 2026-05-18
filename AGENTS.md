@@ -66,6 +66,7 @@ shared/
 - 事实片段写入 `curated/memory/facts/`
 - 项目状态写入 `curated/memory/projects/`
 - 索引更新到 `curated/memory/MEMORY.md`
+- 遵守 `docs/shared-governance-standard.md` 与 `docs/governance-summary-mechanism.md`：候选必须经评分、证据、去重、脱敏与总控/人工审查；raw 宽进，curated 严出。
 
 ### 2) Inbox：agent 原始写入
 默认原始记录、草稿、待整理上下文写入：

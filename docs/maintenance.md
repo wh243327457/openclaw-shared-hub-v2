@@ -51,7 +51,7 @@ RUN_KB_SYNC=0 scripts/daily_maintenance.sh
 
 ## 自动膨胀告警
 
-`verify_bridge.py` 输出 `slimming_metrics`，用于把共享中台是否变胖变成可审计指标。所有 slimming 告警默认都是 warning-only，不自动删除、不让 `ok` 失败。
+`verify_bridge.py` 输出 `slimming_metrics`，用于把共享中台是否变胖变成可审计指标。所有 slimming 告警默认都是 warning-only，不自动删除、不让 `ok` 失败。治理总结标准见 `docs/shared-governance-standard.md`，治理机制说明见 `docs/governance-summary-mechanism.md`，用于决定 warning 出现后应该晋升、压缩、暂缓、拒绝还是清理。
 
 当前阈值：
 

@@ -7,6 +7,8 @@
 - `inbox/<agent>/daily/` 保存各 Agent 的原始记录，不直接等同于长期记忆。
 - `curated/memory/` 是跨 Agent 真相源，必须经过筛选、去重、脱敏和审核。
 - 自动脚本只能生成候选与状态报告，默认不直接写入 curated。
+- 详细治理总结机制见 `docs/governance-summary-mechanism.md`：raw 宽进、curated 严出，候选需经过评分、证据、去重、脱敏、人工/总控审查后才能晋升。
+- 强制执行标准见 `docs/shared-governance-standard.md`：定义五门准入、标准状态流、决策表、质量阈值和 daily/weekly/monthly 节奏。
 
 ## 分层职责
 

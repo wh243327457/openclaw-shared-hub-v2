@@ -542,6 +542,14 @@ git pull origin main
 - 已合并临时分支删除。
 - shared-hub-v2 项目状态更新。
 
+**执行记录（2026-05-18）：**
+
+- 已创建 PR #5：`https://github.com/wh243327457/openclaw-shared-hub-v2/pull/5`，当前 `MERGEABLE`。
+- 已删除已合并远端分支：`docs/shared-live-commit-checklist`、`feat/shared-memory-v2`。
+- 暂不删除 `live/shared-sync`：需等 PR #5 合并并确认 `main` 承载最新 live 状态后再处理。
+- 已将共享中台治理总结机制写入 `docs/governance-summary-mechanism.md`，并从 `AGENTS.md`、`docs/promote-protocol.md`、`docs/maintenance.md`、`curated/memory/MEMORY.md`、`curated/memory/projects/shared-hub-v2.md` 接入。
+- 已将强制执行标准写入 `docs/shared-governance-standard.md`：包含标准状态流、五门准入、决策表、Promote Score、输出格式、质量阈值、daily/weekly/monthly 节奏和验收命令。
+
 ---
 
 ## 推荐执行顺序

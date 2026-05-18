@@ -26,6 +26,8 @@
 - **OpenClaw 网页/公众号采集系统**：`curated/memory/projects/openclaw-web-watch.md`
 - **Self-Healing Agent / 全局巡查自我修复**：`curated/memory/projects/self-healing-agent.md`
 - **共享技能清单**：`capabilities/manifests/shared-skills.yaml`
+- **治理总结标准**：`docs/shared-governance-standard.md`
+- **治理总结机制**：`docs/governance-summary-mechanism.md`
 - **配置目标识别规则**：`capabilities/skills/foundation/config-target-routing/SKILL.md`
 - **自主学习多 agent 编排模式**：`curated/memory/facts/autonomous-learning-multi-agent-orchestration-patterns.md`
 - **Skill-as-contract / Subagent 四状态协议**：`curated/memory/facts/autonomous-learning-skill-as-contract-pattern.md`
@@ -46,6 +48,8 @@
 
 - `shared-hub-v2` 项目状态已沉淀到 `curated/memory/projects/shared-hub-v2.md`
 - `capabilities/manifests/shared-skills.yaml` 已建立，用于声明常驻 shared 的共享技能
+- `docs/shared-governance-standard.md` 已建立，作为 shared hub 长期筛选、总结、晋升、压缩、淘汰的强制执行标准
+- `docs/governance-summary-mechanism.md` 已建立，作为 shared hub 治理总结机制说明入口
 - `foundation/config-target-routing` 已升格为共享 skill，用于约束 Hermes / OpenClaw / future-agent 在配置类任务前先识别目标系统，避免混改配置
 - `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程与配置治理等稳定事实条目
 - 后续新增长期记忆时，请同时更新本索引
