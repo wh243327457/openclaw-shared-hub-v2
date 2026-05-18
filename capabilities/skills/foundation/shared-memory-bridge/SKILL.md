@@ -71,6 +71,10 @@ OpenClaw 旧路径兼容保留：
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
 - 如果某个阶段需要保留推理轨迹，优先在本 skill 下新增简短 `references/<topic>.md`，不要继续膨胀主 `SKILL.md`。
 - 共享中台瘦身流程与 phase gates 见：`references/shared-hub-slimming-iteration.md`
+- compat 薄化时，优先把历史 bulk 从 Git index 移除而不是物理删除，使用 `git rm --cached` 保留本地兼容文件；随后补 `.gitignore` 兜底，防止 `compat/daily/20*.md`、`compat/daily/dreaming/` 再次进入主线。
+- `curated/memory/MEMORY.md` 的 promoted 历史应迁到 archive 文件，主索引只留入口、状态块和 archive 链接；不要把 score/source/raw 表格长期堆在主索引。
+- `scripts/promoter.py` 的职责应限制为更新共享桥状态块与摘要统计，不再向 `MEMORY.md` 追加历史 promoted 明细。
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/runtime-like 资料只做本地保留；如果已进 Git，用 `git rm --cached -r` 清出主线，并在 `docs/promote-protocol.md` / `docs/maintenance.md` 写清不得自动删除或自动晋升。
 
 ## 配置目标识别
 
