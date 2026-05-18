@@ -1,54 +1,45 @@
-# Config-Target-Routing Correction Session
+# 配置目标路由校正会话 · 2026-05-16
 
-**Date**: 2026-05-16
-**Context**: 用户抱怨 Hermes 每次改配置都默认改 OpenClaw，不是直接改 Hermes，也不是先问用户
+## 问题描述
 
----
+用户抱怨：每次让 Hermes 改配置，Hermes 都先改 OpenClaw，而不是先问或默认改 Hermes。
 
-## 用户原话
+根因：记忆里 OpenClaw 配置路径（`/home/vany/openclaw-data/.openclaw/openclaw.json`）比 Hermes 路径更显眼，导致目标识别被记忆劫持，跳过了 skill 中规定的"先问目标"步骤。
 
-> "为什么每次我让你改配置，你都是先改openclaw的，不是直接改Hermes的？或者咨询我要改哪个？"
+## 校正措施
 
----
+### 1. config-target-routing skill 更新
 
-## 问题根因
+触发条件加严：
+- **之前**："用户只说'改配置 / 重启'时才触发"
+- **之后**："用户只说'改配置 / 重启 / 你这里 / 当前 agent / 你的配置'，没有明确说 OpenClaw"就触发
 
-虽然 `config-target-routing` 规则已经存在于 `shared-memory-bridge` SKILL.md 中，且 `AGENTS.md` 也有明确说明，但实际执行时没有遵守。
+目标识别规则强化：
+- 用户说"你 / 当前 agent / 当前 CLI / 当前网关 / Hermes / 这个 agent" → **直接默认 Hermes**，不用问
+- 只有用户**明确**说 OpenClaw 或给出其路径时才操作 OpenClaw
+- 记忆中 OpenClaw 配置路径更显眼 → 不能作为默认目标的理由
 
-规则本身是对的，执行层面出了问题：
-1. 规则表述不够强制（用词是"默认"而非"必须"）
-2. 没有配置写入前的强制自检清单
-3. 没有明确"违反即算错误"的表述
+### 2. shared-memory-bridge skill 更新
 
----
+配置目标识别章节增加：
+- 常见触发词与预期目标表（含"Hermes"行默认 Hermes）
+- 配置写入前强制自检清单（声明目标系统+文件路径）
 
-## 修复内容
+### 3. shared 层 config-target-routing skill
 
-更新了 `shared-memory-bridge` SKILL.md：
+新增 standalone skill：`capabilities/skills/foundation/config-target-routing/SKILL.md`
+- 独立于 Hermes 本地 skill，可在 Hermes/OpenClaw 间共享
+- 登记在 `capabilities/manifests/shared-skills.yaml`
 
-1. 将配置路由规则表述从"默认"改为"强制路由规则（必须遵守，违反即算错误）"
-2. 新增"配置写入前强制自检清单"：操作前必须声明目标系统、目标文件、操作方式
-3. 新增"常见触发词与预期目标"表格
-4. 补充了 `config-target-routing` 技能的 manifest 登记信息
+## 关键教训
 
----
+1. **路由不能依赖记忆中的路径显著性** — 如果某条路径在记忆里出现频率高，它就会变成隐性默认，绕过显式路由规则。需要用 skill 的触发条件强制做本轮自检。
+2. **用户抱怨"你总是 X"是强烈的 skill 信号** — 说明问题重复出现，不是偶发，skill 需要记录防止再犯。
+3. **配置类任务的默认目标必须显式声明** — 不能让用户靠抱怨来纠正，要从机制上保证每次配置写入前都有目标声明。
 
-## 关键规则（必须遵守）
+## 验证方法
 
-| 用户说 | 默认目标 | 正确文件 |
-|---|---|---|
-| "你 / Hermes / 当前 agent / 这个 agent / 当前 CLI" | Hermes | `~/.hermes/config.yaml` |
-| "你 / Hermes 的模型 / 你用的模型" | Hermes | `~/.hermes/config.yaml` |
-| "Hermes gateway / 你的 gateway" | Hermes | `~/.hermes/hermes-agent/` |
-| "OpenClaw / openclaw 的配置" | OpenClaw | `/home/vany/openclaw-data/.openclaw/openclaw.json` |
-| "shared / 共享中台 / 跨 agent" | shared 层 | `shared/` 根目录 |
-| 只有"改配置"且无上下文 | **必须先问** | — |
-
----
-
-## 教训
-
-规则写在 SKILL.md 里不代表会被遵守。涉及跨系统高风险操作的规则，需要：
-1. 明确的"禁止/必须"措辞，而非模糊的"默认/通常"
-2. 操作前的强制检查清单
-3. 具体的触发词对照表
+用户下次说"改配置"时：
+- Hermes 应先声明："目标系统：Hermes（因为你说的是'你'）"
+- 只有用户说"OpenClaw"或给路径时才切 OpenClaw
+- 不再出现"先改 OpenClaw 再问"的情况

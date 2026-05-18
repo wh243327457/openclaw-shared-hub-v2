@@ -76,10 +76,10 @@ OpenClaw 旧路径兼容保留：
 
 ### 强制路由规则（必须遵守，违反即算错误）
 
-- 用户说“你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关”时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。
+- 用户说"你 / 当前 agent / Hermes / 这个 agent / 当前 CLI / 当前网关"时，默认目标是 **Hermes**，优先操作 `~/.hermes/config.yaml`、`~/.hermes/.env`、`~/.hermes/auth.json` 等 Hermes 路径。**即使记忆中 OpenClaw 配置路径更显眼，也不能作为默认操作 OpenClaw 的理由。**
 - 只有用户**明确**说 OpenClaw，或提供 `/home/vany/openclaw-data/.openclaw/`、`/home/node/.openclaw/` 等 OpenClaw 路径时，才操作 OpenClaw 配置。
-- 用户提到“共享中台 / shared / 跨 agent / 共享记忆”时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
-- **如果目标不明确，必须先问：“这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。”**
+- 用户提到"共享中台 / shared / 跨 agent / 共享记忆"时，才进入 shared 层，先读 `manifest.yaml`、`AGENTS.md`、`curated/memory/MEMORY.md`。
+- **如果目标不明确，必须先问："这是改 Hermes 还是 OpenClaw？如果是当前这个 agent，我会按 Hermes 处理。"**
 - 禁止因为历史记忆或某个 agent 的已知配置路径更显眼，就默认改错系统。
 - 配置写入前必须声明目标系统和目标文件路径。
 
@@ -252,6 +252,16 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 
 ## 运行与验证
 
+### 外部机制类项目本地化
+
+当用户要深度学习一个外部项目/文章并判断能否集成到系统中时，若结论是“机制值得借鉴，但不应直接依赖其源码/服务”，优先落成三层产物，而不是只输出调研报告：
+
+1. `curated/memory/projects/<project>.md`：跨 agent 真相源，写机制、边界、接入价值、禁止事项。
+2. `runtime/<agent>/<project>/`：实施计划、状态、架构、POC 模板和可恢复执行记录。
+3. Obsidian 风格知识库：面向人类的学习入口和分章节文档。
+
+边界：GPL/外部项目只作为机制样板时，不复制源码进核心；runtime/cache/sqlite/chunks 不晋升 curated；需要 Hermes review 后再把结论写入 curated。参考会话细节见 `references/openhuman-mechanism-localization-session.md`。
+
 ### 当用户要"按当前情况和进度重新整理一版"时
 
 不要只做概念说明，按**现状审计 → 落盘沉淀 → 脚本复核**执行：
@@ -324,9 +334,17 @@ python3 scripts/verify_bridge.py
 
 状态不一致收口细节见：`references/orchestrator-state-reconciliation.md`。其中包含 run-state 与实际产物不一致时的审计顺序、只更新 runtime 的边界和最小验证命令。
 
-Further rollout detail is also captured in `references/autonomous-learning-semi-auto-candidate.md`: plan-only semi-auto candidate packets, explicit no-cron/no-curated gates, and Claude Code deep-dive granularity rules after repeated `max_turns_exhausted`.
+落地优先级与 runtime-only 脚手架经验见：`references/landing-prioritization-runtime-scaffold.md`。其中包含如何区分 learned vs landed、按共享治理→现有流水线→自主学习→新采集系统→本地代码探索能力的落地顺序，以及新系统最小 runtime 文件包与 CodeGraph shared 候选判断口径。
 
-Fact freshness / conflict-resolution governance automation is captured in `references/fact-governance-warning-only-automation.md`: how to convert runtime policy drafts into a self-running warning-only loop via `promoter.py --dry-run --scan-promote-candidates`, `verify_bridge.py` fact_governance checks, `daily_maintenance.sh`, tests, and state/backlog updates while keeping curated auto-promotion disabled.
+CodeGraph / 本地代码上下文索引候选规则见：`references/codegraph-context-index-candidate.md`。要点：先把代码结构索引成 runtime 图谱，再让 agent 通过自然语言/MCP 查询 symbol/file/edge；缓存不进 curated；本地 POC 通过前不要升格 shared skill。
+
+
+
+Semi-auto discovery execution detail is captured in `references/autonomous-learning-semi-auto-discovery-execution.md`: how to execute exactly one approved low-risk OpenClaw discovery run from a plan-only candidate, preserve runtime/inbox-only boundaries, save stdout/stderr evidence, run Hermes spec/quality review, and avoid treating transient GitHub fetch failures as durable tool limitations.
+
+Effect-check run pattern is captured in `references/autonomous-learning-semi-auto-effect-check.md`: when the user asks to “run one version and see effect”, generate a runtime-only semi-auto candidate bundle with explicit gates, three bounded draft runs, validation commands, and report language that does not imply full automation.
+
+Self-healing / global inspection agent scaffolding is captured in `references/self-healing-agent-scaffold.md`: runtime-first plan shape, safety gates, finding taxonomy, approval boundaries, and verification commands for building a self-repair loop without premature auto-fixing.
 
 ### 运行与验证的最小闭环
 
