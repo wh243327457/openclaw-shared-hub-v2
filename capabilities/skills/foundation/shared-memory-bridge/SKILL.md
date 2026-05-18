@@ -69,14 +69,25 @@ OpenClaw 旧路径兼容保留：
 - 若该 skill 会被 Hermes / OpenClaw / future-agent 复用，或属于共享中台、共享记忆、进度汇报、调研协作、配置目标识别等横切能力，则同步到 `shared/capabilities/skills/`
 - 升格到 shared 时，除了复制完整 skill 目录（`SKILL.md`、`templates/`、`references/`、`scripts/`、`assets/`），还要更新 `shared/capabilities/manifests/shared-skills.yaml`
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
-- 如果某个阶段需要保留推理轨迹，优先在本 skill 下新增简短 `references/<topic>.md`，不要继续膨胀主 `SKILL.md`。
-- 共享中台瘦身流程与 phase gates 见：`references/shared-hub-slimming-iteration.md`
-- compat 薄化时，优先把历史 bulk 从 Git index 移除而不是物理删除，使用 `git rm --cached` 保留本地兼容文件；随后补 `.gitignore` 兜底，防止 `compat/daily/20*.md`、`compat/daily/dreaming/` 再次进入主线。
-- `curated/memory/MEMORY.md` 的 promoted 历史应迁到 archive 文件，主索引只留入口、状态块和 archive 链接；不要把 score/source/raw 表格长期堆在主索引。
-- `scripts/promoter.py` 的职责应限制为更新共享桥状态块与摘要统计，不再向 `MEMORY.md` 追加历史 promoted 明细。
 - `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/runtime-like 资料只做本地保留；如果已进 Git，用 `git rm --cached -r` 清出主线，并在 `docs/promote-protocol.md` / `docs/maintenance.md` 写清不得自动删除或自动晋升。
 
-## 配置目标识别
+### shared hub slimming workflow
+
+当 shared 目录开始变重时，优先按阶段瘦身，而不是一次性大改：
+
+1. 先加 `.gitignore` 和治理文本，阻止新的 bulk 进入主线。
+2. 再把 `compat/` 收缩成薄兼容入口，历史 bulk 用 `git rm --cached` 从 index 移除，保留本地文件。
+3. 再把 `curated/memory/MEMORY.md` 缩成“入口索引 + 当前状态 + archive 链接”，把 promoted 历史迁到单独 archive。
+4. 最后再收口 `inbox/` raw 的 Git 跟踪边界，明确 raw 可保留、可统计，但不自动晋升 curated。
+5. 每完成一阶段，更新计划文件里的 phase 状态，再跑 `git diff --check`、`scripts/promoter.py --dry-run`、`scripts/verify_bridge.py` 做收口验证。
+
+### Pitfalls
+
+- 不要把 `compat/` 当成真实数据仓库；它只负责兼容旧入口。
+- 不要把 `MEMORY.md` 重新写成历史流水账；promoted 明细应进 archive。
+- 不要把 raw bulk 的本地保留误当成 Git 跟踪；`git rm --cached` 的目标是移出主线，不是物理删除。
+- 不要让 `promoter.py` 继续向主索引追加历史 promoted 明细；它应只刷新状态块和摘要统计。
+
 
 配置类任务（配置、模型、provider、模型列表、gateway、tools、skills、auth、env、cron、streaming、fallback、profile、重启服务等）属于跨 agent 高风险任务，必须先识别目标系统，避免把 Hermes / OpenClaw / shared 中台混用。
 

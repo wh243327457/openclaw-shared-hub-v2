@@ -101,7 +101,7 @@ readlink compat/daily/.dreams
 | Phase 2 | compat 薄化：只做兼容入口 | 中 | ✅ 已完成 |
 | Phase 3 | MEMORY.md 瘦身：主索引回归索引 | 中 | ✅ 已完成 |
 | Phase 4 | inbox/raw 归档与摘要晋升机制 | 中 | ✅ 已完成 |
-| Phase 5 | shared skills references 合并与升格门槛 | 低-中 | ⏳ 待开始 |
+| Phase 5 | shared skills references 合并与升格门槛 | 低-中 | ✅ 已完成 |
 | Phase 6 | 自动化守护：verify 增加膨胀告警 | 中 | ⏳ 待开始 |
 | Phase 7 | 收口 PR、删除已合并分支、更新长期状态 | 低 | ⏳ 待开始 |
 
@@ -439,6 +439,15 @@ references/config-routing-governance.md
 
 - shared skill 数量和 reference 数量不再无序增长。
 - 新 skill 是否进 shared 有明确判断口径。
+
+**执行记录（2026-05-18）：**
+
+- 已审计 shared skills reference 数量：`foundation/shared-memory-bridge` 14、`autonomous-learning/orchestrator-protocol` 13、`research/github-hot-project-learning` 5，均未超过 Phase 6 预设 warning 阈值 15。
+- 本阶段不大规模删除或合并历史 reference，避免误删仍有价值的依据；先建立准入与引用治理边界。
+- 已新增 `docs/shared-skill-governance.md`，明确 shared skill 是 class-level 能力契约，不是 session dump，并定义升格准入、内容边界、reference 治理和审查清单。
+- 已更新 `AGENTS.md` 的共享 skill 升格规则，加入 `scope`、`reference_policy`、`future_agent_readable` 与 reference review 阈值。
+- 已更新 `capabilities/manifests/shared-skills.yaml`，为全部 shared skill 补充 `scope`、`reference_policy`、`future_agent_readable` 元数据，并把 `last_reviewed` 更新到本轮 review 日期。
+- 已把 shared hub slimming 经验收敛进 `foundation/shared-memory-bridge` 主流程，避免继续追加零散 reference。
 
 ---
 

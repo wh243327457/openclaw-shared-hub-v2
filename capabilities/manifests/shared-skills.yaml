@@ -18,7 +18,10 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-04-25"
+    last_reviewed: "2026-05-18"
+    scope: governance
+    reference_policy: bounded-class-level
+    future_agent_readable: true
     description: 跨 Hermes / OpenClaw / future-agent 的共享中台 v2 入口与读写边界
   - id: foundation/console-style-progress-report
     path: foundation/console-style-progress-report
@@ -29,7 +32,10 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-04-25"
+    last_reviewed: "2026-05-18"
+    scope: cross-agent-reporting
+    reference_policy: class-level-only
+    future_agent_readable: true
     description: 总控台式进度汇报格式，避免把原始 todo / 日志直接倒给用户
   - id: autonomous-ai-agents/claude-research-then-hermes-review
     path: autonomous-ai-agents/claude-research-then-hermes-review
@@ -39,7 +45,10 @@ shared_skills:
       - hermes
       - openclaw
     owner: shared-hub
-    last_reviewed: "2026-04-25"
+    last_reviewed: "2026-05-18"
+    scope: research-workflow
+    reference_policy: class-level-only
+    future_agent_readable: true
     description: 调研型任务先由 Claude Code 首轮调研，再由 Hermes 复核
   - id: foundation/priority-backlog-clearance
     path: foundation/priority-backlog-clearance
@@ -50,7 +59,10 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-04-25"
+    last_reviewed: "2026-05-18"
+    scope: workflow
+    reference_policy: class-level-only
+    future_agent_readable: true
     description: 按优先级依次收口积压任务的标准工作流
   - id: research/github-hot-project-learning
     path: research/github-hot-project-learning
@@ -61,7 +73,10 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-05-09"
+    last_reviewed: "2026-05-18"
+    scope: research-pipeline
+    reference_policy: bounded-class-level
+    future_agent_readable: true
     description: GitHub 热门项目每日学习流水线：OpenClaw 首轮学习，Hermes 质量审计，结果落盘 Obsidian 并生成每日推送。v1.1.0 新增"防失败规则"（FR-1~FR-9），基于5次审计失败教训，违反任一条将触发返工。
   - id: foundation/config-target-routing
     path: foundation/config-target-routing
@@ -72,7 +87,10 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-05-15"
+    last_reviewed: "2026-05-18"
+    scope: governance
+    reference_policy: class-level-only
+    future_agent_readable: true
     description: 配置类任务先识别目标系统，避免把 Hermes / OpenClaw / shared 中台配置混用
   - id: autonomous-learning/orchestrator-protocol
     path: autonomous-learning/orchestrator-protocol
@@ -83,5 +101,8 @@ shared_skills:
       - openclaw
       - future-agent
     owner: shared-hub
-    last_reviewed: "2026-05-17"
+    last_reviewed: "2026-05-18"
+    scope: orchestration-protocol
+    reference_policy: bounded-class-level
+    future_agent_readable: true
     description: 自主学习系统编排协议 — 状态机驱动的多 agent 学习任务编排，含 review gates、fallback、approval 闸门
