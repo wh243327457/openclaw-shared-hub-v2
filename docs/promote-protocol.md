@@ -7,6 +7,8 @@
 - `inbox/<agent>/daily/` 保存各 Agent 的原始记录，不直接等同于长期记忆。
 - `curated/memory/` 是跨 Agent 真相源，必须经过筛选、去重、脱敏和审核。
 - 自动脚本只能生成候选与状态报告，默认不直接写入 curated。
+- 详细治理总结机制见 `docs/governance-summary-mechanism.md`：raw 宽进、curated 严出，候选需经过评分、证据、去重、脱敏、人工/总控审查后才能晋升。
+- 强制执行标准见 `docs/shared-governance-standard.md`：定义五门准入、标准状态流、决策表、质量阈值和 daily/weekly/monthly 节奏。
 
 ## 分层职责
 
@@ -66,6 +68,15 @@
 6. 运行验证：
    - `python3 scripts/promoter.py --dry-run --scan-promote-candidates --recent-limit 10`
    - `python3 scripts/verify_bridge.py`
+
+## Raw 保留与 Git 跟踪边界
+
+`inbox/<agent>/daily/` 是 raw 写入入口，不等于 Git 主线审查面。
+
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/`、cache、index、临时摘要默认只保留在本地运行目录，不进入 Git 主线。
+- 对已经误入 Git 的 raw bulk，优先使用 `git rm --cached -r <path>` 从 Git index 移除，同时保留本地文件。
+- 如 raw 中有长期价值，先提炼摘要或稳定事实，再写入 `curated/memory/facts/` 或 `curated/memory/projects/`。
+- 不把整段 raw、score/source 噪声或单次运行日志直接追加到 `curated/memory/MEMORY.md`。
 
 ## 自动化边界
 

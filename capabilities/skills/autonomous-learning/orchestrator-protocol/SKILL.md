@@ -220,6 +220,7 @@ docker exec openclaw-main agent --local --agent main \
 11. pending promotion queue 要把“晋升”和“分流”分开处理：用户批准的候选才写 curated；未批准的高分候选可重新分类为 observation card/runtime-only/awaiting approval。相似候选（如同一项目跨日期重复出现）应合并成单一观察卡，避免重复长期事实。详见 `references/2026-05-18-promotion-candidate-triage.md`。
 12. node-08 canary 验收看链路证据是否完整，不必机械重跑高成本联网任务；如果最近运行已覆盖选题/路由、执行产物、双审、晋升队列/边界、通知报告、状态回写、promoter dry-run 和 verify_bridge，即可作为低风险 canary evidence。canary 通过仍不代表允许 cron 或自动 curated 晋升。详见 `references/2026-05-18-notification-canary-closure.md`。
 14. node-09 cron hardening closure：上线 autonomous-learning cron 前/同时必须有 runtime-only policy、preflight/prompt/postrun guard、hardened prompt、保守 schedule、最小 toolsets、Weixin 限流处理和人工晋升边界；更新现有 cron 优先于创建重复 job。详见 `references/2026-05-18-cron-hardening-closure.md`。
+15. `audit_output.py` deterministic audit 的 `completion_marker_present` 检查从 instruction 文件中提取 ALL_CAPS 标记（DONE/COMPLETED/EXECUTOR/HERMES）；如果 instruction 模板（如 `hardened-cron-prompt.md`）不含这类标记，该检查永远 FAIL，连带 `boundary_present` 也可能因关键词不匹配而 FAIL。此时必须做手动 Spec/Quality review 覆盖 deterministic 结果，不要把 14/20 误判为真正低质量。同时 `promoter.py --dry-run` 和 `verify_bridge.py` 在当前 scripts 目录不存在，post-run 检查只能跳过这两步。详见 `references/audit-automation-runtime-scaffold.md`。
 
 ## 参考资料
 

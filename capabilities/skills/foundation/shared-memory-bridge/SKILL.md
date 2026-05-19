@@ -69,8 +69,40 @@ OpenClaw 旧路径兼容保留：
 - 若该 skill 会被 Hermes / OpenClaw / future-agent 复用，或属于共享中台、共享记忆、进度汇报、调研协作、配置目标识别等横切能力，则同步到 `shared/capabilities/skills/`
 - 升格到 shared 时，除了复制完整 skill 目录（`SKILL.md`、`templates/`、`references/`、`scripts/`、`assets/`），还要更新 `shared/capabilities/manifests/shared-skills.yaml`
 - 若明确只保留本地，也要在结论里写清楚：当前仅本地长期，不是 shared 长期能力
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/runtime-like 资料只做本地保留；如果已进 Git，用 `git rm --cached -r` 清出主线，并在 `docs/promote-protocol.md` / `docs/maintenance.md` 写清不得自动删除或自动晋升。
 
-## 配置目标识别
+### shared governance standard
+
+共享中台的筛选总结必须按 `docs/shared-governance-standard.md` 执行：
+
+- `references/shared-governance-standard.md` condenses the standard into a concise reference for future screening, scoring, promotion, and compression work.
+
+- **状态流**：`RAW_CAPTURED -> CANDIDATE_EXTRACTED -> SCREENED -> DECIDED_* -> CURATED_WRITTEN/LEFT_IN_INBOX -> VERIFIED`。
+- **五门准入**：长期价值、跨 agent 价值、可验证证据、去重/冲突、脱敏安全；任一失败不得写入 curated active fact。
+- **决策表**：单次 PR/commit/任务进度默认不进长期记忆；日志/cache/.dreams 默认只做 runtime 证据；项目状态压缩写 projects；跨 agent 工作流写 shared skill。
+- **节奏**：daily 只做每日总结和候选池；weekly 是常规内容晋升核心记忆的唯一触发点；monthly 只做 MEMORY、runtime、skill references、tracked raw bulk 结构体检和瘦身。
+  - 细节见 `references/weekly-core-memory-promotion.md`：把“每周总结复盘到核心记忆”落实为 daily summary → weekly core-memory promotion → monthly health review。
+- **验收**：治理改动后跑 `python3 -m unittest tests/test_fact_governance.py`、`python3 scripts/promoter.py --dry-run`、`python3 scripts/verify_bridge.py`、`git diff --check`。
+
+机制解释见 `docs/governance-summary-mechanism.md`；强制口径以标准文档为准。
+
+### shared hub slimming workflow
+
+当 shared 目录开始变重时，优先按阶段瘦身，而不是一次性大改：
+
+1. 先加 `.gitignore` 和治理文本，阻止新的 bulk 进入主线。
+2. 再把 `compat/` 收缩成薄兼容入口，历史 bulk 用 `git rm --cached` 从 index 移除，保留本地文件。
+3. 再把 `curated/memory/MEMORY.md` 缩成“入口索引 + 当前状态 + archive 链接”，把 promoted 历史迁到单独 archive。
+4. 最后再收口 `inbox/` raw 的 Git 跟踪边界，明确 raw 可保留、可统计，但不自动晋升 curated。
+5. 每完成一阶段，更新计划文件里的 phase 状态，再跑 `git diff --check`、`scripts/promoter.py --dry-run`、`scripts/verify_bridge.py` 做收口验证。
+
+### Pitfalls
+
+- 不要把 `compat/` 当成真实数据仓库；它只负责兼容旧入口。
+- 不要把 `MEMORY.md` 重新写成历史流水账；promoted 明细应进 archive。
+- 不要把 raw bulk 的本地保留误当成 Git 跟踪；`git rm --cached` 的目标是移出主线，不是物理删除。
+- 不要让 `promoter.py` 继续向主索引追加历史 promoted 明细；它应只刷新状态块和摘要统计。
+
 
 配置类任务（配置、模型、provider、模型列表、gateway、tools、skills、auth、env、cron、streaming、fallback、profile、重启服务等）属于跨 agent 高风险任务，必须先识别目标系统，避免把 Hermes / OpenClaw / shared 中台混用。
 

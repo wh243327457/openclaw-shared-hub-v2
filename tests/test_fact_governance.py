@@ -160,6 +160,40 @@ secret_checked: true
         self.assertIn("possible_conflict", candidate)
         self.assertIn("recommended_state", candidate)
 
+    def test_collect_slimming_metrics_reports_warning_only_growth_signals(self) -> None:
+        """共享中台膨胀指标应进入 warning，不导致 verify 失败。"""
+        memory_file = self.tmp / "curated" / "memory" / "MEMORY.md"
+        memory_file.write_text("\n".join(f"line {index}" for index in range(151)) + "\n", encoding="utf-8")
+        runtime_file = self.tmp / "runtime" / "large.bin"
+        runtime_file.write_bytes(b"x")
+        skill_refs = self.tmp / "capabilities" / "skills" / "heavy-skill" / "references"
+        skill_refs.mkdir(parents=True)
+        for index in range(16):
+            (skill_refs / f"ref-{index}.md").write_text("# ref\n", encoding="utf-8")
+
+        paths = {
+            "runtime": self.tmp / "runtime",
+            "memory_file": memory_file,
+            "capabilities_skills": self.tmp / "capabilities" / "skills",
+        }
+        record = verify_bridge.collect_slimming_metrics(
+            self.tmp,
+            paths,
+            tracked_paths=[
+                "inbox/hermes/daily/dreaming/2026-05-18.md",
+                "compat/daily/.dreams/old.md",
+            ],
+        )
+
+        self.assertTrue(record["ok"])
+        self.assertEqual(record["memory_lines"], 151)
+        self.assertEqual(record["tracked_inbox_dreaming_count"], 1)
+        self.assertEqual(record["tracked_compat_dreaming_count"], 1)
+        self.assertIn("SLIMMING_MEMORY_TOO_LONG: curated/memory/MEMORY.md has 151 lines > 150", record["warnings"])
+        self.assertIn("SLIMMING_TRACKED_INBOX_DREAMING: 1 tracked files", record["warnings"])
+        self.assertIn("SLIMMING_TRACKED_COMPAT_DREAMING: 1 tracked files", record["warnings"])
+        self.assertIn("SLIMMING_SKILL_REFERENCES_TOO_MANY: heavy-skill has 16 references > 15", record["warnings"])
+
 
 if __name__ == "__main__":
     unittest.main()

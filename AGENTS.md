@@ -66,6 +66,7 @@ shared/
 - 事实片段写入 `curated/memory/facts/`
 - 项目状态写入 `curated/memory/projects/`
 - 索引更新到 `curated/memory/MEMORY.md`
+- 遵守 `docs/shared-governance-standard.md` 与 `docs/governance-summary-mechanism.md`：候选必须经评分、证据、去重、脱敏与总控/人工审查；raw 宽进，curated 严出。
 
 ### 2) Inbox：agent 原始写入
 默认原始记录、草稿、待整理上下文写入：
@@ -84,6 +85,22 @@ shared/
 - 其他临时产物
 
 **不要**把运行时产物直接落到 `curated/` 或 `compat/` 的真实目录里。
+
+### 3.1) Git 跟踪边界：core 可审查，bulk 默认不进 main
+
+共享中台 live 目录可以是 Git 仓库，但 Git 主线不是运行日志仓库。默认可进入 main 的内容是：
+
+- core 真相层：`curated/`、`capabilities/`、`manifest.yaml`、`AGENTS.md`、`README.md`
+- 治理与工具：核心 `docs/`、核心 `scripts/`、`tests/`
+- 兼容入口：`memory/` symlink、`skills` symlink、必要的 `prefill/`
+
+默认不应继续扩大 Git 跟踪面的内容是：
+
+- `runtime/` 下任何运行时产物、日志、cache、index
+- `inbox/**/daily/dreaming/`、`inbox/**/daily/.dreams/` 等 raw/bulk 历史
+- `compat/daily/dreaming/`、`compat/daily/.dreams/` 等兼容层 bulk 数据
+
+如果 raw/bulk 中出现需要长期复用的信息，应先人工摘录为摘要或事实，再晋升到 `curated/memory/facts/` 或 `curated/memory/projects/`；不要把全文日志当作跨 agent 真相源提交。
 
 ### 4) Legacy compatibility：保留旧入口
 为了不破坏现有 Hermes / OpenClaw 接入：
@@ -112,10 +129,16 @@ shared/
   - Hermes / OpenClaw / future-agent 预计都会复用
   - 属于共享中台、跨 agent 协作、共享记忆、调研工作流、进度汇报等横切能力
   - 不共享会导致不同 agent 行为漂移、重复造轮子或长期规则不一致
+  - 是稳定工作流，而不是单次任务复盘
 - 升格到 shared 时，必须同时完成：
   1. 复制完整 skill 目录（`SKILL.md` 与 `templates/`、`references/`、`scripts/`、`assets/`）
-  2. 更新 `capabilities/manifests/shared-skills.yaml`
+  2. 更新 `capabilities/manifests/shared-skills.yaml`，包含 `scope`、`reference_policy`、`future_agent_readable`
   3. 如涉及长期协作约束，再同步更新 `prefill/` 或 `curated/memory/` 的对应说明
+- Shared skill 是 class-level 能力契约，不是会话记录库：
+  - `SKILL.md` 保留触发条件、流程、契约、验证命令和 pitfalls
+  - `references/` 只保留可复用主题文档，不放 raw 日志、stdout、score/source 明细或一次性任务状态
+  - 单个 skill 的 `references/` 文件数超过 15 时应触发 review，优先合并同主题 reference
+- 详细治理口径见 `docs/shared-skill-governance.md`
 - 如果明确只保留本地，不进入共享层，则需要在结果里说清楚：当前仅为 agent 本地长期能力，不是 shared 长期能力
 
 ## 配置目标识别规则

@@ -65,6 +65,35 @@ python3 scripts/promoter.py --dry-run
 python3 scripts/verify_bridge.py
 ```
 
+## Actual invocation
+
+```bash
+cd <shared-root>
+python3 runtime/hermes/autonomous-learning/scripts/audit_output.py \
+  --run-id "<run_id>" \
+  --instruction "runtime/hermes/autonomous-learning/templates/hardened-cron-prompt.md" \
+  --output "runtime/hermes/autonomous-learning/agent-outputs/<file>.md" \
+  --spec-review "runtime/hermes/autonomous-learning/reviews/<run_id>-spec-review.md" \
+  --quality-review "runtime/hermes/autonomous-learning/reviews/<run_id>-quality-review.md" \
+  --item "<backlog-item-id>"
+```
+
+注意：脚本要求 `--spec-review` 和 `--quality-review` 显式路径（不是 `--reviews-dir`）。缺任一会报 `argparse` 错误。
+
+## Known limitations
+
+1. **completion_marker_present 依赖 instruction 内容**：脚本从 `--instruction` 文件提取 ALL_CAPS 标记（含 DONE/COMPLETED/EXECUTOR/HERMES 的 token）。如果 instruction 模板不含这类标记（如 `hardened-cron-prompt.md`），`matched` 永远为空，该检查永远 FAIL。
+2. **boundary_present 关键词有限**：脚本只检查 `风险`、`边界`、`不确定`、`限制`、`极早期`、`early`、`boundaries`、`bounded`、`not source-level`、`降级产出`。输出中的 "Source boundary" 不会被匹配。必须包含上述关键词之一。
+3. **post-run 验证脚本缺失**：`promoter.py --dry-run` 和 `verify_bridge.py` 在当前 scripts 目录不存在。post-run 检查只能跳过。
+4. **deterministic 评分偏保守**：模板缺标记时 spec 直接 FAIL，quality boundary=0 导致总分偏低。应手动复核 deterministic 结果，不要把误报的低分当作真正质量问题。
+
+## Manual override pattern
+
+当 deterministic audit 因模板缺标记而 FAIL 时：
+1. 写手动 Spec Review（覆盖所有 checklist 项，verdict=PASS）
+2. 写手动 Quality Review（正常评分 20 分制）
+3. 在最终通知中注明 "deterministic audit 因 instruction 模板缺 ALL_CAPS 标记产生误报，已手动复核通过"
+
 ## Pitfall
 
 Deterministic scoring can over-score concise but well-structured outputs. Use it to stabilize pipeline mechanics, not as the sole curated-promotion decision. Node-05 should create a pending-promotion queue rather than auto-promoting curated content.

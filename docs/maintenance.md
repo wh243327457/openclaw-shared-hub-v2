@@ -43,6 +43,26 @@ DRY_RUN=1 scripts/daily_maintenance.sh
 RUN_KB_SYNC=0 scripts/daily_maintenance.sh
 ```
 
+## Raw retention / Git 主线边界
+
+- `inbox/**/daily/dreaming/` 与 `inbox/**/daily/.dreams/` 是 raw/runtime-like 资料，默认只做本地保留。
+- 日常维护脚本可以统计它们的数量和大小，但不应自动删除、不应自动晋升 curated。
+- Git 主线只保留必要 README、稳定摘要或人工确认后的 curated fact/project；raw bulk 如需清理 Git 跟踪，用 `git rm --cached`，不要物理删除运行目录文件。
+
+## 自动膨胀告警
+
+`verify_bridge.py` 输出 `slimming_metrics`，用于把共享中台是否变胖变成可审计指标。所有 slimming 告警默认都是 warning-only，不自动删除、不让 `ok` 失败。治理总结标准见 `docs/shared-governance-standard.md`，治理机制说明见 `docs/governance-summary-mechanism.md`，用于决定 warning 出现后应该晋升、压缩、暂缓、拒绝还是清理。
+
+当前阈值：
+
+- `curated/memory/MEMORY.md` 超过 150 行：`SLIMMING_MEMORY_TOO_LONG`。
+- Git 已跟踪 `inbox/**/daily/dreaming/**` 或 `inbox/**/daily/.dreams/**`：`SLIMMING_TRACKED_INBOX_DREAMING`。
+- Git 已跟踪 `compat/daily/dreaming/**` 或 `compat/daily/.dreams/**`：`SLIMMING_TRACKED_COMPAT_DREAMING`。
+- `runtime/` 总量超过 100MB：`SLIMMING_RUNTIME_TOO_LARGE`。
+- 单个 shared skill 的 `references/` 文件超过 15 个：`SLIMMING_SKILL_REFERENCES_TOO_MANY`。
+
+出现 warning 后的处理原则：先判断是否需要晋升为 curated 摘要或 class-level skill，再决定是否用独立 PR 做 `git rm --cached` / reference 合并；不要在维护脚本里自动清理。
+
 ## 日志位置
 
 - 主日志：`runtime/hermes/cron.log`
