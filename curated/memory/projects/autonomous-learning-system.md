@@ -375,3 +375,26 @@ OpenSquilla 是本轮自主学习系统非常值得保留的工程参考：它�
 ### 对当前系统的意义
 - 继续关注长上下文复用、回放、压缩和检索效率。
 - 将来若做推理层优化或本地 model orchestration，这条观察卡可以直接作为参考入口。
+
+## 20. 2026-05-19 学习晋升建议集成
+
+本轮 GitHub 热门项目学习日报的价值不在于单个项目热度，而在于把几条工程范式纳入自主学习系统的运行规则：显式记忆长期成长、兼容旧入口优先、本地工具封装成简单入口、输出面从 Markdown 扩展到 HTML、多数据源访问先统一抽象。
+
+### 已落地
+
+1. 已建立集成计划：`docs/plans/2026/05/2026-05-19-learning-promotion-integration.md`。
+2. 已沉淀稳定事实：`curated/memory/facts/toolchain-migration-compat-first.md`。
+3. 已把下一轮学习主题写入 `runtime/hermes/autonomous-learning/learning-backlog.json`。
+4. 已建立 runtime 执行状态：`runtime/hermes/autonomous-learning/promotion-integration/2026-05-19-state.json`。
+
+### 对系统的约束
+
+- 后续工具链迁移默认采用“compat 入口不破坏、canonical 新写入、验证脚本收口”的模式。
+- Agent 记忆 / skill 自进化继续作为高优先级学习主题，但未验证前不直接升格新的 shared skill。
+- html-anything / mirage / ds4 等项目先作为 runtime POC 或观察卡，不复制外部源码进核心系统。
+
+### 下一步
+
+1. 让执行 agent 深挖 Agent memory / skill self-evolution 的关键源码与机制。
+2. 对 shared hub 兼容入口做一次独立审计，形成必须项清单。
+3. 做 runtime-only HTML 输出面 POC，验证微信和 Obsidian 可读性。

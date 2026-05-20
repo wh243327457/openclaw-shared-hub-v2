@@ -11,8 +11,8 @@ updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
 review_due_at: 2026-08-16T02:58:05+08:00
 source_refs:
-  - /home/vany/agent/.openclaw/shared/manifest.yaml
-  - /home/vany/agent/.openclaw/shared/AGENTS.md
+  - /home/vany/agent/shared/manifest.yaml
+  - /home/vany/agent/shared/AGENTS.md
 conflict:
   status: none
   type: null

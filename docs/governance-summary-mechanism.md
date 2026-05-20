@@ -108,7 +108,7 @@ compat/daily/        -> legacy evidence       -> 不直接晋升全文          
 3. 对 accepted 候选写入 `curated/memory/facts/`、`curated/memory/projects/` 或 `capabilities/skills/`。
 4. 对 duplicate 候选更新已有条目或不处理。
 5. 对 disputed 候选写 conflict metadata，不覆盖旧事实。
-6. 生成 `runtime/hermes/governance/weekly/YYYY-WW.md` 周复盘报告。
+6. 先生成 `runtime/hermes/governance/weekly/YYYY-WW.md` 周复盘草稿，再由总控拍板是否晋升。
 7. 跑 verify，确认 warning 可解释。
 
 ### Monthly：每月结构体检

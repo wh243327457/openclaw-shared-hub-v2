@@ -1,7 +1,7 @@
 ---
 name: claude-research-then-hermes-review
 description: 对外部调研型任务强制执行“Claude Code 首轮调研，Hermes 二轮复核”的两阶段工作流，避免 Hermes 自己先查先总结导致职责污染、假委派和不可审计。
-version: 1.0.0
+version: 1.1.1
 author: Hermes Agent
 license: MIT
 metadata:
@@ -86,6 +86,15 @@ Hermes 不允许做：
 - 断言 -> 来源 映射
 - 未决问题 / 冲突点 / 风险
 
+### 第 4.1 步：保留可复用的研究产物
+如果这轮调研产出的是稳定机制、可重复流程、可复用结构，而不是一次性结论，
+应把成果同时整理成：
+- 用户可读的研究包/评估文档
+- 后续可复用的知识库条目（Obsidian 风格）
+- 必要时补一个简短 reference，记录本次调研中的关键抓手、验证路径与集成判断
+
+相关沉淀见：`references/openhuman-project-research-and-integration.md`
+
 ### 第 5 步：Hermes 做二轮复核
 复核顺序：
 1. 完整性检查
@@ -123,6 +132,22 @@ Hermes 不允许做：
 4. 仍按“研究包 -> Hermes 复核”闭环执行
 
 这个回退策略是允许的，因为 Hermes 只做链路排障/来源可达性筛选，不做首轮内容研究。
+
+## 研究交付的结构化模板
+
+对“项目机制 + 集成评估”类调研，优先要求 Claude Code 交付下面五段：
+
+1. 来源与贡献
+2. 关键摘录/要点
+3. 项目机制与流程图
+4. 初步集成评估（按 Hermes / OpenClaw / shared hub / Obsidian / 微信推送分项）
+5. 断言 -> 来源 映射 + 未决问题/风险 + 下一步实验
+
+如果文章/产品本身是“知识库、记忆、同步、摘要、路由、压缩、编排”一类系统，复核时必须额外检查：
+- 是否能映射到 shared hub 的 curated / inbox / runtime 边界
+- 是否能转成 Obsidian 风格 Markdown
+- 是否清楚区分本地运行时状态与长期真相源
+- 是否存在把外部系统本体误当成内部核心依赖的风险
 
 ## 真假委派判定
 
@@ -210,6 +235,7 @@ E. 未决问题/冲突点/风险
 - 复核等于复述
 - Hermes 发现缺口后自己接管整轮研究
 - 把最终 guardrail 错当成中间结果已自动可信
+- 只保留一次性报告，不沉淀可复用的流程与结构
 
 ## 一句话规则
 

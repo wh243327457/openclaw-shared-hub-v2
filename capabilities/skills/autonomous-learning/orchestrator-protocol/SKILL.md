@@ -205,9 +205,10 @@ docker exec openclaw-main agent --local --agent main \
 | `learning-weights.json` | 学习组合权重 |
 | `learning-backlog.json` | 候选学习主题 |
 
-## 教训记录
+16. `generate_readable_notification.py` linter 对 section header 做精确匹配，禁止在粗体标记里附加任何额外文字。例如 `**🔍 审计结果（待确认晋升项）**` 会被 linter 报 `missing_section:**🔍 审计结果**`；必须严格使用 `**🔍 审计结果**`。所有 section header 都要保持模板原始文字，不能加括号注释或子标题。
+17. review-consolidation 类型的 run（复核 pending promotion、无新学习主题）跑 `generate_readable_notification.py` 时，自动输出全是 UNKNOWN/通用结论，不会包含 pending 决策表。必须手动改写通知文件，把 7 项待确认候选的决策表手动填入。linter 通过后仍要人工验证内容完整性。
 
-1. Claude Code 直接写 runtime 文件不稳定 → 改为 stdout-capture 或 delegate_task
+## 教训记录
 2. Claude Code max_turns 6~12 不够做 WebSearch + 分析 → 至少 20
 3. 执行 agent 会越权自称 review 通过 → 模板必须禁止
 4. OpenClaw 容器路径映射问题 → 优先写容器 canonical 路径

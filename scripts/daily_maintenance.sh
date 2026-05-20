@@ -14,7 +14,9 @@ SHARED_ONLY="${SHARED_ONLY:-0}"
 RUN_KB_SYNC="${RUN_KB_SYNC:-1}"
 RUN_GITHUB_LEARNING="${RUN_GITHUB_LEARNING:-1}"
 RUN_MEMORY_TREE_LOCALIZATION="${RUN_MEMORY_TREE_LOCALIZATION:-1}"
+RUN_WEEKLY_GOVERNANCE_REVIEW="${RUN_WEEKLY_GOVERNANCE_REVIEW:-1}"
 GITHUB_LEARNING_DATE="${GITHUB_LEARNING_DATE:-$(TZ=Asia/Shanghai date -d '1 day ago' +%F)}"
+WEEKLY_GOVERNANCE_DATE="${WEEKLY_GOVERNANCE_DATE:-$(TZ=Asia/Shanghai date +%F)}"
 GITHUB_LEARNING_LOG_DIR="$LOG_DIR/github-hot-project-learning"
 mkdir -p "$GITHUB_LEARNING_LOG_DIR"
 
@@ -25,7 +27,7 @@ if [ "$DRY_RUN" = "1" ]; then
   RUN_KB_SYNC=0
 fi
 
-echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING run_memory_tree_localization=$RUN_MEMORY_TREE_LOCALIZATION github_learning_date=$GITHUB_LEARNING_DATE" >> "$LOG_DIR/cron.log"
+echo "[$TIMESTAMP] === daily maintenance start === dry_run=$DRY_RUN shared_only=$SHARED_ONLY run_kb_sync=$RUN_KB_SYNC run_github_learning=$RUN_GITHUB_LEARNING run_memory_tree_localization=$RUN_MEMORY_TREE_LOCALIZATION run_weekly_governance_review=$RUN_WEEKLY_GOVERNANCE_REVIEW github_learning_date=$GITHUB_LEARNING_DATE weekly_governance_date=$WEEKLY_GOVERNANCE_DATE" >> "$LOG_DIR/cron.log"
 
 # 1. Promoter - refresh auto-state block, or dry-run without writing curated memory.
 if [ "$DRY_RUN" = "1" ]; then
@@ -80,7 +82,27 @@ OPENCLAW_COUNT=$(find inbox/openclaw/daily -maxdepth 1 -type f -name '*.md' 2>/d
 FUTURE_AGENT_COUNT=$(find inbox/future-agent/daily -maxdepth 1 -type f -name '*.md' 2>/dev/null | wc -l)
 echo "[$TIMESTAMP] inbox backlog: hermes=$HERMES_COUNT, openclaw=$OPENCLAW_COUNT, future-agent=$FUTURE_AGENT_COUNT" >> "$LOG_DIR/cron.log"
 
-# 8. Knowledge base git auto-sync (optional; disabled by SHARED_ONLY=1 or DRY_RUN=1).
+# 8. Weekly governance review draft (Mondays only by default; report-only runtime artifact).
+if [ "$RUN_WEEKLY_GOVERNANCE_REVIEW" = "1" ]; then
+  WEEKDAY=$(TZ=Asia/Shanghai date -d "$WEEKLY_GOVERNANCE_DATE" +%u)
+  if [ "$WEEKDAY" = "1" ]; then
+    if [ "$DRY_RUN" = "1" ]; then
+      python3 "$SCRIPT_DIR/weekly_governance_review.py" --date "$WEEKLY_GOVERNANCE_DATE" --dry-run >> "$LOG_DIR/weekly-governance-review-cron.log" 2>&1 || {
+        echo "[$TIMESTAMP] weekly governance review dry-run failed" >> "$LOG_DIR/cron.log"
+      }
+    else
+      python3 "$SCRIPT_DIR/weekly_governance_review.py" --date "$WEEKLY_GOVERNANCE_DATE" >> "$LOG_DIR/weekly-governance-review-cron.log" 2>&1 || {
+        echo "[$TIMESTAMP] weekly governance review failed" >> "$LOG_DIR/cron.log"
+      }
+    fi
+  else
+    echo "[$TIMESTAMP] weekly governance review skipped (weekday=$WEEKDAY)" >> "$LOG_DIR/cron.log"
+  fi
+else
+  echo "[$TIMESTAMP] weekly governance review skipped (RUN_WEEKLY_GOVERNANCE_REVIEW=$RUN_WEEKLY_GOVERNANCE_REVIEW)" >> "$LOG_DIR/cron.log"
+fi
+
+# 9. Knowledge base git auto-sync (optional; disabled by SHARED_ONLY=1 or DRY_RUN=1).
 if [ "$RUN_KB_SYNC" = "1" ]; then
   echo "[$TIMESTAMP] kb sync:" >> "$LOG_DIR/cron.log"
   bash "$SCRIPT_DIR/kb_git_sync.sh" >> "$LOG_DIR/kb_sync.log" 2>&1 || {
@@ -90,7 +112,7 @@ else
   echo "[$TIMESTAMP] kb sync skipped" >> "$LOG_DIR/cron.log"
 fi
 
-# 9. Memory tree localization runner.
+# 10. Memory tree localization runner.
 if [ "$RUN_MEMORY_TREE_LOCALIZATION" = "1" ]; then
   if [ "$DRY_RUN" = "1" ]; then
     bash "$SCRIPT_DIR/memory_tree_localization_runner.sh" DRY_RUN=1 >> "$LOG_DIR/memory-tree-localization-cron.log" 2>&1 || {

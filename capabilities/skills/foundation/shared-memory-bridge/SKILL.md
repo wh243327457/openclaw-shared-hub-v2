@@ -337,6 +337,8 @@ ls scripts/promoter.py scripts/verify_bridge.py 2>/dev/null || echo "scripts mis
 4. 验证时固定跑：`json 解析 -> promoter --dry-run -> promoter -> verify_bridge`。
 5. 如果项目会跨会话延续，必须在 `curated/memory/MEMORY.md` 里加索引入口。
 
+Continue-from-plan iteration detail is captured in `references/continue-from-plan-iteration.md`: when a user says “继续” after a plan exists, read plan/state, execute the next pending step, update persisted plan/state, verify, and report compactly instead of asking which branch to continue.
+
 ### 长任务状态复核：不要只信 state.json
 
 当用户问“方案到什么地步 / 能否跑通 / 继续确认”时，除了读取 `state.json` 和 `implementation-plan.md`，还必须交叉检查实际产物目录：

@@ -243,6 +243,16 @@ python3 scripts/verify_bridge.py
 5. 本周 shared 是否变胖？膨胀源是什么？
 6. 是否需要用户决策？
 
+### Weekly Review 草稿标准
+
+在不写入 curated 的前提下，允许先生成周复盘草稿，供总控拍板：
+
+- 读取 `scripts/promoter.py --dry-run --scan-promote-candidates` 的候选池。
+- 读取 `scripts/verify_bridge.py` 的 warning 和 slimming 指标。
+- 生成 `runtime/hermes/governance/weekly/YYYY-WW.md` 与同名 JSON 草稿。
+- 草稿中必须明确标注：`accepted` 只是“建议进入人工/总控复核队列”，不是已写入长期记忆。
+- 草稿可列出 `accept_review_needed / deferred / duplicate_or_disputed / rejected_or_redact_first` 四类建议，但不得直接写 curated。
+
 允许：
 
 - 写入 `curated/memory/facts/`
@@ -250,12 +260,14 @@ python3 scripts/verify_bridge.py
 - 更新 `curated/memory/MEMORY.md` 索引入口
 - 升格/更新 shared skill
 - 标记 facts 为 `superseded` / `disputed`
+- 生成 weekly review 草稿到 `runtime/hermes/governance/weekly/`
 
 禁止：
 
 - 无证据自动写 active fact
 - 把 daily/raw 全文复制进 curated
 - 在未确认路径时删除 raw/runtime
+- 把周报草稿当作自动晋升结果
 
 产物：`runtime/hermes/governance/weekly/YYYY-WW.md`。
 
