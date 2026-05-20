@@ -6,8 +6,8 @@
 
 ## 根目录
 
-- 宿主 canonical：`/home/vany/agent/.openclaw/shared`
-- 宿主 legacy 兼容：`/home/vany/openclaw-data/.openclaw/shared`
+- 宿主 canonical：`/home/vany/agent/shared`
+- 宿主 legacy 兼容：`/home/vany/agent/.openclaw/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 核心分层

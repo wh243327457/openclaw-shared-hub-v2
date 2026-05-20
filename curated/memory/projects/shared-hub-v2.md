@@ -111,7 +111,7 @@
 ### Git 同步现状
 当前已确认：
 
-- `/home/vany/agent/.openclaw/shared` 不是 git 仓库
+- `/home/vany/agent/shared` 不是 git 仓库
 - `/home/vany/agent/.openclaw`、`/home/vany/openclaw-data`、`/home/vany` 也都不是 git 仓库
 - 远端仓库已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2`
 - PR 已创建：`https://github.com/wh243327457/openclaw-shared-hub-v2/pull/1`
@@ -193,7 +193,7 @@
 ## 治理总结机制状态
 
 - 最近更新时间：`2026-05-18T22:30:00+08:00`
-- 状态：黄绿 / 机制已设计并接入入口文档，后续应补自动候选评分与 weekly review 草稿生成
+- 状态：黄绿 / 机制已设计并接入入口文档，weekly review 草稿生成已补齐；后续重点转向更细的候选评分与人工拍板效率
 - 人话结论：共享中台已经能跑，下一阶段重点不是继续堆内容，而是按 `docs/shared-governance-standard.md` 和 `docs/governance-summary-mechanism.md` 执行“raw 宽进、curated 严出”的筛选总结机制。
 - 已确立规则：候选进入 curated 前必须经过跨会话价值、跨 agent 价值、可验证证据、去重、脱敏检查；自动化只生成候选、score、warning 和 review 草稿，不默认写 curated 或删除 raw。
 - 周期节奏：daily 只扫描和告警；weekly 做总控审查与压缩晋升；monthly 做 MEMORY、runtime、skill references、tracked raw bulk 的结构瘦身。

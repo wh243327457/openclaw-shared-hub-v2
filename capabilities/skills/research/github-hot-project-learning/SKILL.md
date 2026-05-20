@@ -474,7 +474,7 @@ cat runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt
 3. `经验沉淀` 或深读项目中的 `可复用经验` → 今天真正学到的东西 + 可沉淀判断
 4. 审计得分/问题 → Hermes 审计结果 + 主观复盘 + 明日加压点
 
-然后由 cron 任务读取生成的 `wechat-push-YYYY-MM-DD.txt` 并用 `send_message(target='weixin')` 发送。
+然后由 cron 任务读取生成的 `wechat-push-YYYY-MM-DD.txt` 并用 `hermes send -t weixin -f <file>` 发送（或 `cat file | hermes send -t weixin -f -`）。
 
 ## 微信主动推送限流保护
 
@@ -494,9 +494,16 @@ cat runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt
 ### 微信推送平台名称
 
 **错误**: `send_message(target='wechat')` → `Unknown platform: wechat`
-**正确**: `send_message(target='weixin')`
+**错误**: `send_message(target='weixin')` → 工具在 cron/受限环境中不可用
+
+**正确**: 使用 `hermes send` CLI（无需 LLM/agent loop，复用 gateway 平台凭证）：
+```bash
+cat wechat-push-YYYY-MM-DD.txt | hermes send -t weixin -f -
+```
 
 iLink Bot 的平台标识是 `weixin`，不是 `wechat`。
+
+`hermes send` 是独立 CLI（`/root/.local/bin/hermes send`），通过 `-t weixin` 指定目标，`-f -` 从 stdin 读取。不依赖 `send_message` 工具，适合 cron job 和脚本调用。
 
 ### 微信限流
 

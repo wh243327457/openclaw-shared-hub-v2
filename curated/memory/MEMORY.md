@@ -4,7 +4,7 @@
 
 ## 根路径
 
-- 宿主：`/home/vany/agent/.openclaw/shared`
+- 宿主：`/home/vany/agent/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 作用范围
@@ -32,6 +32,7 @@
 - **自主学习多 agent 编排模式**：`curated/memory/facts/autonomous-learning-multi-agent-orchestration-patterns.md`
 - **Skill-as-contract / Subagent 四状态协议**：`curated/memory/facts/autonomous-learning-skill-as-contract-pattern.md`
 - **Agent 工程 Verification-first 实践**：`curated/memory/facts/agent-engineering-verification-first-practices.md`
+- **工具链迁移兼容优先原则**：`curated/memory/facts/toolchain-migration-compat-first.md`
 - **ds4 推理优化长期事实**：`curated/memory/facts/autonomous-learning-ds4-inference-patterns.md`
 - **旧 OpenClaw daily 兼容视图**：`compat/daily/`（可通过 `memory/daily/` 访问）
 - **agent 原始写入**：`inbox/<agent>/daily/`
@@ -58,29 +59,63 @@
 - `openhuman-mechanism-localization` 已进入 planned 阶段：将 OpenHuman 的 Memory Tree / Obsidian Wiki / Auto-fetch sync_state / Trigger triage / Token compression 思路本地化到 Hermes + OpenClaw + shared hub v2 + Obsidian 工作流；不依赖 OpenHuman 后端，不复用 GPL 源码，先做 runtime/实验区 POC。
 - `self-healing-agent` 已创建 v0.1 runtime 脚手架：定位为全局巡查、自我纠错、自我修复迭代机制；当前只做手动 baseline 和 runtime 产物，不启用 cron、不自动改配置。
 - `autonomous-learning-system` 继续吸纳架构参考：OpenSquilla 的 TurnRunner / provider-neutral / skill loader / memory snapshot / sandbox 分层已作为长期观察卡记入项目说明。
+- `autonomous-learning-system` 已开始集成 2026-05-19 晋升建议：兼容旧入口优先、本地工具简单入口、HTML 输出面 POC、多数据源统一抽象进入 backlog。
 
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-18T22:18:17+08:00`
-- 共享根目录: `/home/vany/agent/.openclaw/shared`
-- runtime 位置提示: `/home/vany/agent/.openclaw/shared/runtime`
-- facts 文件数: 10
+- 生成时间: `2026-05-20T18:19:28+08:00`
+- 共享根目录: `/home/vany/agent/shared`
+- runtime 位置提示: `/home/vany/agent/shared/runtime`
+- facts 文件数: 11
 - projects 文件数: 6
 - 最近 daily 文件:
-  - `inbox/hermes/daily/2026-05-18.md` (inbox/hermes/daily)
-  - `compat/daily/dreaming/deep/2026-05-18.md` (compat/daily)
-  - `compat/daily/dreaming/rem/2026-05-18.md` (compat/daily)
-  - `compat/daily/dreaming/light/2026-05-18.md` (compat/daily)
-  - `inbox/openclaw/daily/dreaming/deep/2026-05-18.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-05-20.md` (inbox/hermes/daily)
+  - `compat/daily/dreaming/deep/2026-05-20.md` (compat/daily)
+  - `compat/daily/dreaming/rem/2026-05-20.md` (compat/daily)
+  - `compat/daily/dreaming/light/2026-05-20.md` (compat/daily)
+  - `inbox/openclaw/daily/dreaming/deep/2026-05-20.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 25
-  - `openclaw`: 80
+  - `hermes`: 27
+  - `openclaw`: 34
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
 
 - 旧自动 promoted 明细已迁出：`curated/memory/archives/promoted-legacy-2026-05.md`
 - 主索引只保留稳定入口和当前状态；长期事实请沉淀到 `facts/` 或 `projects/`。
+
+
+
+## Promoted From Short-Term Memory (2026-05-19)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:30:33 -->
+- | 项目 | 值 | |------|---| | **主要来源** | `https://github.com/trending` — 今日所有语言 | | **补充来源** | `https://api.github.com/search/repositories?q=stars:>1000+created:>2025-05-01&sort=stars` | [score=0.894 recalls=0 avg=0.620 source=memory/2026-05-13.md:30-33]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:3:4 -->
+- > 数据来源: GitHub API，查询时间 2026-05-14T23:35 UTC > 说明: 实际执行日期为 2026-05-14（cron 调度时使用 2026-05-14 作为日期标签） [score=0.868 recalls=0 avg=0.620 source=memory/2026-05-14.md:3-4]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:8:8 -->
+- 深读了两个 AI 基础设施项目（ollama 本地 LLM 运行平台、everything-claude-code AI Agent 优化系统）和一个工作流自动化平台（n8n），提炼出 3 条可复用工程经验，并设计了 1 个可尝试的实验。 [score=0.868 recalls=0 avg=0.620 source=memory/2026-05-14.md:8-8]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:12:15 -->
+- | 项目 | Stars | Forks | 语言 | 描述 | |------|-------|-------|------|------| | openclaw/openclaw | 371,883 | 76,985 | TypeScript | OpenClaw AI 助手主仓库 | | public-apis/public-apis | 435,034 | 47,667 | Python | 免费 API 集合列表 | [score=0.868 recalls=0 avg=0.620 source=memory/2026-05-14.md:12-15]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:16:19 -->
+- | sindresorhus/awesome | 466,375 | 34,974 | - | 各类优质主题列表合集 | | freeCodeCamp/freeCodeCamp | 444,736 | 44,565 | TypeScript | 免费编程学习平台 | | EbookFoundation/free-programming-books | 388,301 | 66,300 | Python | 免费编程书籍列表 | [score=0.868 recalls=0 avg=0.620 source=memory/2026-05-14.md:16-18]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:2:5 -->
+- source: openclaw-cron pipeline: github-hot-project-learning job_id: 7aa310ea-b264-40c8-b23a-ed655c565a69 run_status: ok [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-13.md:2-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:20:20 -->
+- 现在我已经获取了足够的结构化数据，以下是完整的流水线输出： [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-13.md:20-20]
+
+
+
+
+
+
+## Promoted From Short-Term Memory (2026-05-20)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:20:23 -->
+- | n8n-io/n8n | 187,864 | 57,628 | TypeScript | 流程自动化平台（含 AI） | | everything-claude-code/affaan-m | 182,217 | 28,071 | JavaScript | AI Agent 性能优化系统 | | ollama/ollama | 171,404 | 16,117 | Go | 本地 LLM 运行平台 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-14.md:20-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-14.md:24:27 -->
+- | Significant-Gravitas/AutoGPT | 184,302 | 46,234 | Python | AI Agent 框架 | | avelino/awesome-go | 172,658 | 13,208 | Go | Go 语言优质资源列表 | | rustdesk/rustdesk | 114,194 | 17,155 | Rust | 开源远程桌面 | | denoland/deno | 106,696 | 6,058 | Rust | 现代 JS/TS 运行时 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-14.md:24-27]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:6:7 -->
+- run_ts: '1778670620846' needs_hermes_audit: true [score=0.860 recalls=0 avg=0.620 source=memory/2026-05-13.md:6-7]
 

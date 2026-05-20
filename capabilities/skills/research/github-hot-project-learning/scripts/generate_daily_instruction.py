@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-DEFAULT_SHARED_ROOT = Path('/home/vany/agent/.openclaw/shared')
+DEFAULT_SHARED_ROOT = Path('/home/vany/agent/shared')
 PIPELINE = 'github-hot-project-learning'
 TZ = timezone(timedelta(hours=8))
 

@@ -32,10 +32,10 @@
 3. 连续观察 1-3 天：OpenClaw 08:30 生成、bridge/healthcheck、Hermes 09:10 审计推送是否全链路稳定。
 
 ## 相关文件
-- 当前加固计划：`/home/vany/agent/.openclaw/shared/docs/plans/2026/05/2026-05-01-openclaw-continuous-learning-hardening.md`
-- 历史计划：`/home/vany/agent/.openclaw/shared/docs/plans/2026/04/2026-04-28-github-hot-project-learning-pipeline.md`
-- Bridge：`/home/vany/agent/.openclaw/shared/scripts/openclaw_github_learning_bridge.py`
-- Healthcheck：`/home/vany/agent/.openclaw/shared/scripts/github_learning_healthcheck.py`
-- Daily maintenance：`/home/vany/agent/.openclaw/shared/scripts/daily_maintenance.sh`
-- Skill：`/home/vany/agent/.openclaw/shared/capabilities/skills/research/github-hot-project-learning/SKILL.md`
+- 当前加固计划：`/home/vany/agent/shared/docs/plans/2026/05/2026-05-01-openclaw-continuous-learning-hardening.md`
+- 历史计划：`/home/vany/agent/shared/docs/plans/2026/04/2026-04-28-github-hot-project-learning-pipeline.md`
+- Bridge：`/home/vany/agent/shared/scripts/openclaw_github_learning_bridge.py`
+- Healthcheck：`/home/vany/agent/shared/scripts/github_learning_healthcheck.py`
+- Daily maintenance：`/home/vany/agent/shared/scripts/daily_maintenance.sh`
+- Skill：`/home/vany/agent/shared/capabilities/skills/research/github-hot-project-learning/SKILL.md`
 - 知识库入口：`/mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案/00-总览索引.md`

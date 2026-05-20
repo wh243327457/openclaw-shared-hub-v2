@@ -191,14 +191,21 @@ def _equivalent_existing_paths(path: Path) -> list[str]:
     except OSError:
         pass
 
-    # If verification runs from the symlinked canonical root, Path.resolve()
-    # normalizes everything back to the legacy physical path. Keep accepting the
-    # canonical literal spelling too so configs can move to /home/vany/agent.
+    # Include both the neutral canonical path and compatibility aliases.  The
+    # neutral path may itself be a symlink in some deployments, so verification
+    # must compare literal spellings as well as resolved paths.
     for item in list(candidates):
-        if item.startswith("/home/vany/openclaw-data/"):
-            canonical = item.replace("/home/vany/openclaw-data/", "/home/vany/agent/", 1)
-            if canonical not in candidates:
-                candidates.append(canonical)
+        replacements = []
+        if item.startswith("/home/vany/openclaw-data/.openclaw/shared"):
+            replacements.append(item.replace("/home/vany/openclaw-data/.openclaw/shared", "/home/vany/agent/shared", 1))
+            replacements.append(item.replace("/home/vany/openclaw-data/.openclaw/shared", "/home/vany/agent/.openclaw/shared", 1))
+        if item.startswith("/home/vany/agent/.openclaw/shared"):
+            replacements.append(item.replace("/home/vany/agent/.openclaw/shared", "/home/vany/agent/shared", 1))
+        if item.startswith("/home/vany/agent/shared"):
+            replacements.append(item.replace("/home/vany/agent/shared", "/home/vany/agent/.openclaw/shared", 1))
+        for candidate in replacements:
+            if candidate not in candidates:
+                candidates.append(candidate)
     return candidates
 
 

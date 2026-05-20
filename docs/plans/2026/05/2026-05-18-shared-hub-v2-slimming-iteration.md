@@ -12,7 +12,7 @@
 
 ## 当前审计基线（2026-05-18）
 
-共享根目录：`/home/vany/agent/.openclaw/shared`，legacy 入口：`/home/vany/openclaw-data/.openclaw/shared`。
+共享根目录：`/home/vany/agent/shared`，legacy 入口：`/home/vany/agent/.openclaw/shared`。
 
 ### 规模基线
 
@@ -73,7 +73,7 @@ bulk/原始与运行层：inbox + runtime，默认不进主审查，不长期堆
 ### 每步固定验证命令
 
 ```bash
-cd /home/vany/agent/.openclaw/shared
+cd /home/vany/agent/shared
 python3 scripts/promoter.py --dry-run
 python3 scripts/verify_bridge.py
 git diff --check
