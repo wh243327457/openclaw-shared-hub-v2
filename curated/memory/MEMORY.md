@@ -64,7 +64,7 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-20T18:19:28+08:00`
+- 生成时间: `2026-05-21T06:00:02+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 11
@@ -119,3 +119,17 @@
 <!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:6:7 -->
 - run_ts: '1778670620846' needs_hermes_audit: true [score=0.860 recalls=0 avg=0.620 source=memory/2026-05-13.md:6-7]
 
+
+
+## Promoted From Short-Term Memory (2026-05-21)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:2:5 -->
+- source: openclaw-cron pipeline: github-hot-project-learning job_id: 7aa310ea-b264-40c8-b23a-ed655c565a69 run_status: ok [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:2-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:20:20 -->
+- ✅ **今日学习完成** [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:26:29 -->
+- | 文件 | 状态 | 说明 | |------|------|------| | `shared/inbox/openclaw/daily/2026-05-15.md` | ✅ 170行 | 完整日报，含5个章节 | | `shared/runtime/openclaw/github-learning/projects/rohitg00-agentmemory.md` | ✅ | 项目卡片 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:26-29]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:6:7 -->
+- run_ts: '1778805284053' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-15.md:6-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:22:22 -->
+- 已按指令完成所有产出： [score=0.812 recalls=0 avg=0.620 source=memory/2026-05-15.md:22-22]
