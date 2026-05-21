@@ -5,10 +5,10 @@ freshness_class: static
 scope: shared-hub
 subject: model.availability
 attribute: configured_models
-value_summary: "gpt-5.4, kimi-for-coding, MiniMax-M2.7"
+value_summary: "gpt-5.4, kimi-for-coding, MiniMax-M2.7, gpt5.5"
 created_at: 2026-05-16T02:58:05+08:00
-updated_at: 2026-05-16T02:58:05+08:00
-last_verified_at: 2026-05-16T02:58:05+08:00
+updated_at: 2026-05-21T14:15:00+08:00
+last_verified_at: 2026-05-21T14:15:00+08:00
 review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
   - /root/.hermes/config.yaml
@@ -45,6 +45,13 @@ secret_checked: true
    - Base URL: https://api.minimax.chat/v1
    - contextWindow: 256k, maxTokens: 8k
    - 适用于中文场景和中长文本处理
+
+4. **gpt5.5** (FastAI / api.fastapi.ai) ← 新增
+   - Provider: `fastai`
+   - Base URL: https://api.fastapi.ai/v1
+   - 默认模型: gpt5.5
+   - API Key: 环境变量 `$FASTAI_API_KEY`
+   - 模型列表: 待通过接口获取补全
 
 ## 模型切换策略
 - 代码/编程任务: 优先 kimi-for-coding
