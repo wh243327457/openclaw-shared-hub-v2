@@ -74,6 +74,64 @@
 
 ---
 
+## 深度学习与安全反哺要求
+
+每日学习不只做项目摘抄，必须采用“深挖 → 机制抽象 → 反哺建议 → 安全边界”的结构。
+
+### A. 深挖对象
+- 明确今日深挖对象是项目、工具、机制还是故障案例。
+- 每个深读对象至少核验 README/docs/release/issues 中的 2 类来源；关键 repo 元数据必须来自 GitHub API。
+
+### B. 可验证证据
+- 给出 GitHub 链接、核心文件/目录、版本/提交或查询时间。
+- 不确定的结论必须标注“待核验”，不得编造。
+
+### C. 核心机制
+- 不只罗列功能；必须抽象出可迁移模式。
+- 优先使用这种句式：`当……时，应优先……，因为……，边界是……`。
+
+### D. 反哺到现有体系
+每个深读项目至少判断一次是否可反馈到：
+- shared curated memory / facts / projects
+- shared skill / workflow
+- Hermes 审计流程
+- OpenClaw 每日学习 / 每日巡检
+- runtime POC / open questions
+
+### E. 安全边界
+必须明确哪些内容不能自动执行：
+- 不自动改配置、模型、provider、cron、secret。
+- 不直接写 curated active fact，只提出 candidate。
+- 不复制 license 不明或不兼容项目源码。
+- 不从 assistant-authored prose 生成用户事实。
+- 巡检类建议只输出风险、证据、影响、建议动作，不自动修复。
+
+### F. 候选反哺
+在日报末尾新增“候选反哺”小节，按以下格式输出：
+
+```markdown
+## 候选反哺
+
+### Candidate Facts
+- [ ] topic: ... | evidence: ... | 建议: create/update/retire/dispute | 安全级别: low/medium/high
+
+### Candidate Skills / Workflow
+- [ ] 名称: ... | 可复用场景: ... | 是否建议 shared: yes/no | 原因: ...
+
+### Candidate Open Questions
+- [ ] 问题: ... | reason: gap/conflict/stale/adaptation | priority: low/medium/high
+
+### 不应自动落地
+- ...
+```
+
+### G. 输出约束
+- 候选反哺只作为 Hermes 二轮审计输入，不代表已落库。
+- 如果触及安全/密钥/配置，必须只写变量名或占位符，不写明文值。
+- 受 cron summary 截断限制，核心结论要短；完整证据应尽量写入 shared inbox/runtime 产物。
+
+---
+
 ## 审计反馈区（Hermes 自动更新）
 
 > 以下内容由 Hermes 审计后自动写入，请勿手动修改。

@@ -373,6 +373,8 @@ python3 scripts/verify_bridge.py
 
 CodeGraph / 本地代码上下文索引候选规则见：`references/codegraph-context-index-candidate.md`。要点：先把代码结构索引成 runtime 图谱，再让 agent 通过自然语言/MCP 查询 symbol/file/edge；缓存不进 curated；本地 POC 通过前不要升格 shared skill。
 
+Claim / evidence / runtime-only governance rollout pattern is captured in `references/claim-evidence-runtime-rollout.md`: baseline first, schema as target not migration, evidence-backed candidates, warning-only checkers, text recall before vector, open questions in runtime, reflect workers candidate-only, and dashboard-based manual review.
+
 
 
 Semi-auto discovery execution detail is captured in `references/autonomous-learning-semi-auto-discovery-execution.md`: how to execute exactly one approved low-risk OpenClaw discovery run from a plan-only candidate, preserve runtime/inbox-only boundaries, save stdout/stderr evidence, run Hermes spec/quality review, and avoid treating transient GitHub fetch failures as durable tool limitations.

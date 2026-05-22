@@ -44,6 +44,7 @@ metadata:
 - **审计反馈数据**: `shared/runtime/hermes/github-hot-project-learning/audit-feedback.json`
 - **每日生成指令**: `shared/runtime/hermes/github-hot-project-learning/instruction.md`
 - **OpenClaw 集成指南**: `references/openclaw-integration.md`（修改学习任务提示词、手动触发等）
+- **深挖学习与安全反哺模式**: `references/deep-learning-safe-feedback-pattern.md`（把高质量外部项目研究转成每日学习/巡检的 candidate-first 安全机制）
 
 ### 单一任务编排器模式（推荐）
 
@@ -299,6 +300,18 @@ shared/
 6. 可尝试实验：一个 30 分钟内能做的最小 demo 或阅读任务。
 7. 风险边界：license、维护活跃度、安全风险、适用/不适用场景。
 8. skill 升格判断：是否值得升格；若值得，给出 skill 草案。
+9. 候选反哺：按 candidate fact / candidate skill-workflow / open question / 不应自动落地 四类输出，供 Hermes 二轮审计。
+
+### 深挖学习与安全反哺模式（2026-05-22 增强）
+
+本流水线的学习质量标准从“热门项目摘要”升级为“深挖 → 机制抽象 → 反哺建议 → 安全边界”：
+
+1. **深挖对象**：明确今日深挖的是项目、工具、机制还是故障案例；每个深读对象至少核验 README/docs/release/issues 中的 2 类来源。
+2. **可验证证据**：给出 GitHub 链接、核心文件/目录、版本/提交或查询时间；不确定结论必须标注“待核验”。
+3. **核心机制**：不只罗列功能，必须抽象为可迁移模式，优先使用 `当……时，应优先……，因为……，边界是……`。
+4. **反哺判断**：判断是否可进入 shared curated memory、shared skill/workflow、Hermes 审计流程、OpenClaw 每日学习/巡检、runtime POC 或 open questions。
+5. **安全边界**：OpenClaw 只产出 candidate；不得自动改配置、模型、provider、cron、secret；不得直接写 curated active fact；不得复制 license 不明或不兼容源码；巡检类结论只输出风险、证据、影响、建议动作，不自动修复。
+6. **Hermes 二轮审计**：所有候选反哺必须由 Hermes 按 shared governance 五门准入复核后，才能进入 Obsidian / shared curated / shared skill。
 
 ## ⚠️ 防失败规则（来自历史审计教训）
 
@@ -505,10 +518,46 @@ iLink Bot 的平台标识是 `weixin`，不是 `wechat`。
 
 `hermes send` 是独立 CLI（`/root/.local/bin/hermes send`），通过 `-t weixin` 指定目标，`-f -` 从 stdin 读取。不依赖 `send_message` 工具，适合 cron job 和脚本调用。
 
-### 微信限流
+### ⚠️ OpenClaw protocol mismatch 时的 Hermes fallback（2026-05-22 发现）
 
-iLink sendmessage 可返回 `ret=-2 errcode=None errmsg=rate limited`。
-间隔 5-10 分钟再发，或写入文件备用。
+如果 `docker exec openclaw openclaw cron run <job-id>` 失败，错误包含：
+
+```text
+GatewayClientRequestError: protocol mismatch
+GatewayTransportError: gateway closed (1002): protocol mismatch
+```
+
+不要直接声称闭环失败，也不要反复重启/重试到超时。先确认 `runtime/hermes/github-hot-project-learning/instruction.md` 已生成；如果 `inbox/openclaw/daily/YYYY-MM-DD.md` 尚不存在，可由 Hermes fallback executor/subagent 读取今日 instruction，代执行 GitHub 热门项目学习，并写入 OpenClaw 兼容产物：
+
+```text
+shared/inbox/openclaw/daily/YYYY-MM-DD.md
+```
+
+随后使用审计-only 路径收口：
+
+```bash
+cd /home/vany/agent/shared
+python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-DD
+```
+
+最终汇报必须区分：
+- OpenClaw 原定 cron 触发失败；
+- Hermes fallback 已代执行学习；
+- 审计与知识库是否完成；
+- 微信是否实际发送。
+
+详细案例：`references/2026-05-22-fallback-and-push-guard.md`。
+
+### ⚠️ `push_guard_active` 不是发送成功
+
+如果 `hermes send -t weixin -f -` 返回：
+
+```text
+Weixin send failed: push_guard_active
+```
+
+这是 Hermes Weixin 平台层主动推送保护生效。不要绕过、不要连续补发、不要声称“微信已推送”。正确处理：保留 `wechat-push-YYYY-MM-DD.txt`，报告“推送内容已落盘，但微信未实际发出”。
+
 
 ### Hermes cron 创建参数
 
