@@ -1,11 +1,23 @@
 ---
 fact_id: github-auth-status
+claim_id: github-auth-status
+claim_type: agent_system
 status: active
 freshness_class: operational
 scope: hermes
+lens: identity
 subject: github.auth
 attribute: cli_auth_status
 value_summary: "gh CLI 认证完成，账号 wh243327457，scopes 包含 repo/read:org/gist"
+topic: github.auth.cli_status
+source_agent: hermes
+source_paths:
+  - /root/.gitconfig
+  - /root/.config/gh/hosts.yml
+evidence_refs:
+  - /root/.gitconfig
+  - /root/.config/gh/hosts.yml
+sensitivity: low
 created_at: 2026-05-16T02:58:05+08:00
 updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
@@ -13,6 +25,7 @@ review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
   - /root/.gitconfig
   - /root/.config/gh/hosts.yml
+review_status: approved
 conflict:
   status: none
   type: null

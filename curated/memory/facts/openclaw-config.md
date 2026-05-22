@@ -1,17 +1,28 @@
 ---
 fact_id: openclaw-core-config
+claim_id: openclaw-core-config
+claim_type: agent_system
 status: active
 freshness_class: operational
 scope: openclaw
+lens: world
 subject: openclaw.config
 attribute: core_model_config
 value_summary: "Base URL https://aixj.vip/v1, default model gpt-5.4 + xhigh thinking"
+topic: openclaw.config.core_model
+source_agent: hermes
+source_paths:
+  - /home/vany/agent/.openclaw/openclaw.json
+evidence_refs:
+  - /home/vany/agent/.openclaw/openclaw.json
+sensitivity: low
 created_at: 2026-05-16T02:58:05+08:00
 updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
 review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
   - /home/vany/agent/.openclaw/openclaw.json
+review_status: approved
 conflict:
   status: none
   type: null

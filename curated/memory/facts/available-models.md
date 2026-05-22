@@ -1,11 +1,23 @@
 ---
 fact_id: shared-model-availability
+claim_id: shared-model-availability
+claim_type: agent_system
 status: active
 freshness_class: static
 scope: shared-hub
+lens: world
 subject: model.availability
 attribute: configured_models
 value_summary: "gpt-5.4, kimi-for-coding, MiniMax-M2.7, gpt5.5"
+topic: shared.models.available
+source_agent: hermes
+source_paths:
+  - /root/.hermes/config.yaml
+  - /home/vany/agent/.openclaw/openclaw.json
+evidence_refs:
+  - /root/.hermes/config.yaml
+  - /home/vany/agent/.openclaw/openclaw.json
+sensitivity: low
 created_at: 2026-05-16T02:58:05+08:00
 updated_at: 2026-05-21T14:15:00+08:00
 last_verified_at: 2026-05-21T14:15:00+08:00
@@ -13,6 +25,7 @@ review_due_at: 2026-06-16T02:58:05+08:00
 source_refs:
   - /root/.hermes/config.yaml
   - /home/vany/agent/.openclaw/openclaw.json
+review_status: approved
 conflict:
   status: none
   type: null
