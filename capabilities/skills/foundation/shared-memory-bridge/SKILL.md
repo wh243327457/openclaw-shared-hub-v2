@@ -383,7 +383,7 @@ Effect-check run pattern is captured in `references/autonomous-learning-semi-aut
 
 Self-healing / global inspection agent scaffolding is captured in `references/self-healing-agent-scaffold.md`: runtime-first plan shape, safety gates, finding taxonomy, approval boundaries, and verification commands for building a self-repair loop without premature auto-fixing.
 
-### 运行与验证的最小闭环
+### 运行与验证
 
 完成迁移或修复后，至少执行：
 
@@ -399,6 +399,21 @@ python3 <shared-root>/scripts/verify_bridge.py
 - Hermes 仍引用 `shared/skills` 与 `shared/prefill/hermes-shared-memory.json`
 - OpenClaw 仍引用 `/home/node/.openclaw/shared/skills`
 - 各 workspace 的 `memory` / `MEMORY.md` / `shared` 入口仍可解析
+
+## 新增：Warning 观察期与全局待办收口
+
+当 claim schema、recall helper、reflect candidate 等能力刚落地时，`warning-only` 结果通常不是故障，而是结构过渡信号。处理这类阶段性 warning 时：
+
+1. 先按类型分群：
+   - **结构缺口**：缺 frontmatter / claim 字段 / evidence_refs
+   - **状态枚举漂移**：旧 project 状态值不在新枚举里
+   - **少量例外项**：个别条目已升级、但字段还没补齐
+2. 先补少量高价值条目，不做批量迁移；优先 shared 基础结构和高频 operational facts。
+3. 把“观察期问题”写进持续可见的全局待办/计划，而不是只留在聊天里，避免跨天遗忘。
+4. 每次补强后重新跑 `check_curated_claims.py` / `shared_memory_dashboard.py` / `verify_bridge.py`，观察 warning 是否真实下降。
+5. 仍保持 warning-only 边界：不自动写 active curated fact、不启用新 cron、不上 vector 作为默认下一步。
+
+观察期分析细节可参考 `references/claim-warning-observation.md`。
 
 ## Secrets 安全规范
 
