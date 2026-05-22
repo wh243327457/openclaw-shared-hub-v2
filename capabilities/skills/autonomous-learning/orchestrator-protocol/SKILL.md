@@ -224,12 +224,9 @@ docker exec openclaw-main agent --local --agent main \
 15. `audit_output.py` deterministic audit 的 `completion_marker_present` 检查从 instruction 文件中提取 ALL_CAPS 标记（DONE/COMPLETED/EXECUTOR/HERMES）；如果 instruction 模板（如 `hardened-cron-prompt.md`）不含这类标记，该检查永远 FAIL，连带 `boundary_present` 也可能因关键词不匹配而 FAIL。此时必须做手动 Spec/Quality review 覆盖 deterministic 结果，不要把 14/20 误判为真正低质量。同时 `promoter.py --dry-run` 和 `verify_bridge.py` 在当前 scripts 目录不存在，post-run 检查只能跳过这两步。详见 `references/audit-automation-runtime-scaffold.md`。
 16. 上下文压力下 write_file 调用参数可能被破坏（path 字段被截断或留空），导致 "missing required field 'path'" 错误，最终通知文件未能写入。症状：写入大量内容后紧接着 write_file 失败，后续调用全部中断。缓解策略：先写核心通知文件，再写 review 文件；或分批写入，每批不超过 5 个文件。不要在同一次回复中连续调用 write_file 超过 3 次，中间穿插 read_file 或 terminal 以释放上下文缓冲。
 17. 禁止为同一 run 写入多个 quality review 文件（重复改名）。只写一个最终版 `<run_id>-quality-review.md`，评分要果断（不要写 17 个变体然后说"评分不确定"）。多个文件浪费 context 预算且不会提高审计质量，反而增大后续 run 的 preflight 开销。
-18. `generate_readable_notification.py` 在当前 scripts 目录中不存在（lesson #10/#17 引用了未部署的基础设施）。必须手动 write_file 通知文件，不能假设脚本可用。写文件前先确认脚本存在，如不存在则降级为纯手动模板输出。详见 `references/2026-05-21-notification-missing-script.md`。
-19. 每轮结束时检查上一轮遗留的高价值未处理项（如 zerolang agents-best-practices 跨多轮重复出现）。在最终通知的"下一步"中明确提及，而不是静默跳过。pending promotion queue 中的待确认项不要超过 2 个批次才通知用户。
-16. 上下文压力下 write_file 调用参数可能被破坏（path 字段被截断或留空），导致 "missing required field 'path'" 错误，最终通知文件未能写入。症状：写入大量内容后紧接着 write_file 失败，后续调用全部中断。缓解策略：先写核心通知文件，再写 review 文件；或分批写入，每批不超过 5 个文件。不要在同一次回复中连续调用 write_file 超过 3 次，中间穿插 read_file 或 terminal 以释放上下文缓冲。
-17. 禁止为同一 run 写入多个 quality review 文件（重复改名）。只写一个最终版 `<run_id>-quality-review.md`，评分要果断（不要写 17 个变体然后说"评分不确定"）。多个文件浪费 context 预算且不会提高审计质量，反而增大后续 run 的 preflight 开销。
-18. `generate_readable_notification.py` 在当前 scripts 目录中不存在（lesson #10/#17 引用了未部署的基础设施）。必须手动 write_file 通知文件，不能假设脚本可用。写文件前先确认脚本存在，如不存在则降级为纯手动模板输出。详见 `references/2026-05-21-notification-missing-script.md`。
+18. `generate_readable_notification.py` 可能在某些环境中缺失。2026-05-22 验证该脚本已存在于 `scripts/` 目录。写文件前先用 `test -f` 确认脚本存在，如不存在则降级为纯手动模板输出。不要假设脚本一定缺失或一定存在。详见 `references/2026-05-21-notification-missing-script.md` 和 `references/runtime-state-desync-patterns.md`。
 19. 每轮结束时检查上一轮遗留的高价值未处理项（如 zerolang / agents-best-practices 跨多轮重复出现）。在最终通知的"下一步"中明确提及，而不是静默跳过。pending promotion queue 中的待确认项不要超过 2 个批次才通知用户。
+20. 巡检型 scheduled learning 必须检查状态 desync：对比 delivery-state.json 与 health_alert.log 最新条目，如果前者显示 normal 但后者连续失败 >10 次，标记 desync 并在通知报告中列出。详见 `references/runtime-state-desync-patterns.md`。
 
 ## 参考资料
 
@@ -242,5 +239,6 @@ docker exec openclaw-main agent --local --agent main \
 - `references/2026-05-18-notification-canary-closure.md` — node-07/08 收口经验：可扫读 notification 生成器与 linter 的最小检查、Spec review PASS 格式兼容、以及用完整链路证据验收低风险 canary 的标准。
 - `references/2026-05-18-cron-hardening-closure.md` — node-09 收口经验：scheduled autonomous-learning 的 policy/guard/prompt 三件套、现有 cron 更新策略、Weixin 限流边界、preflight/postrun 验证清单。
 - `references/2026-05-18-promotion-candidate-triage.md` — pending promotion queue 分流经验：批准项进 curated，未批准高分候选重新分类，重复主题合并观察卡，用户汇报只暴露需要拍板项。
-- `references/2026-05-18-progress-review-status-sources.md` — 用户询问“最近自主学习进度”时的状态源优先级与汇报口径：以 `state.json` + `health-dashboard.json` 交叉验证真实阶段，识别 plan 文档滞后，并把 pending promotion 决策单独列出。
+- `references/2026-05-18-progress-review-status-sources.md` — 用户询问"最近自主学习进度"时的状态源优先级与汇报口径：以 `state.json` + `health-dashboard.json` 交叉验证真实阶段，识别 plan 文档滞后，并把 pending promotion 决策单独列出。
+- `references/runtime-state-desync-patterns.md` — 运行时状态文件与真实系统脱节模式：delivery-state vs health_alert.log、state.json vs artifact 存在性、backlog dormancy 检测规则。
 
