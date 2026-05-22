@@ -383,6 +383,8 @@ Effect-check run pattern is captured in `references/autonomous-learning-semi-aut
 
 Self-healing / global inspection agent scaffolding is captured in `references/self-healing-agent-scaffold.md`: runtime-first plan shape, safety gates, finding taxonomy, approval boundaries, and verification commands for building a self-repair loop without premature auto-fixing.
 
+Embedded inspection todo bar integration is captured in `references/self-healing-todo-bar-integration.md`: keep the original self-healing pipeline intact, add todo as a runtime sublayer, wire baseline scans to read todo signals, and have trial cron refresh the Markdown view and validate JSON/MD artifacts.
+
 ### 运行与验证
 
 完成迁移或修复后，至少执行：
