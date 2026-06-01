@@ -25,6 +25,7 @@
 - **OpenHuman 机制本地化**：`curated/memory/projects/openhuman-mechanism-localization.md`
 - **OpenClaw 网页/公众号采集系统**：`curated/memory/projects/openclaw-web-watch.md`
 - **Self-Healing Agent / 全局巡查自我修复**：`curated/memory/projects/self-healing-agent.md`
+- **Elephant Agent 机制研究与 shared hub v2 反哺**：`curated/memory/projects/elephant-agent-mechanism-study.md`
 - **共享技能清单**：`capabilities/manifests/shared-skills.yaml`
 - **治理总结标准**：`docs/shared-governance-standard.md`
 - **治理总结机制**：`docs/governance-summary-mechanism.md`
@@ -64,21 +65,21 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-20T18:19:28+08:00`
+- 生成时间: `2026-06-01T06:00:02+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
-- facts 文件数: 11
-- projects 文件数: 6
+- facts 文件数: 18
+- projects 文件数: 7
 - 最近 daily 文件:
-  - `inbox/hermes/daily/2026-05-20.md` (inbox/hermes/daily)
-  - `compat/daily/dreaming/deep/2026-05-20.md` (compat/daily)
-  - `compat/daily/dreaming/rem/2026-05-20.md` (compat/daily)
-  - `compat/daily/dreaming/light/2026-05-20.md` (compat/daily)
-  - `inbox/openclaw/daily/dreaming/deep/2026-05-20.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-05-31.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-05-31.md` (inbox/openclaw/daily)
+  - `inbox/openclaw/daily/2026-05-30.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-05-30.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-05-29.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 27
-  - `openclaw`: 34
+  - `hermes`: 38
+  - `openclaw`: 50
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
@@ -118,4 +119,45 @@
 - | Significant-Gravitas/AutoGPT | 184,302 | 46,234 | Python | AI Agent 框架 | | avelino/awesome-go | 172,658 | 13,208 | Go | Go 语言优质资源列表 | | rustdesk/rustdesk | 114,194 | 17,155 | Rust | 开源远程桌面 | | denoland/deno | 106,696 | 6,058 | Rust | 现代 JS/TS 运行时 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-14.md:24-27]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-13.md:6:7 -->
 - run_ts: '1778670620846' needs_hermes_audit: true [score=0.860 recalls=0 avg=0.620 source=memory/2026-05-13.md:6-7]
+
+
+
+## Promoted From Short-Term Memory (2026-05-21)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:2:5 -->
+- source: openclaw-cron pipeline: github-hot-project-learning job_id: 7aa310ea-b264-40c8-b23a-ed655c565a69 run_status: ok [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:2-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:20:20 -->
+- ✅ **今日学习完成** [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:26:29 -->
+- | 文件 | 状态 | 说明 | |------|------|------| | `shared/inbox/openclaw/daily/2026-05-15.md` | ✅ 170行 | 完整日报，含5个章节 | | `shared/runtime/openclaw/github-learning/projects/rohitg00-agentmemory.md` | ✅ | 项目卡片 | [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-15.md:26-29]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:6:7 -->
+- run_ts: '1778805284053' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-15.md:6-7]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-15.md:22:22 -->
+- 已按指令完成所有产出： [score=0.812 recalls=0 avg=0.620 source=memory/2026-05-15.md:22-22]
+
+
+
+
+## Promoted From Short-Term Memory (2026-05-22)
+
+<!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:2:5 -->
+- source: openclaw-cron pipeline: github-hot-project-learning job_id: 7aa310ea-b264-40c8-b23a-ed655c565a69 run_status: ok [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-16.md:2-5]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:20:20 -->
+- 已完成今日 GitHub 热门项目学习，产出文件如下： [score=0.862 recalls=0 avg=0.620 source=memory/2026-05-16.md:20-20]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:22:22 -->
+- **✅ 已完成产出** [score=0.842 recalls=0 avg=0.620 source=memory/2026-05-16.md:22-22]
+<!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:6:7 -->
+- run_ts: '1778891706299' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-16.md:6-7]
+
+
+
+
+
+
+
+
+
+
+
+
 

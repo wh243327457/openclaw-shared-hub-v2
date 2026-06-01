@@ -108,6 +108,19 @@ RAW_CAPTURED
 
 ---
 
+## 4.1 Claim-like metadata 增强规范
+
+Elephant Agent 机制研究后，shared hub v2 新增长期事实推荐采用 claim-like frontmatter。详见：`docs/curated-fact-claim-schema.md`。
+
+执行策略：
+
+- 新增 curated fact/project_state 尽量采用该 schema。
+- 旧 facts/projects 暂不强制迁移，缺字段只 warning，不阻塞 `verify_bridge.py`。
+- `evidence_refs` 是后续 evidence-backed promotion 的核心字段，但初期 warning-only。
+- 自动反思、每日学习、每日巡检只生成 candidate，不直接写 active curated fact。
+
+---
+
 ## 5. 标准输出格式
 
 ### 5.1 Candidate 记录
@@ -187,6 +200,21 @@ conflict:
 - 日志、score/source 明细。
 - 单次任务进度。
 - 大段调研摘要。
+
+---
+
+## 5.5 Evidence-backed promotion 模板
+
+候选晋升记录使用 `docs/evidence-backed-promotion-template.md`。该模板强调：candidate-first、证据路径、五门准入、安全边界和人工/Hermes 复核。
+
+配套 warning-only 检查：
+
+```bash
+cd <shared-root>
+python3 scripts/check_curated_claims.py --json
+```
+
+该检查初期只输出 warnings，不阻塞 `verify_bridge.py`，用于观察旧事实迁移压力。
 
 ---
 

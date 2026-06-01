@@ -12,6 +12,7 @@
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 import time
@@ -119,66 +120,166 @@ def wait_for_openclaw_completion(date: str, shared_root: Path, timeout: int = OP
     return False
 
 
+def _count_pattern(content: str, pattern: str) -> int:
+    """统计内容中某模式出现次数。"""
+    return len(re.findall(pattern, content, re.IGNORECASE))
+
+
 def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[str]]:
-    """Step 3: 审计学习产出。"""
+    """Step 3: 审计学习产出（v2 — 内容深度导向）。
+
+    20 分制，低于 16 分返工。
+    维度：结构完整 4 + 深读数量 3 + 源码深度 3 + API 数据 2 + 可迁移经验 3 + 风险边界 2 + skill 升格 2 + 无幻觉 1
+    """
     log('Step 3: 审计学习产出...')
-    
+
     output_file = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
-    
+
     if not output_file.exists():
         log('❌ 学习产出不存在')
         return 0, ['学习产出文件不存在'], []
-    
+
     content = output_file.read_text(encoding='utf-8')
-    
-    # 简单评分逻辑（可根据需要扩展）
+    lines = content.splitlines()
+    line_count = len(lines)
+
     score = 0
-    issues = []
-    strengths = []
-    
-    # 检查结构完整性
+    issues: list[str] = []
+    strengths: list[str] = []
+
+    # ── 1. 结构完整性（4 分）─────────────────────
     required_sections = ['今日结论', '项目速览', '深读项目', '经验沉淀', '明日继续']
-    for section in required_sections:
-        if section in content:
-            score += 2
-            strengths.append(f'包含「{section}」章节')
-        else:
-            issues.append(f'缺少「{section}」章节')
-    
-    # 检查深读项目数量
-    deep_reads = content.count('### 项目')
-    if deep_reads >= 2:
-        score += 4
-        strengths.append(f'深读 {deep_reads} 个项目')
+    missing_sections = [s for s in required_sections if s not in content]
+    structure_score = (len(required_sections) - len(missing_sections)) * 4 // len(required_sections)
+    score += structure_score
+    if not missing_sections:
+        strengths.append('五个必需章节齐全')
     else:
-        issues.append(f'深读项目不足（{deep_reads} 个）')
-    
-    # 检查可迁移经验
-    if '可迁移' in content or '可复用' in content:
+        for s in missing_sections:
+            issues.append(f'缺少「{s}」章节')
+
+    # ── 2. 深读项目数量（3 分）─────────────────────
+    deep_project_headers = [l for l in lines if l.strip().startswith('### 项目') or re.match(r'^###\s+\d+\.\d+\s+\S', l.strip())]
+    deep_count = len(deep_project_headers)
+    if deep_count >= 3:
         score += 3
-        strengths.append('包含可迁移经验')
+        strengths.append(f'深读 {deep_count} 个项目（达标）')
+    elif deep_count == 2:
+        score += 2
+        strengths.append(f'深读 2 个项目（基本达标）')
+    else:
+        issues.append(f'深读项目不足（{deep_count} 个，要求 ≥2）')
+
+    # ── 3. 源码深度（3 分）─────────────────────
+    # 检查是否有源码级分析：repo tree、关键文件、架构图、目录结构
+    source_depth_signals = [
+        (r'(?i)(repo\s*tree|目录结构|项目结构|文件结构)', 'repo tree / 目录结构'),
+        (r'(?i)(关键(源码|文件)|core\s*files?|关键模块)', '关键源码文件分析'),
+        (r'(?i)(架构|实现原理|数据流|核心模块|内部机制)', '架构/实现分析'),
+        (r'```', '代码块'),
+    ]
+    source_hits = 0
+    for pattern, label in source_depth_signals:
+        if _count_pattern(content, pattern) > 0:
+            source_hits += 1
+    if source_hits >= 3:
+        score += 3
+        strengths.append(f'源码深度良好（{source_hits}/4 信号命中）')
+    elif source_hits >= 2:
+        score += 2
+        strengths.append(f'有一定源码分析（{source_hits}/4 信号命中）')
+    elif source_hits >= 1:
+        score += 1
+        issues.append(f'源码深度不足（仅 {source_hits}/4 信号命中，需要 repo tree + 关键文件 + 架构分析）')
+    else:
+        issues.append('完全没有源码级分析，停留在 README 复述层')
+
+    # ── 4. GitHub API 数据真实性（2 分）─────────────
+    # 检查是否有实时数据：stars 数字、license、查询时间
+    api_data_score = 0
+    if re.search(r'(Stars?|⭐)\s*[:：]?\s*\d[\d,.]*[Kk]?\b', content):
+        api_data_score += 1
+    else:
+        issues.append('缺少 stars 数据')
+    if re.search(r'(?i)(License)\s*[:：]?\s*\S+', content):
+        api_data_score += 1
+    else:
+        issues.append('缺少 license 信息')
+    if api_data_score == 2:
+        strengths.append('包含 stars + license 数据')
+    score += api_data_score
+
+    # ── 5. 可迁移经验（3 分）─────────────────────
+    # 统计「当……时，应优先……」格式的经验数量
+    lesson_pattern = r'(?m)^[\-\d.*]+\s*.*当.*时.*应优先'
+    lesson_count = _count_pattern(content, lesson_pattern)
+    # 也统计「可复用经验」「可迁移」段落中的列表项
+    if lesson_count == 0:
+        # fallback: 统计经验沉淀章节的列表项
+        in_lesson_section = False
+        for line in lines:
+            if '经验沉淀' in line and line.lstrip().startswith('#'):
+                in_lesson_section = True
+                continue
+            if in_lesson_section and line.lstrip().startswith('#'):
+                break
+            if in_lesson_section and (line.strip().startswith('-') or (len(line.strip()) > 2 and line.strip()[0].isdigit() and '.' in line[:3])):
+                lesson_count += 1
+
+    if lesson_count >= 3:
+        score += 3
+        strengths.append(f'提炼了 {lesson_count} 条可迁移经验')
+    elif lesson_count >= 1:
+        score += 2
+        issues.append(f'可迁移经验偏少（{lesson_count} 条，要求 ≥3）')
     else:
         issues.append('缺少可迁移经验')
-    
-    # 检查风险边界
-    if '风险' in content or '限制' in content:
-        score += 3
-        strengths.append('包含风险边界')
-    else:
-        issues.append('缺少风险边界')
-    
-    # 检查数据来源
-    if 'github.com' in content:
+
+    # ── 6. 风险边界（2 分）─────────────────────
+    risk_signals = [
+        (r'(?i)(License|许可证)', 'license'),
+        (r'(?i)(安全风险|security|漏洞)', '安全风险'),
+        (r'(?i)(限制|局限|不适用|缺点|不足)', '局限性'),
+        (r'(?i)(维护活跃|活跃度|last commit)', '维护活跃度'),
+    ]
+    risk_hits = sum(1 for p, _ in risk_signals if _count_pattern(content, p) > 0)
+    if risk_hits >= 2:
         score += 2
-        strengths.append('包含 GitHub 链接')
+        strengths.append(f'风险边界覆盖良好（{risk_hits}/4 信号）')
+    elif risk_hits >= 1:
+        score += 1
+        issues.append(f'风险边界不完整（仅 {risk_hits}/4 信号）')
     else:
-        issues.append('缺少 GitHub 链接')
-    
-    # 补齐分数
-    if not issues:
-        score = min(score + 2, PASS_SCORE)
-    
+        issues.append('缺少风险边界分析')
+
+    # ── 7. Skill 升格判断（2 分）─────────────────
+    if re.search(r'(?i)(skill\s*升格|升格判断|可沉淀|暂不沉淀|继续观察)', content):
+        score += 2
+        strengths.append('包含 skill 升格判断')
+    else:
+        issues.append('缺少 skill 升格判断（要求明确：可直接迁移 / 需二次验证 / 暂不沉淀）')
+
+    # ── 8. 无明显幻觉（1 分）─────────────────────
+    # 检查可疑的 stars 数字（>500K 或增速离谱）
+    suspicious_stars = re.findall(r'(?:Stars?|⭐)\s*[:：]?\s*(\d[\d,.]*)', content)
+    hallucination = False
+    for s in suspicious_stars:
+        try:
+            num = int(s.replace(',', '').replace('.', ''))
+            if num > 500000:
+                hallucination = True
+                issues.append(f'可疑 stars 数字: {s}（需二次验证）')
+        except ValueError:
+            pass
+    if not hallucination:
+        score += 1
+        strengths.append('未发现明显数据幻觉')
+
+    # ── 汇总 ──────────────────────────────────
+    score = min(score, PASS_SCORE)
     log(f'审计完成: {score}/{PASS_SCORE}')
+    if issues:
+        log(f'  问题: {"; ".join(issues[:5])}')
     return score, issues, strengths
 
 
@@ -220,6 +321,7 @@ def handle_failure(date: str, score: int, issues: list[str], shared_root: Path) 
 def handle_success(
     date: str,
     score: int,
+    issues: list[str],
     strengths: list[str],
     shared_root: Path,
     knowledge_base: Path
@@ -236,14 +338,15 @@ def handle_success(
     # 3. 推送微信
     push_to_wechat(summary, shared_root)
     
-    # 4. 记录反馈
+    # 4. 记录反馈（传入实际 issues，即使是空的也比硬编码"无"好）
     script = shared_root / 'scripts' / 'audit_feedback_writer.py'
     if script.exists():
+        real_issues = [i for i in issues if i and i != '无']
         cmd = [
             'python3', str(script),
             '--date', date,
             '--score', str(score),
-            '--issues', '无',
+            '--issues'] + (real_issues if real_issues else ['无']) + [
             '--strengths'] + strengths
         
         subprocess.run(cmd, capture_output=True, text=True)
@@ -300,10 +403,13 @@ def _extract_deep_projects(content: str) -> list[dict[str, str]]:
 
     for raw_line in content.split('\n'):
         line = raw_line.strip()
-        if line.startswith('### 项目'):
+        if line.startswith('### 项目') or re.match(r'^###\s+\d+\.\d+\s+\S', line):
             if current:
                 projects.append(current)
-            name = line.split(':', 1)[1].strip() if ':' in line else line.replace('###', '').strip()
+            if line.startswith('### 项目'):
+                name = line.split(':', 1)[1].strip() if ':' in line else line.replace('###', '').strip()
+            else:
+                name = re.sub(r'^###\s+\d+\.\d+\s+', '', line).strip()
             current = {
                 'name': name,
                 'judgement': '',
@@ -563,7 +669,7 @@ def main() -> None:
         handle_failure(date, score, issues, shared_root)
         log(f'❌ 审计未通过 ({score}/{PASS_SCORE})')
     else:
-        handle_success(date, score, strengths, shared_root, knowledge_base)
+        handle_success(date, score, issues, strengths, shared_root, knowledge_base)
         log(f'✅ 审计通过 ({score}/{PASS_SCORE})')
     
     log('=== 闭环完成 ===')

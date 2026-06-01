@@ -64,7 +64,59 @@ docker exec openclaw openclaw cron edit 7aa310ea-b264-40c8-b23a-ed655c565a69 \
 
 **待优化**: 应该适配 OpenClaw 的 A/B/C 格式进行评分。
 
-## 测试技巧
+## 已知 Bug（2026-05-21）
+
+### Bug 1：审计得分比较类型错误
+
+**文件**: `scripts/github_learning_orchestrator.py`，约 L527
+
+**问题**: `PASS_SCORE` 从配置读取时为字符串（`"16"`），但与整数比较时未转换。
+
+```python
+# 错误（PASS_SCORE 是 str，score 是 int）
+if score >= PASS_SCORE:
+
+# 正确
+if score >= int(PASS_SCORE):
+```
+
+**影响**: 审计判定永远失败（`"16" >= 16` 在 Python 中为 `False`），即使得分满分 16，审计也被判定为失败，导致知识库更新和微信推送被跳过。
+
+**症状**: orchestrator 输出显示 `audit_score=16` 但 `audit_pass=False`。
+
+**修复**: 在 `load_config()` 中将 `pass_score` 转换为 int，或在比较处强制转换。
+
+### Bug 2：来源表 key 不匹配
+
+**文件**: `scripts/github_learning_orchestrator.py`，约 L447
+
+**问题**: YAML frontmatter 用 `source`（单数），但 `get_source()` 查询时用 `sources`（复数）。
+
+```python
+# frontmatter（单数）
+source: xxx
+
+# 代码（复数）
+sources = get_source(row["sources"])  # 查不到，返回 "unknown"
+```
+
+**影响**: 微信推送消息中所有项目的来源列都显示为 `unknown`，即使来源已正确记录在 frontmatter 中。
+
+**修复**: 统一为 `source`（单数）或 `sources`（复数）。
+
+### Bug 3：PASS_SCORE 空值防御
+
+**文件**: 同上，`load_config()` 函数
+
+**问题**: 如果 `config.yaml` 中 `pass_score` 字段为空或不存在，`config.get("pass_score", 16)` 返回 `None`，后续 `int(None)` 会抛 `TypeError`。
+
+**修复**:
+```python
+pass_score = config.get("pass_score", 16)
+PASS_SCORE = int(pass_score) if pass_score is not None else 16
+```
+
+## 微信推送注意事项
 
 ```bash
 # 只测试指令生成和审计流程（跳过 OpenClaw 学习）

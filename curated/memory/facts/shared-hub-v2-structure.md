@@ -1,11 +1,23 @@
 ---
 fact_id: shared-hub-v2-structure
+claim_id: shared-hub-v2-structure
+claim_type: agent_system
 status: active
 freshness_class: static
 scope: shared-hub
+lens: world
 subject: shared-hub.v2
 attribute: directory_structure
 value_summary: "curated, inbox, runtime, capabilities, compat, memory and skills compatibility layers"
+topic: shared.hub.v2.structure
+source_agent: hermes
+source_paths:
+  - /home/vany/agent/shared/manifest.yaml
+  - /home/vany/agent/shared/AGENTS.md
+evidence_refs:
+  - /home/vany/agent/shared/manifest.yaml
+  - /home/vany/agent/shared/AGENTS.md
+sensitivity: low
 created_at: 2026-05-16T02:58:05+08:00
 updated_at: 2026-05-16T02:58:05+08:00
 last_verified_at: 2026-05-16T02:58:05+08:00
@@ -13,6 +25,7 @@ review_due_at: 2026-08-16T02:58:05+08:00
 source_refs:
   - /home/vany/agent/shared/manifest.yaml
   - /home/vany/agent/shared/AGENTS.md
+review_status: approved
 conflict:
   status: none
   type: null
