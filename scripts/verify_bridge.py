@@ -554,6 +554,8 @@ def collect_fact_governance_checks(facts_dir: Path, now: datetime | None = None)
         review_due_at = parse_iso_datetime(metadata.get("review_due_at"))
         if metadata.get("review_due_at") and review_due_at is None:
             warnings.append(f"FACT_REVIEW_DUE_AT_INVALID: {fact_id}")
+        if review_due_at and review_due_at.tzinfo is None:
+            review_due_at = review_due_at.replace(tzinfo=current_time.tzinfo)
         if review_due_at and review_due_at < current_time:
             warnings.append(f"STALE_FACT_REVIEW_NEEDED: {fact_id}")
 

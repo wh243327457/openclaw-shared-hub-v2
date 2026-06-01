@@ -65,21 +65,21 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-05-22T10:39:46+08:00`
+- 生成时间: `2026-06-01T06:00:02+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
-- facts 文件数: 11
+- facts 文件数: 18
 - projects 文件数: 7
 - 最近 daily 文件:
-  - `inbox/openclaw/daily/2026-05-22.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-05-22.md` (inbox/hermes/daily)
-  - `inbox/hermes/daily/2026-05-21.md` (inbox/hermes/daily)
-  - `compat/daily/dreaming/deep/2026-05-21.md` (compat/daily)
-  - `compat/daily/dreaming/rem/2026-05-21.md` (compat/daily)
+  - `inbox/hermes/daily/2026-05-31.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-05-31.md` (inbox/openclaw/daily)
+  - `inbox/openclaw/daily/2026-05-30.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-05-30.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-05-29.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 29
-  - `openclaw`: 38
+  - `hermes`: 38
+  - `openclaw`: 50
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
@@ -148,3 +148,16 @@
 - **✅ 已完成产出** [score=0.842 recalls=0 avg=0.620 source=memory/2026-05-16.md:22-22]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:6:7 -->
 - run_ts: '1778891706299' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-16.md:6-7]
+
+
+
+
+
+
+
+
+
+
+
+
+

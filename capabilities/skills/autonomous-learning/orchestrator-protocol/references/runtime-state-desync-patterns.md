@@ -10,7 +10,10 @@
 
 **检查方法**:
 ```bash
-# 对比两个数据源
+# 快速时间戳新鲜度检查（推荐第一步）
+stat -c "%Y %n" runtime/hermes/autonomous-learning/delivery-state.json
+
+# 对比 delivery-state 与 health_alert.log
 jq '.status, .consecutive_delivery_failures, .last_delivery_at' runtime/hermes/autonomous-learning/delivery-state.json
 tail -3 runtime/hermes/health_alert.log
 ```
@@ -52,6 +55,56 @@ done
 **建议**:
 - 改为 `weekly_review` 或 `needs_periodic_check` 以增加可见度
 - 或在 cron guard 中加检测：如果 backlog 有 dormant warning items，降级通知频率
+
+## Pattern: health-dashboard staleness + pending queue count drift
+
+**症状**: `delivery-state.json` 显示 `status: normal` / `consecutive_delivery_failures: 0`，但 `health-dashboard.json` 的 `generated_at` 远早于最新 run 日期（2026-05-30 实测：dashboard 生成于 2026-05-18，已 12 天未刷新）。同时 `pending-promotion-queue.json` 记录 0 条候选，但 dashboard 声称 `awaiting_user_approval: 8`。
+
+**根因**: health-dashboard.json 由一次性脚本生成后未被 cron 自动刷新；pending queue 在后续 run 中被消耗或过期，但 dashboard 快照未同步更新。两者都是"快照"而非"活状态"。
+
+**检查方法**:
+
+快速 shell 版（推荐，无 python 依赖）：
+```bash
+stat -c "%Y %n" \
+  runtime/hermes/autonomous-learning/health-dashboard.json \
+  runtime/hermes/autonomous-learning/delivery-state.json \
+  runtime/hermes/autonomous-learning/pending-promotion-queue.json
+tail -3 runtime/hermes/health_alert.log
+```
+
+详细交叉验证版（用 `execute_code`，因为 tirith 禁止 `cat | python3` 管道）：
+```python
+import json, datetime
+
+base = "/home/vany/agent/shared/runtime/hermes/autonomous-learning"
+ds = json.load(open(f"{base}/delivery-state.json"))
+hd = json.load(open(f"{base}/health-dashboard.json"))
+pq = json.load(open(f"{base}/pending-promotion-queue.json"))
+
+# 关键：pending queue 的顶层 key 是 items，不是 candidates（见 pending-promotion-queue-schema.md）
+pq_items = pq.get('items', [])
+pq_awaiting = len([i for i in pq_items if i.get('status') == 'awaiting_user_approval'])
+
+hd_awaiting = hd.get('summary', {}).get('pending_promotion', {}).get('awaiting_user_approval', '?')
+print(f'delivery-state: {ds.get("status")}')
+print(f'dashboard generated_at: {hd.get("generated_at", "?")}')
+print(f'dashboard awaiting_approval: {hd_awaiting}')
+print(f'pending-queue actual awaiting: {pq_awaiting} (total items: {len(pq_items)})')
+```
+
+**⚠️ 已知陷阱**: 上述代码必须用 `execute_code` 执行，不能用 `cat file | python3`（tirith 安全扫描会拦截）。参见 `references/github-discovery-fallback.md` 的 pitfall 节。
+
+**检测规则**: 如果 dashboard `generated_at` 距今 > 7 天，或 dashboard 声称的 pending count ≠ queue JSON 实际 count，即为 desync。
+
+**影响**:
+- 用户收到的"需要你决策"可能基于过期数据
+- pending 候选可能被静默丢弃或重复报告
+
+**处理**:
+- 在巡检报告中明确列出 desync 差异
+- 建议用户手动刷新 dashboard 或确认 pending 队列真实状态
+- 长期方案：cron postrun 应自动刷新 dashboard 计数
 
 ## Applicability
 

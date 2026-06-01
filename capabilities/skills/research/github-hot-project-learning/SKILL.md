@@ -502,6 +502,38 @@ cat runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt
 - 微信未配置：不阻塞知识库落盘。
 - 审计不通过：保留草稿到 runtime，不进入长期知识资产。
 
+## ⚠️ 审计评分体系（v2，2026-05-30 重写）
+
+旧审计只检查关键词存在性（"有就给分"），导致永远 16/20 通过、issues 永远"无"，反馈闭环断裂。
+
+新审计 8 维 20 分制：
+
+| # | 维度 | 分值 | 检查方式 |
+|---|------|------|----------|
+| 1 | 结构完整 | 4 | 五个必需章节逐一检查 |
+| 2 | 深读数量 | 3 | `### 项目` 或 `### N.N 项目名` 头计数，≥3 满分 |
+| 3 | 源码深度 | 3 | repo tree/关键文件/架构/代码块 4 信号 |
+| 4 | API 数据 | 2 | stars 数字 + license 信息正则匹配 |
+| 5 | 可迁移经验 | 3 | `当……时，应优先……` 格式 + 经验沉淀章节列表项 |
+| 6 | 风险边界 | 2 | license/安全风险/局限性/维护活跃度 4 信号 |
+| 7 | Skill 升格 | 2 | `skill 升格/升格判断/可沉淀/暂不沉淀/继续观察` |
+| 8 | 无幻觉 | 1 | 可疑 stars >500K 检测 |
+
+实现：`shared/scripts/github_learning_orchestrator.py::audit_learning()` + `_count_pattern()`
+
+## ⚠️ 反馈闭环断裂陷阱（2026-05-30 发现）
+
+**问题**：`handle_success()` 硬编码 `'--issues', '无'`，导致即使审计发现了问题，feedback.json 也只记录"无"。强化指令永远是"今日无特殊要求"。
+
+**根因**：`handle_success` 不接收 `issues` 参数。
+
+**修复**：
+1. `handle_success` 签名增加 `issues: list[str]` 参数
+2. 调用处从 `handle_success(date, score, strengths, ...)` 改为 `handle_success(date, score, issues, strengths, ...)`
+3. 写入 feedback 时过滤：`real_issues = [i for i in issues if i and i != '无']`
+
+**同样修复**：`analyze_failures()` 旧版只看 `score < 16`，新版跟踪通过但有扣分项的情况。
+
 ## ⚠️ 关键陷阱
 
 ### 微信推送平台名称
@@ -548,7 +580,57 @@ python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-D
 
 详细案例：`references/2026-05-22-fallback-and-push-guard.md`。
 
-### ⚠️ `push_guard_active` 不是发送成功
+Full session details: `references/2026-05-27-manual-retrigger-and-wechat-rate-limit.md`.
+
+### ⚠️ Orchestrator timeout but instruction already exists: manual re-trigger recovery
+
+When `github_learning_orchestrator.py` times out at shell timeout (300s), but the daily instruction was already generated (either by an earlier orchestrator step or by `generate_daily_instruction.py` directly), OpenClaw is healthy and just needs to be manually triggered. This is **simpler** than the fallback pattern — no need for Hermes to do the learning itself.
+
+**Recovery steps:**
+
+1. Confirm instruction exists: `ls -la <shared-root>/runtime/hermes/github-hot-project-learning/instruction.md`
+2. Check OpenClaw is running: `docker inspect -f '{{.State.Status}}' openclaw`
+3. Trigger manually: `docker exec openclaw openclaw cron run <job-id>`
+   - If `"already-running"`, wait 30s and retry
+   - If `"enqueued": true`, proceed to wait
+4. Poll for output every 30s (15min max): `ls -la <shared-root>/inbox/openclaw/daily/YYYY-MM-DD.md`
+   **Key timing**: When instruction already exists and container is healthy, OpenClaw typically completes in **~2 minutes**, not 10-15 min.
+5. Once output exists, close with audit-only:
+   ```bash
+   cd /home/vany/agent/shared
+   python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-DD
+   ```
+
+### ⚠️ OpenClaw gateway 1006 immediately after container auto-start: wait + manual cron run recovery
+
+If `github_learning_orchestrator.py` starts the OpenClaw container and Step 2 fails with:
+
+```text
+GatewayTransportError: gateway closed (1006 abnormal closure)
+Gateway target: ws://127.0.0.1:18789
+```
+
+Do not immediately declare the learning loop failed and do not jump straight to Hermes fallback. First treat this as a gateway readiness race:
+
+1. Check/wait for the `openclaw` container to keep running and move past startup.
+2. Manually enqueue the OpenClaw learning job:
+   ```bash
+   docker exec openclaw sh -lc 'openclaw cron run 7aa310ea-b264-40c8-b23a-ed655c565a69 --expect-final --timeout 600000'
+   ```
+3. Poll for today's report:
+   ```bash
+   test -s /home/vany/agent/shared/inbox/openclaw/daily/$(date +%F).md
+   ```
+4. Once the report exists, close the loop with audit-only mode:
+   ```bash
+   cd /home/vany/agent/shared
+   python3 scripts/github_learning_orchestrator.py --skip-openclaw --date $(date +%F)
+   ```
+5. Only if the manual enqueue fails or the daily report never appears should Hermes fallback execute the learning task itself.
+
+Final reporting must distinguish: initial orchestrator trigger failed, manual OpenClaw enqueue recovered the learning step, audit/knowledge-base status, and Weixin delivery status.
+
+### ⚠️ `push_guard_active` / `ret=-2 rate limited` 不是发送成功
 
 如果 `hermes send -t weixin -f -` 返回：
 
@@ -556,7 +638,26 @@ python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-D
 Weixin send failed: push_guard_active
 ```
 
-这是 Hermes Weixin 平台层主动推送保护生效。不要绕过、不要连续补发、不要声称“微信已推送”。正确处理：保留 `wechat-push-YYYY-MM-DD.txt`，报告“推送内容已落盘，但微信未实际发出”。
+或：
+
+```text
+hermes send: Weixin send failed: iLink sendmessage rate limited: ret=-2 errcode=None errmsg=rate limited
+```
+
+这是 Hermes Weixin 平台层主动推送保护或 iLink 频控生效。不要绕过、不要连续补发、不要声称“微信已推送”。正确处理：
+
+1. 保留 `runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt`。
+2. 最终报告写清：推送内容已落盘，但微信未实际发出。
+3. 在 `inbox/hermes/daily/YYYY-MM-DD.md` 追加一条执行记录，至少包含：
+   - `pipeline: github-hot-project-learning`
+   - `audit_status`
+   - `knowledge_base_status`
+   - `weixin_delivery_status: failed`
+   - `delivery_error`
+   - `push_file`
+4. 追加记录后跑 `python3 scripts/verify_bridge.py` 做 shared 入口健康复核。
+
+不要因为 cron prompt 写了 `send_message` 就尝试绕过平台层；cron/受限环境优先使用 `hermes send -t weixin -f -`，发送失败时按上面流程落盘和报告。
 
 
 ### Hermes cron 创建参数
