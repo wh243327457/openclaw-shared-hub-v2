@@ -3,7 +3,7 @@ name: shared-hub-v2
 agents:
   hermes:
     role: host-cli
-    root: /root/.hermes
+    root: ${HERMES_ROOT:-~/.hermes}
     reads:
       - curated/memory
       - capabilities/skills
@@ -14,10 +14,52 @@ agents:
     shared_skills:
       - foundation/shared-memory-bridge
       - foundation/console-style-progress-report
+      - foundation/path-portability
 roots:
-  host: /home/vany/agent/shared
-  host_legacy: /home/vany/agent/.openclaw/shared
+  # 注意：roots 段只用于文档/迁移参考，不是运行时真相源。
+  # 运行时真相源是 deployment.resolution。
+  host_examples:
+    - /home/vany/agent/shared
+    - /home/ubuntu/agent/shared
+  host_legacy_examples:
+    - /home/vany/agent/.openclaw/shared
+    - ${HOST_LEGACY_SHARED_ROOT}
   container: /home/node/.openclaw/shared
+deployment:
+  # 路径可迁移：禁止把绝对路径硬编码进 scripts/skills/prefill。
+  # 所有运行时代码必须通过 scripts/resolve_shared_root.py 获取根目录。
+  resolution_order:
+    - $SHARED_HUB_ROOT                  # 1. 显式环境变量，最优先
+    - $AGENTS_SHARED_ROOT               # 2. 别名环境变量
+    - $XDG_DATA_HOME/openclaw/shared    # 3. XDG 标准目录
+    - ~/.local/share/openclaw/shared    # 4. 兜底 XDG
+    - ../shared                         # 5. 相对 manifest 所在目录的探针
+    - .                                 # 6. 兜底：当前 manifest 所在目录
+  invariants:
+    manifest_required_files:
+      - manifest.yaml
+      - AGENTS.md
+    allowed_missing_under_legacy:
+      - compat/daily
+  portable:
+    # 跨机器搬运时只需保留这些子树的语义结构。
+    must_preserve:
+      - manifest.yaml
+      - AGENTS.md
+      - README.md
+      - curated/
+      - capabilities/skills/
+      - capabilities/manifests/
+      - compat/daily/
+      - prefill/
+    may_omit_on_first_run:
+      - runtime/
+      - inbox/<agent>/daily/
+    git_ignored_by_default:
+      - runtime/
+      - inbox/*/daily/dreaming/
+      - compat/daily/dreaming/
+      - inbox/*/daily/.dreams/
 layers:
   curated:
     path: curated

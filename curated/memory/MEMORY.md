@@ -27,6 +27,10 @@
 - **Self-Healing Agent / 全局巡查自我修复**：`curated/memory/projects/self-healing-agent.md`
 - **Elephant Agent 机制研究与 shared hub v2 反哺**：`curated/memory/projects/elephant-agent-mechanism-study.md`
 - **共享技能清单**：`capabilities/manifests/shared-skills.yaml`
+- **路径可迁移契约**：`capabilities/skills/foundation/path-portability/SKILL.md`
+- **跨机器迁移清单**：`capabilities/skills/foundation/path-portability/references/migration-checklist.md`
+- **路径解析器**：`scripts/resolve_shared_root.py`
+- **路径可迁移长期事实**：`curated/memory/facts/path-portability.md`
 - **治理总结标准**：`docs/shared-governance-standard.md`
 - **治理总结机制**：`docs/governance-summary-mechanism.md`
 - **配置目标识别规则**：`capabilities/skills/foundation/config-target-routing/SKILL.md`
@@ -53,7 +57,8 @@
 - `docs/shared-governance-standard.md` 已建立，作为 shared hub 长期筛选、总结、晋升、压缩、淘汰的强制执行标准
 - `docs/governance-summary-mechanism.md` 已建立，作为 shared hub 治理总结机制说明入口
 - `foundation/config-target-routing` 已升格为共享 skill，用于约束 Hermes / OpenClaw / future-agent 在配置类任务前先识别目标系统，避免混改配置
-- `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程与配置治理等稳定事实条目
+- `foundation/path-portability` 已升格为共享 skill，用于约束运行时代码通过 `resolve_shared_root.py` 解析宿主根，禁止硬编码 `/home/vany/...`；`manifest.yaml: deployment` 段同步建立解析顺序、跨机器搬运最小保留集与 git 忽略规则
+- `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程、配置治理、路径可迁移等稳定事实条目
 - 后续新增长期记忆时，请同时更新本索引
 - `autonomous-learning-system` 已进入 v0.1 骨架落地阶段，正式架构在 `curated/memory/projects/autonomous-learning-system.md`，runtime 配置与模板在 `runtime/hermes/autonomous-learning/`
 - 已按用户确认晋升 3 条自主学习长期模式：多 agent 编排、skill-as-contract/subagent 四状态、verification-first agent 工程实践。

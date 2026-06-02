@@ -4,7 +4,10 @@
 
 ## 共享根目录
 
-- 宿主：`/home/vany/agent/shared/`
+> 路径可迁移：所有运行时代码应通过 `scripts/resolve_shared_root.py` 解析宿主根，禁止硬编码绝对路径。
+> 解析顺序与最小保留集见 `manifest.yaml: deployment` 段与 `capabilities/skills/foundation/path-portability/SKILL.md`。
+
+- 宿主示例：`/home/vany/agent/shared/`、`/home/ubuntu/agent/shared/`
 - 容器：`/home/node/.openclaw/shared/`
 
 ## 关键目录
@@ -62,3 +65,10 @@
 
 - 默认禁止把明文 secrets 写入 shared
 - 如需引用 secret，请只写环境变量名或占位符
+
+## 跨机器迁移
+
+shared hub v2 已被设计为可在不同机器之间搬运。最小保留集与逐步迁移清单见：
+
+- `manifest.yaml: deployment.portable.must_preserve`
+- `capabilities/skills/foundation/path-portability/references/migration-checklist.md`

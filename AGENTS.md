@@ -6,8 +6,12 @@
 
 ## 根目录
 
-- 宿主 canonical：`/home/vany/agent/shared`
-- 宿主 legacy 兼容：`/home/vany/agent/.openclaw/shared`
+> 重要：**禁止在任何 scripts / skills / prefill / docs 中硬编码宿主绝对路径**。运行时必须通过 `scripts/resolve_shared_root.py` 解析宿主根。
+>
+> 以下示例仅作迁移参考，不是运行时代码可读的真相源。运行时的真相源是 `manifest.yaml: deployment.resolution_order`。
+
+- 宿主 canonical 示例：`/home/vany/agent/shared`、`/home/ubuntu/agent/shared`
+- 宿主 legacy 兼容示例：`/home/vany/agent/.openclaw/shared`
 - 容器：`/home/node/.openclaw/shared`
 
 ## 核心分层
@@ -167,3 +171,19 @@ shared/
 - **默认禁止**把任何明文 secret、API key、token、密码写入 shared
 - 如需引用 secret，用变量名占位，如 `$OPENCLAW_API_KEY`
 - 各 agent 的 `.env` / credentials 应保留在各自 agentDir 内，不进入 shared
+
+## 路径可迁移（Path Portability）
+
+跨机器搬运（vany → ubuntu、不同工作站之间、宿主 vs 容器）必须通过 `scripts/resolve_shared_root.py` 解析宿主根，禁止硬编码 `/home/vany/...` 这类绝对路径。
+
+- 解析顺序：见 `manifest.yaml: deployment.resolution_order`
+- 新增 scripts / prefill / docs：先确认不引入硬编码宿主路径
+- 跨机器搬运最小保留集：见 `manifest.yaml: deployment.portable.must_preserve`
+- 完整契约与 pitfalls：见 `capabilities/skills/foundation/path-portability/SKILL.md`
+- 逐步操作清单：`capabilities/skills/foundation/path-portability/references/migration-checklist.md`
+
+### 何时违反本规则
+
+- 直接后果：在新机器上 clone 出来的中台无法被 agent 识别
+- 必须做的事：把所有 `/home/vany/...` 替换为通过 `resolve_shared_root.py` 拼出的相对路径
+- 复盘：见 `inbox/hermes/daily/2026-06-02.md`（vany → ubuntu 迁移 raw 记录）
