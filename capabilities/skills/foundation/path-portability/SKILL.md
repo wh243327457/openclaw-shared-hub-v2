@@ -99,7 +99,16 @@ agent 启动时把"语义位置"通过 `SHARED_ROOT / <path>` 拼成实际路径
 3. 机器 B 解压到推荐统一目录 `~/agent/shared/`（如需自定义目录，设置 `SHARED_HUB_ROOT`）
 4. 设置：`export SHARED_HUB_ROOT=$HOME/agent/shared`
 5. 跑 `python3 scripts/resolve_shared_root.py --check` 校验
-6. 跑 `python3 scripts/verify_bridge.py`（如果存在）确认 bridge 状态
+6. 跑 `python3 scripts/verify_bridge.py --portable-only` 确认共享中台自身结构
+7. 如需把本机 agent 接入共享层，先 dry-run 再 apply：
+
+```bash
+python3 scripts/install_hermes_bridge.py --json
+python3 scripts/install_openclaw_bridge.py --json
+# 确认输出后再执行：
+python3 scripts/install_hermes_bridge.py --apply
+python3 scripts/install_openclaw_bridge.py --apply
+```
 
 > **注意**：跨机器搬运不需要保留 `runtime/` 和 `inbox/*/daily/`（见 `manifest.yaml: deployment.portable.may_omit_on_first_run`）。这些是机器本地的运行时产物。
 
@@ -134,6 +143,8 @@ cd <shared-root>
 python3 scripts/resolve_shared_root.py --check      # 根解析 + 必填校验
 python3 scripts/resolve_shared_root.py --explain    # 打印解析路径，便于排错
 python3 scripts/resolve_shared_root.py --json       # JSON 输出
+python3 scripts/install_hermes_bridge.py --json     # Hermes 本机接入 dry-run
+python3 scripts/install_openclaw_bridge.py --json   # OpenClaw 本机接入 dry-run
 ```
 
 新加 scripts 时，跑：

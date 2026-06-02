@@ -47,6 +47,26 @@ export SHARED_HUB_ROOT="$HOME/agent/shared"
 export AGENTS_SHARED_ROOT="$SHARED_HUB_ROOT"
 ```
 
+## 本机 agent 一键接入
+
+共享中台 repo 验证通过后，再按需把本机 Hermes / OpenClaw 指到同一个共享根。接入脚本默认只 dry-run，不会修改本机配置；确认输出无误后加 `--apply` 才会落盘。
+
+```bash
+# 只查看将要写入 Hermes 的本机配置
+python3 scripts/install_hermes_bridge.py --json
+
+# 确认后应用；会备份已有 ~/.hermes/config.yaml
+python3 scripts/install_hermes_bridge.py --apply
+
+# 只查看将要写入 OpenClaw 的本机配置和 workspace symlink
+python3 scripts/install_openclaw_bridge.py --json
+
+# 确认后应用；会备份已有 openclaw.json，不替换真实文件/目录
+python3 scripts/install_openclaw_bridge.py --apply
+```
+
+两个 install 脚本都只写本机配置，不写 secrets；如果配置路径不是默认位置，可传 `--config`，如果共享根不是当前 clone，可传 `--shared-root`。应用后请重启对应 agent，或在 Hermes 中开启新会话 / reset。
+
 ## 关键目录
 
 | 路径 | 用途 |

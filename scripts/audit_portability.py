@@ -19,8 +19,8 @@ sys.path.insert(0, str(SCRIPT_DIR))
 from resolve_shared_root import resolve  # noqa: E402
 
 PATTERNS = [
-    re.compile(r"/home/vany(?:/|\b)"),
-    re.compile(r"/home/ubuntu(?:/|\b)"),
+    re.compile(r"/home/vany(?:/|\b)"),  # portable-audit: allow scanner pattern
+    re.compile(r"/home/ubuntu(?:/|\b)"),  # portable-audit: allow scanner pattern
     re.compile(r"/root/\.hermes(?:/|\b)"),
     re.compile(r"/home/node/\.openclaw(?:/|\b)"),
     re.compile(r"[A-Za-z]:[\\/]Users[\\/]"),

@@ -73,6 +73,12 @@ deployment:
       - inbox/<agent>/daily/
     bootstrap_after_clone:
       - python3 scripts/bootstrap_shared_root.py
+    install_local_bridges_dry_run:
+      - python3 scripts/install_hermes_bridge.py --json
+      - python3 scripts/install_openclaw_bridge.py --json
+    install_local_bridges_apply:
+      - python3 scripts/install_hermes_bridge.py --apply
+      - python3 scripts/install_openclaw_bridge.py --apply
     verify_after_clone:
       - python3 scripts/resolve_shared_root.py --check
       - python3 scripts/verify_bridge.py --portable-only
@@ -145,5 +151,6 @@ policies:
   raw_writes: New raw agent notes belong in inbox/<agent>/daily.
   runtime_artifacts: Runtime artifacts belong in runtime/<agent> and must not be stored in curated memory.
   shared_root_location: Prefer ~/agent/shared on every host; if unavailable, set SHARED_HUB_ROOT explicitly.
+  local_bridge_install: Bridge installers default to dry-run and require --apply before writing local Hermes/OpenClaw config.
   legacy_compat: Keep memory/ and skills/ stable for existing Hermes/OpenClaw integrations.
   secrets: Never write plaintext secrets into shared.
