@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -12,12 +13,51 @@ from typing import Any
 
 from promoter import ManifestError, json_dump, load_manifest, resolve_bridge_paths
 
-EXPECTED_OPENCLAW_SKILLS_REF = "/home/node/.openclaw/shared/skills"
-DEFAULT_HERMES_CONFIG = "/root/.hermes/config.yaml"
-DEFAULT_OPENCLAW_CONFIG = "/home/vany/agent/.openclaw/openclaw.json"
 DEFAULT_WORKSPACES = ["workspace", "workspace-friend-001", "workspace-friend-002"]
 DEFAULT_SHARED_SKILLS_MANIFEST = "capabilities/manifests/shared-skills.yaml"
 
+
+
+def first_existing_path(candidates: list[Path], fallback: Path) -> Path:
+    for item in candidates:
+        try:
+            if item.expanduser().exists():
+                return item.expanduser()
+        except OSError:
+            continue
+    return fallback.expanduser()
+
+
+def default_hermes_config() -> Path:
+    env_config = os.environ.get("HERMES_CONFIG")
+    if env_config:
+        return Path(env_config)
+    hermes_home = Path(os.environ.get("HERMES_HOME", str(Path.home() / ".hermes"))).expanduser()
+    return hermes_home / "config.yaml"
+
+
+def default_openclaw_config() -> Path:
+    env_config = os.environ.get("OPENCLAW_CONFIG")
+    if env_config:
+        return Path(env_config)
+    candidates = []
+    for var in ("OPENCLAW_HOME", "OPENCLAW_AGENT_DIR"):
+        val = os.environ.get(var)
+        if val:
+            candidates.append(Path(val) / "openclaw.json")
+    # portable-audit: allow container fallback path for OpenClaw running inside its standard container.
+    candidates.extend([
+        Path.home() / ".openclaw" / "openclaw.json",
+        Path("/home/node/.openclaw/openclaw.json"),  # portable-audit: allow standard OpenClaw container fallback
+    ])
+    return first_existing_path(candidates, candidates[0] if candidates else Path.home() / ".openclaw" / "openclaw.json")
+
+
+def path_exists_safe(path: Path) -> tuple[bool, str | None]:
+    try:
+        return path.exists(), None
+    except OSError as exc:
+        return False, f"{type(exc).__name__}: {exc}"
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -47,11 +87,20 @@ def path_check(name: str, path: Path, kind: str) -> dict[str, Any]:
     return info
 
 
-def symlink_check(name: str, path: Path, expected_target: Path) -> dict[str, Any]:
+def symlink_check(name: str, path: Path, expected_target: Path, allow_missing_target: bool = False) -> dict[str, Any]:
     exists = path.exists()
     is_link = path.is_symlink()
     actual_target = str(path.resolve()) if is_link and exists else None
     expected_resolved = str(expected_target.resolve()) if expected_target.exists() else str(expected_target)
+    if is_link and not exists and allow_missing_target:
+        try:
+            raw_target = os.readlink(path)
+        except OSError:
+            raw_target = None
+        ok = raw_target == os.path.relpath(expected_target, start=path.parent) or raw_target == str(expected_target)
+        actual_target = raw_target
+    else:
+        ok = is_link and exists and actual_target == expected_resolved
     return {
         "name": name,
         "path": str(path),
@@ -60,7 +109,7 @@ def symlink_check(name: str, path: Path, expected_target: Path) -> dict[str, Any
         "is_symlink": is_link,
         "actual_target": actual_target,
         "expected_target": expected_resolved,
-        "ok": is_link and exists and actual_target == expected_resolved,
+        "ok": ok,
     }
 
 
@@ -176,13 +225,7 @@ def verify_shared_skills_manifest(shared_root: Path, paths: dict[str, Path]) -> 
 
 
 def _equivalent_existing_paths(path: Path) -> list[str]:
-    """Return string forms that should be accepted for the same existing path.
-
-    During the host root rename, /home/vany/agent may be a symlink to the legacy
-    /home/vany/openclaw-data directory. Configs may intentionally use either the
-    canonical symlink path or the resolved legacy path while migration is in
-    progress.
-    """
+    """Return literal and resolved string forms for the same existing path."""
     candidates = [str(path)]
     try:
         resolved = str(path.resolve())
@@ -190,37 +233,26 @@ def _equivalent_existing_paths(path: Path) -> list[str]:
             candidates.append(resolved)
     except OSError:
         pass
-
-    # Include both the neutral canonical path and compatibility aliases.  The
-    # neutral path may itself be a symlink in some deployments, so verification
-    # must compare literal spellings as well as resolved paths.
-    for item in list(candidates):
-        replacements = []
-        if item.startswith("/home/vany/openclaw-data/.openclaw/shared"):
-            replacements.append(item.replace("/home/vany/openclaw-data/.openclaw/shared", "/home/vany/agent/shared", 1))
-            replacements.append(item.replace("/home/vany/openclaw-data/.openclaw/shared", "/home/vany/agent/.openclaw/shared", 1))
-        if item.startswith("/home/vany/agent/.openclaw/shared"):
-            replacements.append(item.replace("/home/vany/agent/.openclaw/shared", "/home/vany/agent/shared", 1))
-        if item.startswith("/home/vany/agent/shared"):
-            replacements.append(item.replace("/home/vany/agent/shared", "/home/vany/agent/.openclaw/shared", 1))
-        for candidate in replacements:
-            if candidate not in candidates:
-                candidates.append(candidate)
     return candidates
 
 
 def verify_hermes_config(config_path: Path, paths: dict[str, Path]) -> dict[str, Any]:
     expected_skills_refs = _equivalent_existing_paths(paths["legacy_skills"])
     expected_prefill_refs = _equivalent_existing_paths(paths["prefill_file"])
+    exists, exists_error = path_exists_safe(config_path)
     record: dict[str, Any] = {
         "path": str(config_path),
-        "exists": config_path.exists(),
+        "exists": exists,
         "expected_refs": {
             "skills": expected_skills_refs,
             "prefill": expected_prefill_refs,
         },
     }
-    if not config_path.exists():
+    if exists_error:
+        record["ok"] = False
+        record["error"] = exists_error
+        return record
+    if not exists:
         record["ok"] = False
         record["error"] = "config file not found"
         return record
@@ -237,14 +269,21 @@ def verify_hermes_config(config_path: Path, paths: dict[str, Path]) -> dict[str,
     return record
 
 
-def verify_openclaw_config(config_path: Path) -> tuple[dict[str, Any], Path]:
+def verify_openclaw_config(config_path: Path, paths: dict[str, Path]) -> tuple[dict[str, Any], Path]:
     workspace_base = config_path.parent
+    expected_extra_dirs = _equivalent_existing_paths(paths["legacy_skills"]) + _equivalent_existing_paths(paths["capabilities_skills"])
     record: dict[str, Any] = {
         "path": str(config_path),
-        "exists": config_path.exists(),
-        "expected_extra_dir": EXPECTED_OPENCLAW_SKILLS_REF,
+        "exists": path_exists_safe(config_path)[0],
+        "expected_extra_dirs": expected_extra_dirs,
     }
-    if not config_path.exists():
+    exists, exists_error = path_exists_safe(config_path)
+    record["exists"] = exists
+    if exists_error:
+        record["ok"] = False
+        record["error"] = exists_error
+        return record, workspace_base
+    if not exists:
         record["ok"] = False
         record["error"] = "config file not found"
         return record, workspace_base
@@ -257,7 +296,8 @@ def verify_openclaw_config(config_path: Path) -> tuple[dict[str, Any], Path]:
 
     extra_dirs = payload.get("skills", {}).get("load", {}).get("extraDirs", [])
     record["extra_dirs"] = extra_dirs
-    record["has_expected_extra_dir"] = EXPECTED_OPENCLAW_SKILLS_REF in extra_dirs
+    record["expected_extra_dirs"] = expected_extra_dirs
+    record["has_expected_extra_dir"] = any(ref in extra_dirs for ref in expected_extra_dirs)
     record["ok"] = record["has_expected_extra_dir"]
     return record, workspace_base
 
@@ -307,7 +347,7 @@ def verify_workspaces(workspace_base: Path, workspace_names: list[str]) -> dict[
     }
 
 
-def collect_structure_checks(shared_root: Path, paths: dict[str, Path]) -> dict[str, Any]:
+def collect_structure_checks(shared_root: Path, paths: dict[str, Path], portable_only: bool = False) -> dict[str, Any]:
     legacy_memory = paths["legacy_memory"]
     compat_dreams = paths["compat_daily"] / ".dreams"
     runtime_openclaw_dreams = paths["runtime"] / "openclaw" / "dreams"
@@ -343,10 +383,14 @@ def collect_structure_checks(shared_root: Path, paths: dict[str, Path]) -> dict[
         symlink_check("shared/memory/daily", legacy_memory / "daily", paths["compat_daily"]),
         symlink_check("shared/compat/daily/.dreams", compat_dreams, runtime_openclaw_dreams),
     ]
-    overall_ok = all(item["ok"] for item in path_records) and all(item["ok"] for item in link_records)
+    runtime_names = {"shared/runtime", "shared/runtime/openclaw/dreams", "shared/runtime/future-agent"}
+    required_path_records = [item for item in path_records if not (portable_only and item["name"] in runtime_names)]
+    required_link_records = [item for item in link_records if not (portable_only and item["name"] == "shared/compat/daily/.dreams")]
+    overall_ok = all(item["ok"] for item in required_path_records) and all(item["ok"] for item in required_link_records)
     return {
         "paths": path_records,
         "symlinks": link_records,
+        "portable_only": portable_only,
         "ok": overall_ok,
     }
 
@@ -629,16 +673,18 @@ def collect_promotion_backlog(paths: dict[str, Path]) -> dict[str, Any]:
     }
 
 
-def collect_future_agent_readiness(shared_root: Path, paths: dict[str, Path]) -> dict[str, Any]:
+def collect_future_agent_readiness(shared_root: Path, paths: dict[str, Path], portable_only: bool = False) -> dict[str, Any]:
     checks = [
         path_check("inbox/future-agent/README.md", paths["inbox"] / "future-agent" / "README.md", "file"),
         path_check("inbox/future-agent/daily", paths["inbox"] / "future-agent" / "daily", "dir"),
         path_check("runtime/future-agent/README.md", paths["runtime"] / "future-agent" / "README.md", "file"),
         path_check("prefill/future-agent-shared-memory.json", shared_root / "prefill" / "future-agent-shared-memory.json", "file"),
     ]
+    required = [item for item in checks if not (portable_only and item["name"] == "runtime/future-agent/README.md")]
     return {
         "checks": checks,
-        "ok": all(item["ok"] for item in checks),
+        "portable_only": portable_only,
+        "ok": all(item["ok"] for item in required),
     }
 
 
@@ -668,13 +714,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--hermes-config",
-        default=DEFAULT_HERMES_CONFIG,
-        help=f"Hermes 配置文件，默认 {DEFAULT_HERMES_CONFIG}",
+        default=None,
+        help="Hermes 配置文件；默认 $HERMES_CONFIG 或 $HERMES_HOME/config.yaml 或 ~/.hermes/config.yaml",
     )
     parser.add_argument(
         "--openclaw-config",
-        default=DEFAULT_OPENCLAW_CONFIG,
-        help=f"OpenClaw 配置文件，默认 {DEFAULT_OPENCLAW_CONFIG}",
+        default=None,
+        help="OpenClaw 配置文件；默认 $OPENCLAW_CONFIG / $OPENCLAW_HOME/openclaw.json / ~/.openclaw/openclaw.json",
+    )
+    parser.add_argument(
+        "--portable-only",
+        action="store_true",
+        help="只验证共享中台自身的可迁移结构，不验证当前机器 Hermes/OpenClaw/workspace 配置",
     )
     parser.add_argument(
         "--workspace-base",
@@ -695,24 +746,30 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     shared_root = Path(args.shared_root).expanduser().resolve()
-    hermes_config = Path(args.hermes_config).expanduser().resolve()
-    openclaw_config = Path(args.openclaw_config).expanduser().resolve()
+    hermes_config = Path(args.hermes_config).expanduser().resolve() if args.hermes_config else default_hermes_config().expanduser().resolve()
+    openclaw_config = Path(args.openclaw_config).expanduser().resolve() if args.openclaw_config else default_openclaw_config().expanduser().resolve()
+    os.environ.setdefault("SHARED_HUB_ROOT", str(shared_root))
     workspace_names = args.workspace_names or list(DEFAULT_WORKSPACES)
 
     manifest, manifest_record = verify_manifest(shared_root)
     paths = resolve_bridge_paths(manifest or {}, shared_root)
-    structure = collect_structure_checks(shared_root, paths)
+    structure = collect_structure_checks(shared_root, paths, portable_only=args.portable_only)
     governance = collect_governance_checks(shared_root)
     promotion_backlog = collect_promotion_backlog(paths)
-    future_agent_readiness = collect_future_agent_readiness(shared_root, paths)
+    future_agent_readiness = collect_future_agent_readiness(shared_root, paths, portable_only=args.portable_only)
     runtime_retention = collect_runtime_retention_report(paths)
     slimming_metrics = collect_slimming_metrics(shared_root, paths)
     fact_governance = collect_fact_governance_checks(paths["facts"])
     shared_skills_record = verify_shared_skills_manifest(shared_root, paths)
-    hermes_record = verify_hermes_config(hermes_config, paths)
-    openclaw_record, inferred_workspace_base = verify_openclaw_config(openclaw_config)
-    workspace_base = Path(args.workspace_base).expanduser().resolve() if args.workspace_base else inferred_workspace_base
-    workspace_record = verify_workspaces(workspace_base, workspace_names)
+    if args.portable_only:
+        hermes_record = {"ok": True, "skipped": True, "reason": "portable_only"}
+        openclaw_record = {"ok": True, "skipped": True, "reason": "portable_only"}
+        workspace_record = {"ok": True, "skipped": True, "reason": "portable_only"}
+    else:
+        hermes_record = verify_hermes_config(hermes_config, paths)
+        openclaw_record, inferred_workspace_base = verify_openclaw_config(openclaw_config, paths)
+        workspace_base = Path(args.workspace_base).expanduser().resolve() if args.workspace_base else inferred_workspace_base
+        workspace_record = verify_workspaces(workspace_base, workspace_names)
 
     errors: list[str] = []
     warnings: list[str] = []
@@ -748,6 +805,7 @@ def main(argv: list[str] | None = None) -> int:
 
     payload = {
         "ok": not errors,
+        "mode": "portable_only" if args.portable_only else "full",
         "shared_root": str(shared_root),
         "manifest": manifest_record,
         "structure": structure,

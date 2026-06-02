@@ -70,7 +70,7 @@ python3 "$SCRIPT_DIR/verify_bridge.py" >> "$LOG_DIR/verify-cron.log" 2>&1 || {
 
 # 5. Disk usage monitoring.
 echo "[$TIMESTAMP] disk usage:" >> "$LOG_DIR/cron.log"
-df -h /home/vany >> "$LOG_DIR/cron.log" 2>&1 || true
+df -h "${SHARED_ROOT:-$PWD}" >> "$LOG_DIR/cron.log" 2>&1 || true
 
 # 6. Shared directory size tracking.
 SHARED_SIZE=$(du -sh . 2>/dev/null | cut -f1)

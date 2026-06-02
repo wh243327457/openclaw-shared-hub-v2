@@ -6,13 +6,14 @@
 
 ## 根目录
 
-> 重要：**禁止在任何 scripts / skills / prefill / docs 中硬编码宿主绝对路径**。运行时必须通过 `scripts/resolve_shared_root.py` 解析宿主根。
->
-> 以下示例仅作迁移参考，不是运行时代码可读的真相源。运行时的真相源是 `manifest.yaml: deployment.resolution_order`。
+> 重要：共享中台本体推荐统一放在每台宿主机的 `~/agent/shared`。
+> 它**不是** `runtime/`；`runtime/` 只是共享根内部的机器本地临时产物层。
+> 运行时必须通过 `scripts/resolve_shared_root.py` 解析宿主根，优先读取 `$SHARED_HUB_ROOT`。
 
-- 宿主 canonical 示例：`/home/vany/agent/shared`、`/home/ubuntu/agent/shared`
-- 宿主 legacy 兼容示例：`/home/vany/agent/.openclaw/shared`
-- 容器：`/home/node/.openclaw/shared`
+- 推荐宿主目录：`~/agent/shared`
+- 推荐环境变量：`SHARED_HUB_ROOT=$HOME/agent/shared`
+- 容器场景：在容器内显式设置 `SHARED_HUB_ROOT` 指向挂载后的 shared 根
+- 自定义目录：允许，但必须显式设置 `SHARED_HUB_ROOT`
 
 ## 核心分层
 
@@ -174,7 +175,7 @@ shared/
 
 ## 路径可迁移（Path Portability）
 
-跨机器搬运（vany → ubuntu、不同工作站之间、宿主 vs 容器）必须通过 `scripts/resolve_shared_root.py` 解析宿主根，禁止硬编码 `/home/vany/...` 这类绝对路径。
+跨机器搬运（不同工作站之间、宿主 vs 容器）必须通过 `scripts/resolve_shared_root.py` 解析宿主根。推荐每台宿主统一使用 `~/agent/shared`；如果不用该目录，必须设置 `SHARED_HUB_ROOT`。禁止硬编码某台机器的绝对路径。
 
 - 解析顺序：见 `manifest.yaml: deployment.resolution_order`
 - 新增 scripts / prefill / docs：先确认不引入硬编码宿主路径
@@ -185,5 +186,5 @@ shared/
 ### 何时违反本规则
 
 - 直接后果：在新机器上 clone 出来的中台无法被 agent 识别
-- 必须做的事：把所有 `/home/vany/...` 替换为通过 `resolve_shared_root.py` 拼出的相对路径
+- 必须做的事：把所有机器专属绝对路径替换为通过 `resolve_shared_root.py` 拼出的相对路径，或用 `SHARED_HUB_ROOT` 显式注入
 - 复盘：见 `inbox/hermes/daily/2026-06-02.md`（vany → ubuntu 迁移 raw 记录）

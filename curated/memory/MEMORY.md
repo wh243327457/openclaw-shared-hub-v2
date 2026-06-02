@@ -4,8 +4,10 @@
 
 ## 根路径
 
-- 宿主：`/home/vany/agent/shared`
-- 容器：`/home/node/.openclaw/shared`
+- 推荐宿主统一目录：`~/agent/shared`
+- 推荐环境变量：`SHARED_HUB_ROOT=$HOME/agent/shared`
+- 共享中台本体不是 `runtime/`；`runtime/` 只是共享根内的机器本地临时产物层
+- 容器或自定义目录必须显式设置 `SHARED_HUB_ROOT`
 
 ## 作用范围
 
@@ -57,7 +59,7 @@
 - `docs/shared-governance-standard.md` 已建立，作为 shared hub 长期筛选、总结、晋升、压缩、淘汰的强制执行标准
 - `docs/governance-summary-mechanism.md` 已建立，作为 shared hub 治理总结机制说明入口
 - `foundation/config-target-routing` 已升格为共享 skill，用于约束 Hermes / OpenClaw / future-agent 在配置类任务前先识别目标系统，避免混改配置
-- `foundation/path-portability` 已升格为共享 skill，用于约束运行时代码通过 `resolve_shared_root.py` 解析宿主根，禁止硬编码 `/home/vany/...`；`manifest.yaml: deployment` 段同步建立解析顺序、跨机器搬运最小保留集与 git 忽略规则
+- `foundation/path-portability` 已升格为共享 skill，用于约束运行时代码通过 `resolve_shared_root.py` 解析宿主根，统一推荐宿主目录 `~/agent/shared`，禁止硬编码机器专属绝对路径；`manifest.yaml: deployment` 段同步建立解析顺序、跨机器搬运最小保留集与 git 忽略规则
 - `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程、配置治理、路径可迁移等稳定事实条目
 - 后续新增长期记忆时，请同时更新本索引
 - `autonomous-learning-system` 已进入 v0.1 骨架落地阶段，正式架构在 `curated/memory/projects/autonomous-learning-system.md`，runtime 配置与模板在 `runtime/hermes/autonomous-learning/`
@@ -71,8 +73,8 @@
 ## 自动生成的共享桥状态块
 
 - 生成时间: `2026-06-01T06:00:02+08:00`
-- 共享根目录: `/home/vany/agent/shared`
-- runtime 位置提示: `/home/vany/agent/shared/runtime`
+- 共享根目录: `~/agent/shared`（或 `$SHARED_HUB_ROOT`）
+- runtime 位置提示: `<shared-root>/runtime`
 - facts 文件数: 18
 - projects 文件数: 7
 - 最近 daily 文件:

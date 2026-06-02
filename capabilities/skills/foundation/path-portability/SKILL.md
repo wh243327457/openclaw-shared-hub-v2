@@ -14,11 +14,11 @@ metadata:
 
 ## 1. 背景与目标
 
-共享中台 v2 的设计目标是让 Hermes / OpenClaw / future-agent 在不同机器、不同宿主路径下都能复用同一份结构。但早期 manifest、prefill、docs 写死了一批绝对路径（如 `/home/vany/agent/shared`），导致在 vany → ubuntu 这种迁移场景下，所有引用都需要人工改写。
+共享中台 v2 的设计目标是让 Hermes / OpenClaw / future-agent 在不同机器、不同宿主路径下都能复用同一份结构。但早期 manifest、prefill、docs 写死了一批机器专属绝对路径，导致跨机器迁移时所有引用都需要人工改写。
 
 本 skill 确立：
 
-1. **运行时根路径必须通过 `scripts/resolve_shared_root.py` 解析**
+1. **共享中台本体推荐统一放在 `~/agent/shared`，运行时根路径必须通过 `scripts/resolve_shared_root.py` 解析**
 2. **agent 原始写入、运行时产物按"相对根路径"表达**
 3. **跨机器搬运只需保留 manifest 定义的 `must_preserve` 子树**
 4. **新增 scripts / skills / prefill / docs 必须通过 portability 检查**
@@ -48,6 +48,8 @@ $AGENTS_SHARED_ROOT
 $XDG_DATA_HOME/openclaw/shared
   ↓
 ~/.local/share/openclaw/shared
+  ↓
+~/agent/shared
   ↓
 <脚本位置>/../../              (即 <root>/scripts/..)
   ↓
@@ -94,8 +96,8 @@ agent 启动时把"语义位置"通过 `SHARED_ROOT / <path>` 拼成实际路径
 
 1. 在机器 A 上 `cd <shared-root> && tar czf shared-hub.tgz manifest.yaml AGENTS.md README.md curated/ capabilities/ compat/ prefill/`
 2. 拷贝 `shared-hub.tgz` 到机器 B
-3. 机器 B 解压到任意目录，例如 `~/agent/shared/`
-4. 设置（可选）：`export SHARED_HUB_ROOT=~/agent/shared`
+3. 机器 B 解压到推荐统一目录 `~/agent/shared/`（如需自定义目录，设置 `SHARED_HUB_ROOT`）
+4. 设置：`export SHARED_HUB_ROOT=$HOME/agent/shared`
 5. 跑 `python3 scripts/resolve_shared_root.py --check` 校验
 6. 跑 `python3 scripts/verify_bridge.py`（如果存在）确认 bridge 状态
 
@@ -147,9 +149,9 @@ cd /tmp && SHARED_HUB_ROOT=<shared-root> python3 <shared-root>/scripts/resolve_s
 |---|---|---|
 | 在 Python 里 `Path("/home/vany/agent/shared")` | 迁移后失效 | `resolve_shared_root.py` |
 | prefill JSON 写死绝对路径 | 迁移后失效 | 用 `shared_root_resolution` 字段 |
-| AGENTS.md / README.md 引用 `/home/vany/...` | 文档误导 | 改为"宿主路径"或 `${SHARED_HUB_ROOT}` |
+| AGENTS.md / README.md 引用某台机器的绝对路径 | 文档误导 | 改为 `~/agent/shared` 规范或 `${SHARED_HUB_ROOT}` |
 | 把 `runtime/` 提交到 main | 仓库臃肿 | `.gitignore` |
-| 在 cron / launchd plist 里写死 `/home/vany/...` | 迁移后定时任务失效 | 用 `${SHARED_HUB_ROOT}` 占位 |
+| 在 cron / launchd plist 里写死机器专属绝对路径 | 迁移后定时任务失效 | 用 `${SHARED_HUB_ROOT}` 占位 |
 
 ## 8. 已知 pitfalls
 

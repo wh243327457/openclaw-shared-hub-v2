@@ -16,31 +16,47 @@ agents:
       - foundation/console-style-progress-report
       - foundation/path-portability
 roots:
-  # 注意：roots 段只用于文档/迁移参考，不是运行时真相源。
-  # 运行时真相源是 deployment.resolution。
+  # 统一存放规范：共享中台本体推荐放在宿主 ~/agent/shared。
+  # 它不是 runtime；runtime/ 只是共享根内部的临时产物层。
+  canonical_host: ~/agent/shared
+  canonical_env: SHARED_HUB_ROOT
+  # 以下仅是历史/容器示例，不是运行时真相源；运行时真相源是 deployment.resolver。
   host_examples:
-    - /home/vany/agent/shared
-    - /home/ubuntu/agent/shared
+    - ~/agent/shared
   host_legacy_examples:
-    - /home/vany/agent/.openclaw/shared
     - ${HOST_LEGACY_SHARED_ROOT}
   container: /home/node/.openclaw/shared
+  xdg_fallback: ~/.local/share/openclaw/shared
 deployment:
-  # 路径可迁移：禁止把绝对路径硬编码进 scripts/skills/prefill。
+  # 路径可迁移：禁止把绝对宿主路径硬编码进 scripts/skills/prefill。
   # 所有运行时代码必须通过 scripts/resolve_shared_root.py 获取根目录。
+  resolver:
+    script: scripts/resolve_shared_root.py
+    strict_env_supported: true
+    valid_root_requires:
+      - manifest.yaml
+      - AGENTS.md
   resolution_order:
-    - $SHARED_HUB_ROOT                  # 1. 显式环境变量，最优先
-    - $AGENTS_SHARED_ROOT               # 2. 别名环境变量
-    - $XDG_DATA_HOME/openclaw/shared    # 3. XDG 标准目录
-    - ~/.local/share/openclaw/shared    # 4. 兜底 XDG
-    - ../shared                         # 5. 相对 manifest 所在目录的探针
-    - .                                 # 6. 兜底：当前 manifest 所在目录
+    - env:SHARED_HUB_ROOT
+    - env:AGENTS_SHARED_ROOT
+    - xdg:$XDG_DATA_HOME/openclaw/shared
+    - xdg:~/.local/share/openclaw/shared
+    - home:~/agent/shared
+    - script:../..
+    - script:..
+    - cwd:.
+    - cwd:..
   invariants:
     manifest_required_files:
       - manifest.yaml
       - AGENTS.md
-    allowed_missing_under_legacy:
-      - compat/daily
+    shared_hub_not_runtime: true
+    canonical_host_root: ~/agent/shared
+    allowed_missing_on_fresh_clone:
+      - runtime/
+      - runtime/openclaw/dreams/
+      - runtime/future-agent/
+      - inbox/<agent>/daily/
   portable:
     # 跨机器搬运时只需保留这些子树的语义结构。
     must_preserve:
@@ -55,6 +71,12 @@ deployment:
     may_omit_on_first_run:
       - runtime/
       - inbox/<agent>/daily/
+    bootstrap_after_clone:
+      - python3 scripts/bootstrap_shared_root.py
+    verify_after_clone:
+      - python3 scripts/resolve_shared_root.py --check
+      - python3 scripts/verify_bridge.py --portable-only
+      - python3 scripts/audit_portability.py
     git_ignored_by_default:
       - runtime/
       - inbox/*/daily/dreaming/
@@ -79,7 +101,7 @@ layers:
       future-agent: inbox/future-agent/daily
   runtime:
     path: runtime
-    role: per-agent runtime artifacts
+    role: per-agent machine-local runtime artifacts; not the shared hub root
     agents:
       hermes: runtime/hermes
       openclaw:
@@ -117,9 +139,11 @@ layers:
     role: agent prefill payloads
     files:
       hermes: prefill/hermes-shared-memory.json
+      future-agent: prefill/future-agent-shared-memory.json
 policies:
   stable_truth: Only curated/memory is the cross-agent truth source.
   raw_writes: New raw agent notes belong in inbox/<agent>/daily.
   runtime_artifacts: Runtime artifacts belong in runtime/<agent> and must not be stored in curated memory.
+  shared_root_location: Prefer ~/agent/shared on every host; if unavailable, set SHARED_HUB_ROOT explicitly.
   legacy_compat: Keep memory/ and skills/ stable for existing Hermes/OpenClaw integrations.
   secrets: Never write plaintext secrets into shared.
