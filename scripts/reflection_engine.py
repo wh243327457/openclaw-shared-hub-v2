@@ -402,8 +402,8 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='通用自我反思引擎')
-    parser.add_argument('action', choices=['reflect', 'summary', 'dashboard'],
-                        help='reflect: 分析指定领域; summary: 跨领域汇总; dashboard: 完整面板')
+    parser.add_argument('action', choices=['reflect', 'summary', 'dashboard', 'guardian'],
+                        help='reflect: 分析指定领域; summary: 跨领域汇总; dashboard: 完整面板; guardian: 自动扫描补位')
     parser.add_argument('--domain', help='领域名 (github-learning / reading-plan / daily-patrol)')
     parser.add_argument('--agent', default='hermes', help='agent 名')
     parser.add_argument('--shared-root', type=Path, default=Path(__file__).resolve().parents[1])
@@ -430,7 +430,7 @@ def main():
                   f'最新: {summary.get("latest_score", 0)}%')
         return
 
-    if not args.domain:
+    if args.action == 'reflect' and not args.domain:
         parser.error('--domain is required for reflect action')
 
     if args.action == 'reflect':
@@ -455,6 +455,207 @@ def main():
             print()
             print('--- 明日指令增强 ---')
             print(enhancement)
+
+    elif args.action == 'guardian':
+        guardian_report = guardian_scan(args.shared_root, args.agent, auto_create=True)
+        print(guardian_report)
+
+
+# ── Guardian: 自动发现 + 补位 ──────────────────────────────────
+
+# cron job 名 → domain 的映射规则
+DOMAIN_PATTERNS = {
+    'github': 'github-learning',
+    '学习': 'github-learning',
+    'learning': 'github-learning',
+    '读书': 'reading-plan',
+    'reading': 'reading-plan',
+    '书': 'reading-plan',
+    '巡检': 'daily-patrol',
+    'patrol': 'daily-patrol',
+    'health': 'daily-patrol',
+    '健康': 'daily-patrol',
+    '审查': 'code-review',
+    'review': 'code-review',
+    '复盘': 'daily-retrospective',
+    'retro': 'daily-retrospective',
+    '知识': 'knowledge-curation',
+    'knowledge': 'knowledge-curation',
+    '同步': 'data-sync',
+    'sync': 'data-sync',
+}
+
+# 需要反思的 cron job 特征（有这些特征的 job 才需要反思）
+# 排除纯基础设施类（日志、同步、推送、健康检查）
+REFLECTION_KEYWORDS = [
+    '学习', '读书', '复盘', '采集', '分析', '闭环', '编排',
+    'learning', 'reading', 'retro', 'collect', 'analyze', 'pipeline',
+    '巡检', '审查', 'review', 'patrol',
+]
+
+# 明确排除的关键词（基础设施类，不需要反思）
+EXCLUDE_KEYWORDS = [
+    '日志', 'logger', '同步', 'sync', '推送', 'push', '提交', 'commit',
+    '健康检查', 'health-check', 'health_check', '自动提交', 'autocommit',
+    '总结', 'summary', 'weekly-summary', '周总结',
+]
+
+
+def guess_domain(job_name: str) -> Optional[str]:
+    """从 cron job 名猜测反思领域。"""
+    name_lower = job_name.lower()
+    for keyword, domain in DOMAIN_PATTERNS.items():
+        if keyword in name_lower:
+            return domain
+    return None
+
+
+def needs_reflection(job_name: str, job_prompt: str) -> bool:
+    """判断一个 cron job 是否需要反思。"""
+    name_lower = job_name.lower()
+    prompt_lower = job_prompt.lower()
+    # 排除规则只看 job name（避免 prompt 中的通用词误触发）
+    if any(kw in name_lower for kw in EXCLUDE_KEYWORDS):
+        return False
+    # 反思规则看 name + prompt
+    combined = name_lower + ' ' + prompt_lower
+    return any(kw in combined for kw in REFLECTION_KEYWORDS)
+
+
+def guardian_scan(
+    shared_root: Path,
+    agent: str = 'hermes',
+    auto_create: bool = True,
+) -> str:
+    """扫描所有 cron job，检查反思覆盖，自动补位。
+
+    返回扫描报告。
+    """
+    # 1. 读取 cron jobs
+    cron_file = shared_root.parent / '.hermes' / 'cron' / 'jobs.json'
+    if not cron_file.exists():
+        # 尝试其他路径
+        alt_paths = [
+            Path.home() / '.hermes' / 'cron' / 'jobs.json',
+            shared_root / 'runtime' / 'hermes' / 'cron' / 'jobs.json',
+        ]
+        for p in alt_paths:
+            if p.exists():
+                cron_file = p
+                break
+        else:
+            return '❌ 找不到 cron jobs.json'
+
+    try:
+        raw = json.loads(cron_file.read_text(encoding='utf-8'))
+        jobs = raw.get('jobs', raw) if isinstance(raw, dict) else raw
+    except Exception as e:
+        return f'❌ 读取 cron 失败: {e}'
+
+    # 2. 读取已有反思数据
+    runtime_dir = shared_root / 'runtime' / agent
+    existing_domains = set()
+    if runtime_dir.exists():
+        for d in runtime_dir.iterdir():
+            if d.is_dir() and (d / 'feedback-history.json').exists():
+                existing_domains.add(d.name)
+
+    # 3. 扫描每个 job
+    lines = ['## 🔍 反思守护者扫描报告', '']
+    covered = []
+    uncovered = []
+    skipped = []
+
+    for job in jobs:
+        job_id = job.get('id', job.get('job_id', '?'))
+        job_name = job.get('name', job_id)
+        job_prompt = job.get('prompt', '')
+        enabled = job.get('enabled', True)
+
+        if not enabled:
+            continue
+
+        # 判断是否需要反思
+        if not needs_reflection(job_name, job_prompt):
+            skipped.append(job_name)
+            continue
+
+        # 猜测领域
+        domain = guess_domain(job_name)
+        if not domain:
+            domain = job_name.lower().replace(' ', '-').replace(':', '-')
+
+        # 检查是否已有反思数据
+        if domain in existing_domains:
+            covered.append((job_name, domain))
+        else:
+            uncovered.append((job_name, domain, job_id))
+
+    # 4. 输出报告
+    lines.append(f'**扫描结果**: {len(covered)} 已覆盖 / {len(uncovered)} 未覆盖 / {len(skipped)} 不需要反思')
+    lines.append('')
+
+    if covered:
+        lines.append('### ✅ 已覆盖')
+        for name, domain in covered:
+            lines.append(f'  - {name} → `{domain}`')
+        lines.append('')
+
+    if uncovered:
+        lines.append('### ⚠️ 未覆盖（自动补位中）')
+        for name, domain, job_id in uncovered:
+            lines.append(f'  - {name} → `{domain}`')
+
+            if auto_create:
+                # 自动创建空的反思数据文件
+                domain_dir = runtime_dir / domain
+                domain_dir.mkdir(parents=True, exist_ok=True)
+
+                feedback_file = domain_dir / 'feedback-history.json'
+                if not feedback_file.exists():
+                    feedback_data = {
+                        'domain': domain,
+                        'created_by': 'guardian',
+                        'created_at': datetime.now(TZ).isoformat(),
+                        'source_job': job_id,
+                        'source_job_name': name,
+                        'records': [],
+                    }
+                    feedback_file.write_text(
+                        json.dumps(feedback_data, indent=2, ensure_ascii=False),
+                        encoding='utf-8',
+                    )
+                    lines.append(f'    → 已创建 feedback-history.json')
+
+                suggestions_file = domain_dir / 'evolution-suggestions.json'
+                if not suggestions_file.exists():
+                    suggestions_data = {
+                        'domain': domain,
+                        'date': datetime.now(TZ).date().isoformat(),
+                        'generated_at': datetime.now(TZ).isoformat(),
+                        'created_by': 'guardian',
+                        'suggestions': [],
+                        'summary': {'total_runs': 0, 'note': '由 guardian 自动创建，等待首次反馈'},
+                    }
+                    suggestions_file.write_text(
+                        json.dumps(suggestions_data, indent=2, ensure_ascii=False),
+                        encoding='utf-8',
+                    )
+                    lines.append(f'    → 已创建 evolution-suggestions.json')
+        lines.append('')
+
+    if not uncovered:
+        lines.append('✅ 所有需要反思的 cron job 都已覆盖！')
+
+    # 5. 汇总建议
+    if uncovered:
+        lines.append('')
+        lines.append('### 💡 下一步')
+        lines.append('这些 job 的 cron prompt 中应加入反思步骤：')
+        for name, domain, job_id in uncovered:
+            lines.append(f'  - `{name}`: 在 prompt 末尾加 `python3 scripts/reflection_engine.py reflect --domain {domain} --score <分数> --issues <问题>`')
+
+    return '\n'.join(lines)
 
 
 if __name__ == '__main__':
