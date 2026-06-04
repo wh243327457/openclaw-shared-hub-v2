@@ -3,7 +3,7 @@ name: shared-hub-v2
 agents:
   hermes:
     role: host-cli
-    root: /root/.hermes
+    root: ${HERMES_ROOT:-~/.hermes}
     reads:
       - curated/memory
       - capabilities/skills
@@ -14,10 +14,80 @@ agents:
     shared_skills:
       - foundation/shared-memory-bridge
       - foundation/console-style-progress-report
+      - foundation/path-portability
 roots:
-  host: /home/vany/agent/shared
-  host_legacy: /home/vany/agent/.openclaw/shared
+  # 统一存放规范：共享中台本体推荐放在宿主 ~/agent/shared。
+  # 它不是 runtime；runtime/ 只是共享根内部的临时产物层。
+  canonical_host: ~/agent/shared
+  canonical_env: SHARED_HUB_ROOT
+  # 以下仅是历史/容器示例，不是运行时真相源；运行时真相源是 deployment.resolver。
+  host_examples:
+    - ~/agent/shared
+  host_legacy_examples:
+    - ${HOST_LEGACY_SHARED_ROOT}
   container: /home/node/.openclaw/shared
+  xdg_fallback: ~/.local/share/openclaw/shared
+deployment:
+  # 路径可迁移：禁止把绝对宿主路径硬编码进 scripts/skills/prefill。
+  # 所有运行时代码必须通过 scripts/resolve_shared_root.py 获取根目录。
+  resolver:
+    script: scripts/resolve_shared_root.py
+    strict_env_supported: true
+    valid_root_requires:
+      - manifest.yaml
+      - AGENTS.md
+  resolution_order:
+    - env:SHARED_HUB_ROOT
+    - env:AGENTS_SHARED_ROOT
+    - xdg:$XDG_DATA_HOME/openclaw/shared
+    - xdg:~/.local/share/openclaw/shared
+    - home:~/agent/shared
+    - script:../..
+    - script:..
+    - cwd:.
+    - cwd:..
+  invariants:
+    manifest_required_files:
+      - manifest.yaml
+      - AGENTS.md
+    shared_hub_not_runtime: true
+    canonical_host_root: ~/agent/shared
+    allowed_missing_on_fresh_clone:
+      - runtime/
+      - runtime/openclaw/dreams/
+      - runtime/future-agent/
+      - inbox/<agent>/daily/
+  portable:
+    # 跨机器搬运时只需保留这些子树的语义结构。
+    must_preserve:
+      - manifest.yaml
+      - AGENTS.md
+      - README.md
+      - curated/
+      - capabilities/skills/
+      - capabilities/manifests/
+      - compat/daily/
+      - prefill/
+    may_omit_on_first_run:
+      - runtime/
+      - inbox/<agent>/daily/
+    bootstrap_after_clone:
+      - python3 scripts/bootstrap_shared_root.py
+    install_local_bridges_dry_run:
+      - python3 scripts/install_hermes_bridge.py --json
+      - python3 scripts/install_openclaw_bridge.py --json
+    install_local_bridges_apply:
+      - python3 scripts/install_hermes_bridge.py --apply
+      - python3 scripts/install_openclaw_bridge.py --apply
+    verify_after_clone:
+      - python3 scripts/resolve_shared_root.py --check
+      - python3 scripts/verify_bridge.py --portable-only
+      - python3 scripts/audit_portability.py
+    git_ignored_by_default:
+      - runtime/
+      - inbox/*/daily/dreaming/
+      - compat/daily/dreaming/
+      - inbox/*/daily/.dreams/
 layers:
   curated:
     path: curated
@@ -37,7 +107,7 @@ layers:
       future-agent: inbox/future-agent/daily
   runtime:
     path: runtime
-    role: per-agent runtime artifacts
+    role: per-agent machine-local runtime artifacts; not the shared hub root
     agents:
       hermes: runtime/hermes
       openclaw:
@@ -75,9 +145,12 @@ layers:
     role: agent prefill payloads
     files:
       hermes: prefill/hermes-shared-memory.json
+      future-agent: prefill/future-agent-shared-memory.json
 policies:
   stable_truth: Only curated/memory is the cross-agent truth source.
   raw_writes: New raw agent notes belong in inbox/<agent>/daily.
   runtime_artifacts: Runtime artifacts belong in runtime/<agent> and must not be stored in curated memory.
+  shared_root_location: Prefer ~/agent/shared on every host; if unavailable, set SHARED_HUB_ROOT explicitly.
+  local_bridge_install: Bridge installers default to dry-run and require --apply before writing local Hermes/OpenClaw config.
   legacy_compat: Keep memory/ and skills/ stable for existing Hermes/OpenClaw integrations.
   secrets: Never write plaintext secrets into shared.
