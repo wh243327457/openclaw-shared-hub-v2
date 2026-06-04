@@ -11,8 +11,8 @@ Use normal tools instead, or set approvals.cron_mode: approve only if this cron 
 is intentionally trusted.
 ```
 
-**Alternatives in cron mode:**
-1. `read_file` — read JSON/CSV/text, parse in response context
+**Alternatives in cron mode (by reliability):**
+1. **首选** `read_file` — read JSON/CSV/text, parse in response context. Zero security risk, no tirith trigger, no terminal dependency. 2026-06-04 verified: parsed pending-promotion-queue.json (20 items) via read_file + manual line parsing, zero errors.
 2. `terminal` + standalone script — write a `.py` file first, then `python3 script.py`
 3. `terminal` + inline python — `python3 -c "import json; ..."` (no pipes)
 4. Still forbidden: `cat file | python3` (tirith pipe_to_interpreter, lesson 9)
