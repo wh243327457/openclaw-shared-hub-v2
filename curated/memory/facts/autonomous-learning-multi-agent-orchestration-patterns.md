@@ -1,3 +1,31 @@
+---
+fact_id: autonomous-learning-multi-agent-orchestration-patterns
+claim_id: autonomous-learning-multi-agent-orchestration-patterns
+claim_type: workflow_rule
+status: active
+confidence: 0.9
+freshness_class: slow_changing
+scope: agent-system
+lens: world
+topic: autonomous_learning.multi_agent.orchestration
+source_agent: hermes
+source_paths:
+  - runtime/hermes/autonomous-learning/agent-outputs/hermes/2026-05-17-anthropic-multi-agent-research.md
+evidence_refs:
+  - runtime/hermes/autonomous-learning/agent-outputs/hermes/2026-05-17-anthropic-multi-agent-research.md
+  - runtime/hermes/autonomous-learning/reviews/2026-05-17-anthropic-multi-agent-research-quality-review.md
+sensitivity: low
+secret_checked: true
+created_at: 2026-05-18T12:07:05+08:00
+updated_at: 2026-06-04T22:53:21+08:00
+last_verified_at: 2026-06-04T22:53:21+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
+---
+
 # 自主学习多 Agent 编排模式
 
 - 晋升时间：`2026-05-18T12:07:05+08:00`

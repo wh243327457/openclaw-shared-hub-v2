@@ -1,3 +1,31 @@
+---
+fact_id: autonomous-learning-skill-as-contract-pattern
+claim_id: autonomous-learning-skill-as-contract-pattern
+claim_type: workflow_rule
+status: active
+confidence: 0.9
+freshness_class: slow_changing
+scope: agent-system
+lens: world
+topic: autonomous_learning.skill_as_contract
+source_agent: hermes
+source_paths:
+  - runtime/hermes/autonomous-learning/agent-outputs/hermes-delegate/2026-05-17-superpowers-deep-analysis.md
+evidence_refs:
+  - runtime/hermes/autonomous-learning/agent-outputs/hermes-delegate/2026-05-17-superpowers-deep-analysis.md
+  - runtime/hermes/autonomous-learning/reviews/2026-05-17-superpowers-deep-analysis-quality-review.md
+sensitivity: low
+secret_checked: true
+created_at: 2026-05-18T12:07:05+08:00
+updated_at: 2026-06-04T22:53:21+08:00
+last_verified_at: 2026-06-04T22:53:21+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
+---
+
 # Skill-as-Contract 与 Subagent 四状态协议
 
 - 晋升时间：`2026-05-18T12:07:05+08:00`

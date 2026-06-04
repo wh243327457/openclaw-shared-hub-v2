@@ -1,10 +1,32 @@
 ---
-topic: Anthropic 多 Agent 研究系统的工程实践
-category: industry-trends
+fact_id: anthropic-multi-agent-engineering
+claim_id: anthropic-multi-agent-engineering
+claim_type: workflow_rule
 status: active
-source: autonomous-learning/pending-promotion
-date: 2026-05-17
-score: 18/20
+confidence: 0.9
+freshness_class: slow_changing
+scope: agent-system
+lens: world
+subject: anthropic.multi_agent_research
+attribute: engineering_practices
+value_summary: "Anthropic research system validates orchestrator-worker decomposition, explicit delegation prompts, scaled agent budgets, broad-to-narrow research, and end-state quality review."
+topic: autonomous_learning.multi_agent.engineering
+source_agent: hermes
+source_paths:
+  - agent-outputs/hermes/2026-05-17-anthropic-multi-agent-research.md
+evidence_refs:
+  - agent-outputs/hermes/2026-05-17-anthropic-multi-agent-research.md
+  - https://www.anthropic.com/engineering/built-multi-agent-research-system
+sensitivity: low
+secret_checked: true
+created_at: 2026-05-17T00:00:00+08:00
+updated_at: 2026-06-04T23:53:40+08:00
+last_verified_at: 2026-06-04T23:53:40+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
 ---
 
 # Anthropic 多 Agent 研究系统的工程实践
