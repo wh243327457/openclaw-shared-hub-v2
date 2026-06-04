@@ -383,15 +383,20 @@ def write_instruction(shared_root: Path, content: str, date: str) -> Path:
 
 
 def read_evolution_suggestions(shared_root: Path) -> list[dict]:
-    """读取昨日学习的进化建议（由 orchestrator 的 reflect_and_evolve 生成）。"""
-    evolution_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'evolution-suggestions.json'
-    if not evolution_file.exists():
-        return []
+    """读取昨日学习的进化建议（由通用反思引擎生成）。"""
     try:
-        data = json.loads(evolution_file.read_text(encoding='utf-8'))
-        return data.get('suggestions', [])
-    except Exception:
-        return []
+        from reflection_engine import ReflectionEngine
+        return ReflectionEngine.read_suggestions(shared_root, 'github-learning')
+    except ImportError:
+        # fallback: 直接读文件
+        evolution_file = shared_root / 'runtime' / 'hermes' / 'github-learning' / 'evolution-suggestions.json'
+        if not evolution_file.exists():
+            return []
+        try:
+            data = json.loads(evolution_file.read_text(encoding='utf-8'))
+            return data.get('suggestions', [])
+        except Exception:
+            return []
 
 
 def generate_evolution_instructions(suggestions: list[dict]) -> str:
@@ -411,13 +416,15 @@ def generate_evolution_instructions(suggestions: list[dict]) -> str:
         lines.append('')
         lines.append('**必须改进**：')
         for s in high_priority:
-            lines.append(f'- 🔴 {s["suggestion"]}')
+            msg = s.get('message') or s.get('suggestion', '')
+            lines.append(f'- 🔴 {msg}')
 
     if medium_priority:
         lines.append('')
         lines.append('**建议提升**：')
         for s in medium_priority:
-            lines.append(f'- 🟡 {s["suggestion"]}')
+            msg = s.get('message') or s.get('suggestion', '')
+            lines.append(f'- 🟡 {msg}')
 
     return '\n'.join(lines)
 

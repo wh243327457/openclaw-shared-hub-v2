@@ -32,6 +32,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--book-id', help='指定读哪本书（跳过队列选择）')
     parser.add_argument('--chapter', type=int, help='指定读第几章')
     parser.add_argument('--list', action='store_true', help='列出书单')
+    parser.add_argument('--reflect', action='store_true', help='执行反思（阅读完成后调用）')
+    parser.add_argument('--score', type=float, help='本次阅读质量评分')
+    parser.add_argument('--max-score', type=float, default=100, help='满分')
+    parser.add_argument('--issues', nargs='*', default=[], help='本次问题')
+    parser.add_argument('--strengths', nargs='*', default=[], help='本次优势')
     return parser.parse_args()
 
 
@@ -169,6 +174,28 @@ def main() -> None:
             total = b.get('chapters', '?')
             practice = ' + 刻意练习' if b.get('practice_after') else ''
             print(f'{status} [{b.get("priority", "?")}] {b.get("title_cn") or b["title"]} ({b["author"]}) — {ch}/{total} — {b["domain"]}{practice}')
+        return
+
+    # 反思模式
+    if args.reflect:
+        from reflection_engine import ReflectionEngine
+        engine = ReflectionEngine('reading-plan', shared_root)
+        if args.score is not None:
+            engine.record_feedback(
+                score=args.score,
+                max_score=args.max_score,
+                issues=args.issues or [],
+                strengths=args.strengths or [],
+            )
+        suggestions = engine.reflect()
+        engine.save()
+        log(f'✅ 读书反思完成，{len(suggestions)} 条建议')
+        for s in suggestions:
+            log(f'   [{s.priority}] {s.message}')
+        enhancement = engine.get_instruction_enhancement()
+        if enhancement:
+            print('\n--- 明日指令增强 ---')
+            print(enhancement)
         return
 
     # 检查是否在刻意练习阶段

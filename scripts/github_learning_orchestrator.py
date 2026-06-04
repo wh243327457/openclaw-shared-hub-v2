@@ -700,110 +700,35 @@ def reflect_and_evolve(
     strengths: list[str],
     shared_root: Path
 ) -> None:
-    """Step 5: 反思进化 — 从本次学习中提取改进建议，更新明日学习策略。
+    """Step 5: 反思进化 — 使用通用反思引擎。
 
     这是自我进化的核心：每次学习都是一次经验，反思后自动调整指令模板。
     """
     log('Step 5: 反思进化...')
+    try:
+        from reflection_engine import ReflectionEngine
 
-    # 1. 读取历史反馈趋势
-    feedback_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'audit-feedback.json'
-    history: list[dict] = []
-    if feedback_file.exists():
-        try:
-            data = json.loads(feedback_file.read_text(encoding='utf-8'))
-            history = data.get('feedbacks', [])[-14:]  # 最近 14 天
-        except Exception:
-            pass
+        engine = ReflectionEngine(
+            domain='github-learning',
+            shared_root=shared_root,
+            history_window=14,
+            recurring_threshold=3,
+        )
+        engine.record_feedback(
+            score=score,
+            max_score=PASS_SCORE,
+            issues=issues,
+            strengths=strengths,
+            metadata={'date': date},
+        )
+        suggestions = engine.reflect()
+        engine.save()
 
-    # 2. 分析趋势
-    scores = [h.get('score', 0) for h in history]
-    avg_score = sum(scores) / len(scores) if scores else 0
-    trend = 'improving' if len(scores) >= 3 and scores[-1] > scores[-3] else \
-            'declining' if len(scores) >= 3 and scores[-1] < scores[-3] else 'stable'
-
-    # 3. 统计高频扣分项（最近 7 天）
-    recent_issues: dict[str, int] = {}
-    for h in history[-7:]:
-        for issue in h.get('issues', []):
-            if issue and issue != '无':
-                recent_issues[issue] = recent_issues.get(issue, 0) + 1
-
-    # 4. 生成进化建议
-    suggestions: list[dict] = []
-
-    # 4a. 基于当前扣分项
-    for issue in issues:
-        if not issue or issue == '无':
-            continue
-        suggestions.append({
-            'type': 'fix_issue',
-            'priority': 'high',
-            'issue': issue,
-            'suggestion': f'明日指令必须强化：{issue}',
-            'auto_action': 'add_to_instruction',
-        })
-
-    # 4b. 基于趋势
-    if trend == 'declining':
-        suggestions.append({
-            'type': 'trend_alert',
-            'priority': 'high',
-            'suggestion': f'最近 7 天平均分 {avg_score:.1f}，呈下降趋势。需要提高学习深度或调整项目选择策略。',
-            'auto_action': 'escalate_depth',
-        })
-    elif trend == 'improving' and avg_score >= 20:
-        suggestions.append({
-            'type': 'trend_positive',
-            'priority': 'medium',
-            'suggestion': f'平均分 {avg_score:.1f}，持续进步。可以尝试更高难度：增加跨项目对比分析、架构反模式识别。',
-            'auto_action': 'increase_challenge',
-        })
-
-    # 4c. 基于高频重复扣分
-    for issue, count in recent_issues.items():
-        if count >= 3:
-            suggestions.append({
-                'type': 'recurring_issue',
-                'priority': 'high',
-                'suggestion': f'「{issue}」最近 7 天出现 {count} 次，是系统性问题。指令模板需要结构性修改。',
-                'auto_action': 'modify_template',
-            })
-
-    # 4d. 学习策略反思
-    if score >= PASS_SCORE:
-        suggestions.append({
-            'type': 'strategy_reflection',
-            'priority': 'low',
-            'suggestion': '本次学习达标。反思：哪些项目收获最大？哪些浪费时间？明日应优先选什么类型的项目？',
-            'auto_action': 'log_for_review',
-        })
-
-    # 5. 写入进化建议文件
-    evolution_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'evolution-suggestions.json'
-    evolution_data = {
-        'date': date,
-        'score': score,
-        'trend': trend,
-        'avg_score_7d': round(avg_score, 1),
-        'suggestions': suggestions,
-        'strengths': strengths,
-        'issues': issues,
-    }
-    evolution_file.parent.mkdir(parents=True, exist_ok=True)
-    evolution_file.write_text(json.dumps(evolution_data, indent=2, ensure_ascii=False), encoding='utf-8')
-
-    # 6. 输出反思摘要
-    log(f'  趋势: {trend}（7 日均分 {avg_score:.1f}）')
-    log(f'  建议数: {len(suggestions)}')
-    high_priority = [s for s in suggestions if s.get('priority') == 'high']
-    if high_priority:
-        log(f'  ⚠️ 高优先建议:')
-        for s in high_priority[:3]:
-            log(f'    - {s["suggestion"][:80]}')
-    else:
-        log(f'  ✅ 无高优先改进建议')
-    log(f'  进化建议已写入: {evolution_file}')
+        log(f'   进化建议: {len(suggestions)} 条')
+        for s in suggestions:
+            log(f'   [{s.priority}] {s.message}')
+    except Exception as e:
+        log(f'   ⚠️ 反思引擎异常: {e}')
 
 
 def main() -> None:
