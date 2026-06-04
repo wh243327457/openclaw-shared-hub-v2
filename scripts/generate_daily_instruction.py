@@ -209,10 +209,13 @@ def generate_instruction_template(
   - **架构/实现**：核心模块、数据流、关键依赖
   - **repo tree 摘要**：目录结构 + 每层用途
   - **关键源码文件**：文件路径 + 用途 + 关键内容摘要
+  - **⭐ 源码精读**（新增）：至少 3 个核心函数/方法的签名 + 逻辑摘要，用代码块展示关键实现片段（≥3 个代码块/项目）
+  - **依赖分析**（新增）：go.mod/requirements.txt/package.json 核心依赖列表 + 供应链风险评估
   - **可复用经验**：至少 1 条「当……时，应优先……」格式
   - **可尝试实验**：30 分钟内能做的最小 demo
   - **风险边界**：license、维护活跃度、安全风险、不适用场景
   - **⭐ Skill 升格判断**：可直接迁移 / 需二次验证 / 暂不沉淀（必须明确，禁止空话）
+  - **⭐ 落地路径**（新增）：如果要在 Hermes/OpenClaw 中复用该项目的某个模式，具体怎么做（列出文件/模块/接口）
 - **经验沉淀**（至少 3 条通用经验）
 - **明日继续**（下一步最小动作）
 - **候选反哺**（candidate facts / skills / open questions）
@@ -240,16 +243,18 @@ def generate_instruction_template(
 
 ### 硬性要求（不达标直接不合格，16 分返工线）
 
-| # | 维度 | 分值 | 要求 |
-|---|------|------|------|
-| 1 | 结构完整 | 4 | 五个必需章节齐全 |
-| 2 | 深读数量 | 3 | ≥2 个深读项目 |
-| 3 | **源码深度** | 3 | repo tree + 关键文件 + 架构分析 + 代码块 |
-| 4 | **API 数据** | 2 | stars + license 来自 GitHub API |
-| 5 | 可迁移经验 | 3 | ≥3 条「当……时，应优先……」格式 |
-| 6 | 风险边界 | 2 | license + 安全 + 局限性 + 维护活跃度 |
-| 7 | **Skill 升格** | 2 | 每个项目明确：可直接迁移 / 需二次验证 / 暂不沉淀 |
-| 8 | 无幻觉 | 1 | 无可疑 stars 数字或未验证声明 |
+|| # | 维度 | 分值 | 要求 |
+||---|------|------|------|
+|| 1 | 结构完整 | 4 | 五个必需章节齐全（今日结论/项目速览/深读/经验沉淀/明日继续） |
+|| 2 | 深读数量 | 3 | ≥2 个深读项目 |
+|| 3 | **源码深度** | 3 | repo tree + 关键文件 + 架构分析 + 代码块 |
+|| 4 | **源码精读** | 2 | 每个深读项目 ≥3 个代码块，展示关键函数签名+逻辑（新增） |
+|| 5 | **API 数据** | 2 | stars + license 来自 GitHub API |
+|| 6 | 可迁移经验 | 3 | ≥3 条「当……时，应优先……」格式 |
+|| 7 | 风险边界 | 2 | license + 安全 + 局限性 + 维护活跃度 |
+|| 8 | **Skill 升格** | 2 | 每个项目明确：可直接迁移 / 需二次验证 / 暂不沉淀 |
+|| 9 | **落地路径** | 1 | 至少 1 个项目给出 Hermes/OpenClaw 复用路径（新增） |
+|| 10 | 无幻觉 | 1 | 无可疑 stars 数字或未验证声明 |
 
 ### 禁止事项
 
@@ -377,6 +382,46 @@ def write_instruction(shared_root: Path, content: str, date: str) -> Path:
     return output_file
 
 
+def read_evolution_suggestions(shared_root: Path) -> list[dict]:
+    """读取昨日学习的进化建议（由 orchestrator 的 reflect_and_evolve 生成）。"""
+    evolution_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'evolution-suggestions.json'
+    if not evolution_file.exists():
+        return []
+    try:
+        data = json.loads(evolution_file.read_text(encoding='utf-8'))
+        return data.get('suggestions', [])
+    except Exception:
+        return []
+
+
+def generate_evolution_instructions(suggestions: list[dict]) -> str:
+    """将进化建议转化为明日指令的强化内容。"""
+    if not suggestions:
+        return ''
+
+    high_priority = [s for s in suggestions if s.get('priority') == 'high']
+    medium_priority = [s for s in suggestions if s.get('priority') == 'medium']
+
+    if not high_priority and not medium_priority:
+        return ''
+
+    lines = ['### 🧬 自我进化建议（昨日学习反思）']
+
+    if high_priority:
+        lines.append('')
+        lines.append('**必须改进**：')
+        for s in high_priority:
+            lines.append(f'- 🔴 {s["suggestion"]}')
+
+    if medium_priority:
+        lines.append('')
+        lines.append('**建议提升**：')
+        for s in medium_priority:
+            lines.append(f'- 🟡 {s["suggestion"]}')
+
+    return '\n'.join(lines)
+
+
 def main() -> None:
     args = parse_args()
     date = args.date
@@ -400,6 +445,13 @@ def main() -> None:
     
     # 5. 生成强化指令
     enhanced_instructions = generate_enhanced_instructions(failures)
+    
+    # 5.5 读取昨日进化建议（自我进化闭环）
+    evolution_suggestions = read_evolution_suggestions(shared_root)
+    evolution_instructions = generate_evolution_instructions(evolution_suggestions)
+    if evolution_instructions:
+        enhanced_instructions += '\n\n' + evolution_instructions
+        print(f'   - 自我进化建议: {len(evolution_suggestions)} 条')
     
     # 6. 构建审计反馈摘要
     audit_feedback = '暂无最近审计反馈' if not feedbacks else f'最近 {len(feedbacks)} 条反馈已记录'

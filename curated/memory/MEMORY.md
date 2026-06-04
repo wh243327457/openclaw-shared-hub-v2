@@ -4,10 +4,8 @@
 
 ## 根路径
 
-- 推荐宿主统一目录：`~/agent/shared`
-- 推荐环境变量：`SHARED_HUB_ROOT=$HOME/agent/shared`
-- 共享中台本体不是 `runtime/`；`runtime/` 只是共享根内的机器本地临时产物层
-- 容器或自定义目录必须显式设置 `SHARED_HUB_ROOT`
+- 宿主：`/home/vany/agent/shared`
+- 容器：`/home/node/.openclaw/shared`
 
 ## 作用范围
 
@@ -29,10 +27,6 @@
 - **Self-Healing Agent / 全局巡查自我修复**：`curated/memory/projects/self-healing-agent.md`
 - **Elephant Agent 机制研究与 shared hub v2 反哺**：`curated/memory/projects/elephant-agent-mechanism-study.md`
 - **共享技能清单**：`capabilities/manifests/shared-skills.yaml`
-- **路径可迁移契约**：`capabilities/skills/foundation/path-portability/SKILL.md`
-- **跨机器迁移清单**：`capabilities/skills/foundation/path-portability/references/migration-checklist.md`
-- **路径解析器**：`scripts/resolve_shared_root.py`
-- **路径可迁移长期事实**：`curated/memory/facts/path-portability.md`
 - **治理总结标准**：`docs/shared-governance-standard.md`
 - **治理总结机制**：`docs/governance-summary-mechanism.md`
 - **配置目标识别规则**：`capabilities/skills/foundation/config-target-routing/SKILL.md`
@@ -59,8 +53,7 @@
 - `docs/shared-governance-standard.md` 已建立，作为 shared hub 长期筛选、总结、晋升、压缩、淘汰的强制执行标准
 - `docs/governance-summary-mechanism.md` 已建立，作为 shared hub 治理总结机制说明入口
 - `foundation/config-target-routing` 已升格为共享 skill，用于约束 Hermes / OpenClaw / future-agent 在配置类任务前先识别目标系统，避免混改配置
-- `foundation/path-portability` 已升格为共享 skill，用于约束运行时代码通过 `resolve_shared_root.py` 解析宿主根，统一推荐宿主目录 `~/agent/shared`，禁止硬编码机器专属绝对路径；`manifest.yaml: deployment` 段同步建立解析顺序、跨机器搬运最小保留集与 git 忽略规则
-- `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程、配置治理、路径可迁移等稳定事实条目
+- `curated/memory/facts/` 已包含自主学习、多 agent 编排、agent 工程与配置治理等稳定事实条目
 - 后续新增长期记忆时，请同时更新本索引
 - `autonomous-learning-system` 已进入 v0.1 骨架落地阶段，正式架构在 `curated/memory/projects/autonomous-learning-system.md`，runtime 配置与模板在 `runtime/hermes/autonomous-learning/`
 - 已按用户确认晋升 3 条自主学习长期模式：多 agent 编排、skill-as-contract/subagent 四状态、verification-first agent 工程实践。
@@ -72,21 +65,21 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-06-01T06:00:02+08:00`
-- 共享根目录: `~/agent/shared`（或 `$SHARED_HUB_ROOT`）
-- runtime 位置提示: `<shared-root>/runtime`
+- 生成时间: `2026-06-04T06:00:02+08:00`
+- 共享根目录: `/home/vany/agent/shared`
+- runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 18
 - projects 文件数: 7
 - 最近 daily 文件:
-  - `inbox/hermes/daily/2026-05-31.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-05-31.md` (inbox/openclaw/daily)
-  - `inbox/openclaw/daily/2026-05-30.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-05-30.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-05-29.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-06-03.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-06-03.md` (inbox/openclaw/daily)
+  - `inbox/openclaw/daily/2026-06-02.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-06-02.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-06-01.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 38
-  - `openclaw`: 50
+  - `hermes`: 41
+  - `openclaw`: 41
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
@@ -155,6 +148,16 @@
 - **✅ 已完成产出** [score=0.842 recalls=0 avg=0.620 source=memory/2026-05-16.md:22-22]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:6:7 -->
 - run_ts: '1778891706299' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-16.md:6-7]
+
+## Promoted From Pending Queue (2026-06-04)
+
+- **opensquilla-agent-runtime-architecture**: Hermes 竞品 OpenSquilla 的微内核架构分析，含 ML 模型路由、Dream 记忆压缩、per-session 锁。→ `facts/opensquilla-agent-runtime-architecture.md`
+- **anthropic-multi-agent-engineering**: Anthropic 多 agent 研究系统工程实践，token 用量 15x 换质量，验证 orchestrator-worker 模式。→ `facts/anthropic-multi-agent-engineering.md`
+- **antirez-ds4-local-inference**: antirez 的 ds4 本地推理引擎，Disk KV Cache 跨 session 复用 + 不对称 MoE 量化。→ `facts/antirez-ds4-local-inference.md`
+- **claude-code-engineering-practices**: Claude Code 工程模式：验证优先、权限先于自主权、project rules 作为可执行上下文。→ `facts/claude-code-engineering-practices.md`
+
+
+
 
 
 

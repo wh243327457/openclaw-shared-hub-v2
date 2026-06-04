@@ -105,23 +105,23 @@ docker exec openclaw sh -lc 'openclaw cron list'
 ls -la <shared-root>/inbox/openclaw/daily/YYYY-MM-DD.md
 ```
 
-### ⚠️ OpenClaw 输出格式不匹配（2026-05-13 发现）
+### ⚠️ OpenClaw 输出格式不匹配（2026-05-13 发现，2026-06-04 已修复）
 
-**问题**: OpenClaw 的实际学习产出格式（A/B/C 章节结构）与 `daily-instruction.md` 模板定义的格式不同。
+**历史问题**: OpenClaw 的实际学习产出格式与 `audit_learning()` 的 regex 不匹配，导致审计假阴性（14/16，内容实际良好）。
 
-OpenClaw 实际输出结构：
-- A. 抓取口径（查询 URL、抓取时间、筛选算法）
-- B. 候选表（7 列：owner/repo、stars、language、license 等）
-- C. 深读项目（README 核心命令、源码分析等）
+**修复状态（2026-06-04）**：✅ 全部修复，审计从 14/16 升至 23/23。
 
-模板期望的结构：
-- 今日结论、项目速览、深读项目、经验沉淀、明日继续
+**已修复的 regex**：
+- 深读标题：新增 `r'^##\s+深读项目\s+'` 和 `r'^###\s+\d+\.\s+'` 匹配
+- Stars 数据：新增表格 header + data row 联合匹配
+- License：新增表格格式匹配
+- 经验沉淀：新增「可复用经验」章节名兼容
+- 明日继续：新增「明日建议」「下一步」「候选反哺」兼容
+- 项目提取字段：兼容 `**一句话判断**：`（无 `- ` 前导）和全角/半角冒号
 
-**影响**: 审计时因格式不匹配被判定为缺失章节，导致不必要的扣分。
-
-**调试技巧**: 用 `--skip-openclaw` 参数测试编排器流程，避免每次等 30 分钟：
+**调试技巧**: 用 `--skip-openclaw` 参数测试编排器流程：
 ```bash
-python3 scripts/github_learning_orchestrator.py --skip-openclaw
+python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-DD
 ```
 
 ### 自进化机制
@@ -403,22 +403,24 @@ shared/
 - [ ] 无明文 secret
 - [ ] delivery 失败时已写入 inbox 并标注
 
-## Hermes 审计标准
+## Hermes 审计标准（v3，10 维 23 分制）
 
-按 20 分制审计，低于 16 分返工。
+低于 16 分返工。审计失败自动重试 1 次（清除旧产出→重触发 OpenClaw→再审计）。
 
-| 项 | 满分要求 |
-|---|---|
-| 来源完整 | 仓库、README/docs/release/issue 链接齐全 |
-| 事实准确 | 关键事实可追溯，不臆测 |
-| 中心判断 | 明确说明为什么值得学 |
-| 技术深度 | 讲清实现思路和边界 |
-| 可复用动作 | 有条件-动作规则或 checklist |
-| 安全合规 | 明确 license、安全、数据风险 |
-| 反宣传能力 | 能指出局限和不适用场景 |
-| Obsidian 结构 | frontmatter 和目录符合知识库规范 |
-| Skill 升格判断 | 明确是否升格及原因 |
-| 每日推送质量 | 3-5 条高密度行动信息 |
+| # | 维度 | 分值 | 检查方式 |
+|---|------|------|----------|
+| 1 | 结构完整 | 4 | 五个必需章节逐一检查（兼容「可复用经验」「候选反哺」等变体章节名） |
+| 2 | 深读数量 | 3 | `### 项目` / `### N.N` / `## 深读项目` 头计数，≥3 满分 |
+| 3 | 源码深度 | 3 | repo tree/关键文件/架构/代码块 4 信号 |
+| 4 | 源码精读 | 2 | 代码块计数：≥6 满分，≥3 半分 |
+| 5 | API 数据 | 2 | stars 三路匹配（行内/表格 header/header+data）+ license 两路匹配 |
+| 6 | 可迁移经验 | 3 | `当……时，应优先……` 格式 + 经验沉淀/可复用经验章节列表项 |
+| 7 | 风险边界 | 2 | license/安全风险/局限性/维护活跃度 4 信号 |
+| 8 | Skill 升格 | 2 | `skill 升格/升格判断/可沉淀/暂不沉淀/继续观察` |
+| 9 | 落地路径 | 1 | `落地路径/复用路径/在 Hermes/在 OpenClaw` |
+| 10 | 无幻觉 | 1 | 可疑 stars >500K 检测 |
+
+PASS 阈值 16，MAX_SCORE=23。实现：`shared/scripts/github_learning_orchestrator.py::audit_learning()`。
 
 ## 落盘路径
 
@@ -497,27 +499,63 @@ cat runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt
 
 - GitHub 限流：用 Trending HTML 或前日缓存。
 - README 缺失：只放观察，不深读。
-- OpenClaw 模型失败：切换到已验证模型 `minimax/MiniMax-M2.7`。
+- **OpenClaw 容器不可用**：Hermes 用 delegate_task 子 agent 直接深读（见下方「Hermes 直接深读 fallback」）。
+- OpenClaw 模型失败：按优先级尝试模型 `minimax/MiniMax-M3`（timeout≥1800s）> `self/gpt-5.4-mini` > `openai/gpt-5.2`。注意 `minimax/MiniMax-Text-01` 不能用于此任务（见下方陷阱）。如果所有模型都失败，走 Hermes fallback 路径。
 - cron 推送失败：先写 runtime 日志，再由 Hermes 当前会话汇报。
 - 微信未配置：不阻塞知识库落盘。
-- 审计不通过：保留草稿到 runtime，不进入长期知识资产。
+- 审计不通过：保留草稿到 runtime，不进入长期知识资产。审计失败自动重试 1 次（清除旧产出→重触发→再审计）。
 
-## ⚠️ 审计评分体系（v2，2026-05-30 重写）
+### Hermes 直接深读 fallback（OpenClaw 不可用时）
+
+当 OpenClaw 容器不可用时，Hermes 可独立完成完整深读闭环：
+
+1. **delegate_task 采集 Trending**（web+terminal toolsets，600s 超时）
+2. **筛选 3 个高价值项目**（优先 AI/Agent/DevOps/CLI 领域）
+3. **并行 delegate_task 每个项目深读**（terminal+file toolsets）
+   - 注意 `max_concurrent=1`，实际串行执行
+   - 每个子 agent 约 120-300s，总耗时 10-15 分钟
+4. **编译完整报告** → 写入 `inbox/openclaw/daily/YYYY-MM-DD-v3.md`
+5. **走编排器** `--skip-openclaw` 审计 → 知识库 → 推送
+
+实测 23/23 满分（2026-06-04）。
+
+### 大仓库 clone 超时 fallback
+
+当 `git clone --depth 1` 超时 60s 时，改用 GitHub REST API：
+
+```bash
+# 获取目录结构
+curl -s "https://api.github.com/repos/{owner}/{repo}/contents/" | jq -r '.[].name'
+
+# 获取文件内容（base64 解码）
+curl -s "https://api.github.com/repos/{owner}/{repo}/contents/{path}" | jq -r '.content' | base64 -d
+
+# 获取子目录
+curl -s "https://api.github.com/repos/{owner}/{repo}/contents/{dir}?ref=main"
+```
+
+未认证限额 60 次/小时。3 个项目各读 10 文件 = 30 次，足够。
+
+## ⚠️ 审计评分体系（v3，2026-06-04 最终版）
 
 旧审计只检查关键词存在性（"有就给分"），导致永远 16/20 通过、issues 永远"无"，反馈闭环断裂。
 
-新审计 8 维 20 分制：
+v3 审计 10 维 23 分制：
 
 | # | 维度 | 分值 | 检查方式 |
 |---|------|------|----------|
-| 1 | 结构完整 | 4 | 五个必需章节逐一检查 |
-| 2 | 深读数量 | 3 | `### 项目` 或 `### N.N 项目名` 头计数，≥3 满分 |
+| 1 | 结构完整 | 4 | 五个必需章节逐一检查（兼容「可复用经验」「候选反哺」等变体章节名） |
+| 2 | 深读数量 | 3 | `### 项目` / `### N.N` / `## 深读项目` 头计数，≥3 满分 |
 | 3 | 源码深度 | 3 | repo tree/关键文件/架构/代码块 4 信号 |
-| 4 | API 数据 | 2 | stars 数字 + license 信息正则匹配 |
-| 5 | 可迁移经验 | 3 | `当……时，应优先……` 格式 + 经验沉淀章节列表项 |
-| 6 | 风险边界 | 2 | license/安全风险/局限性/维护活跃度 4 信号 |
-| 7 | Skill 升格 | 2 | `skill 升格/升格判断/可沉淀/暂不沉淀/继续观察` |
-| 8 | 无幻觉 | 1 | 可疑 stars >500K 检测 |
+| 4 | 源码精读 | 2 | 代码块计数：≥6 满分，≥3 半分（新增 v3） |
+| 5 | API 数据 | 2 | stars 三路匹配（行内/表格 header/header+data）+ license 两路匹配 |
+| 6 | 可迁移经验 | 3 | `当……时，应优先……` 格式 + 经验沉淀/可复用经验章节列表项 |
+| 7 | 风险边界 | 2 | license/安全风险/局限性/维护活跃度 4 信号 |
+| 8 | Skill 升格 | 2 | `skill 升格/升格判断/可沉淀/暂不沉淀/继续观察` |
+| 9 | 落地路径 | 1 | `落地路径/复用路径/在 Hermes/在 OpenClaw`（新增 v3） |
+| 10 | 无幻觉 | 1 | 可疑 stars >500K 检测 |
+
+PASS 阈值 16，MAX_SCORE=23。审计失败自动重试 1 次。
 
 实现：`shared/scripts/github_learning_orchestrator.py::audit_learning()` + `_count_pattern()`
 
@@ -581,6 +619,40 @@ python3 scripts/github_learning_orchestrator.py --skip-openclaw --date YYYY-MM-D
 详细案例：`references/2026-05-22-fallback-and-push-guard.md`。
 
 Full session details: `references/2026-05-27-manual-retrigger-and-wechat-rate-limit.md`.
+
+### ⚠️ OpenClaw 模型级联失败（2026-06-02 发现）
+
+当 OpenClaw cron job 的模型从 allowlist 被移除或 provider key 失效时，逐个尝试模型会导致多次失败。不同模型的典型失败模式：
+
+| 模型 | 典型错误 | 耗时 | 诊断 |
+|------|---------|------|------|
+| `minimax/MiniMax-M2.7` | `rejected by agents.defaults.models allowlist` | 24ms | 模型已从 allowlist 移除 |
+| `minimax/MiniMax-M3` | 超时（600s 不够） | ~556s | 需要 `--timeout-seconds 1800` |
+| `minimax/MiniMax-Text-01` | 完成但**不写文件** | ~52s | ⚠️ 该模型不使用工具，只返回推理文本 |
+| `deepseek/deepseek-v4-flash` | `HTTP 401: Invalid API Key` | <1s | Provider API key 过期 |
+| `mimo/MiMo-V2.5-Pro` | `HTTP 401: Invalid API Key` | <1s | Provider API key 过期 |
+| `openai/gpt-5.2` | `hasBeforeToolCallPolicy is not a function` | ~11s | OpenClaw 版本兼容问题 |
+| `self/gpt-5.4` | `403 Forbidden` | ~4s | 自托管模型权限问题 |
+
+**诊断命令**：
+```bash
+# 查看最近一次 run 的错误
+docker exec openclaw openclaw cron runs --id <job-id> --limit 1 2>&1 | grep -E '"error"|"status"|"durationMs"'
+
+# 查看 allowlist 中可用的模型
+docker exec openclaw openclaw config get agents.defaults.models 2>&1
+
+# 改模型
+docker exec openclaw openclaw cron edit <job-id> --model "minimax/MiniMax-M3" --timeout-seconds 1800
+
+# 改完后重新触发
+docker exec openclaw openclaw cron run <job-id>
+```
+
+**关键教训**：
+- `minimax/MiniMax-Text-01` 虽然返回 `status: ok`，但**不调用任何工具**，不写文件。不要因为 cron run 成功就认为产出已生成，必须检查 inbox 文件是否实际存在。
+- `minimax/MiniMax-M3` 需要至少 1800s timeout，原来的 600s 不够。
+- 检查 cron run status 要用 `openclaw cron list`（实时状态）而不是 `cron runs`（历史记录可能缓存旧的 error）。
 
 ### ⚠️ Orchestrator timeout but instruction already exists: manual re-trigger recovery
 

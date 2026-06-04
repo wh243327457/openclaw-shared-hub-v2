@@ -134,12 +134,24 @@ docker exec openclaw-main agent --local --agent main \
 
 ### Step 5：晋升决策
 
-| 质量分 | 决策 |
+**评分只是筛选线，不是决策依据。** 用户明确要求：按"对系统的实际价值"评估，不按分数排序。
+
+评估维度（按优先级）：
+1. **直接影响 Hermes/OpenClaw 架构**：竞品分析、安全范式、架构模式 → 高价值，建议晋升
+2. **指导实际系统决策**：有量化数据、可复用模式、落地路径 → 中高价值
+3. **技术参考但不急迫**：有趣的技术判断但当前无应用场景 → 中等价值，runtime 够用
+4. **已半衰或重复**：过时的项目分析、重复候选 → 低价值，归档
+
+分数阈值仅作为初筛线：
+
+| 质量分 | 初筛 |
 |--------|------|
-| 18-20 | 建议晋升 curated，需用户确认 |
-| 15-17 | 晋升 runtime learning，不自动进 curated |
-| 10-14 | 存档，供后续参考 |
+| 18-20 | 进入价值评估（不自动晋升） |
+| 15-17 | 默认 runtime learning |
+| 10-14 | 存档 |
 | <10   | 标记为失败教训 |
+
+最终决策必须回答：**有它没它会怎样？它能指导什么实际系统动作？**
 
 ### Step 6：通知用户
 
@@ -227,14 +239,16 @@ docker exec openclaw-main agent --local --agent main \
 16. 上下文压力下 write_file 调用参数可能被破坏（path 字段被截断或留空），导致 "missing required field 'path'" 错误，最终通知文件未能写入。症状：写入大量内容后紧接着 write_file 失败，后续调用全部中断。缓解策略：先写核心通知文件，再写 review 文件；或分批写入，每批不超过 5 个文件。不要在同一次回复中连续调用 write_file 超过 3 次，中间穿插 read_file 或 terminal 以释放上下文缓冲。
 17. 禁止为同一 run 写入多个 quality review 文件（重复改名）。只写一个最终版 `<run_id>-quality-review.md`，评分要果断（不要写 17 个变体然后说"评分不确定"）。多个文件浪费 context 预算且不会提高审计质量，反而增大后续 run 的 preflight 开销。
 18. `generate_readable_notification.py` 可能在某些环境中缺失。2026-05-22 验证该脚本已存在于 `scripts/` 目录。写文件前先用 `test -f` 确认脚本存在，如不存在则降级为纯手动模板输出。不要假设脚本一定缺失或一定存在。详见 `references/2026-05-21-notification-missing-script.md` 和 `references/runtime-state-desync-patterns.md`。
-23. `generate_readable_notification.py` 的 `--lint-only` 模式期望通知文件名为 `<run_id>-readable-report.md`（不是 `<run_id>.md`）。脚本内部硬编码 `REPORTS / f"{args.run_id}-readable-report.md"` 作为 lint 目标，其中 `REPORTS` = `runtime/hermes/autonomous-learning/notifications/`（相对于 shared root）。手动写通知时，必须写到 `notifications/<run_id>-readable-report.md`（不是 `orchestrator-runs/<run_id>/` 下）。2026-06-01 实测：先写到 orchestrator-runs 子目录再跑 `--lint-only` 会报 FileNotFoundError，cp 到 `notifications/` 后通过。正确流程：(a) 写报告到 `notifications/<run_id>-readable-report.md`；(b) cp 一份到 `orchestrator-runs/<run_id>/` 留档；(c) `cd <shared-root> && python3 scripts/generate_readable_notification.py --run-id <id> --lint-only`。
+23. `generate_readable_notification.py` 的 `--lint-only` 模式期望通知文件名为 `<run_id>-readable-report.md`（不是 `<run_id>.md`）。脚本内部硬编码 `REPORTS / f"{args.run_id}-readable-report.md"` 作为 lint 目标，其中 `REPORTS` = `runtime/hermes/autonomous-learning/notifications/`（相对于 shared root）。手动写通知时，必须写到 `notifications/<run_id>-readable-report.md`（不是 `orchestrator-runs/<run_id>/` 下）。2026-06-01 实测：先写到 orchestrator-runs 子目录再跑 `--lint-only` 会报 FileNotFoundError，cp 到 `notifications/` 后通过。正确流程：(a) 写报告到 `notifications/<run_id>-readable-report.md`；(b) cp 一份到 `orchestrator-runs/<run_id>/` 留档；(c) `cd <shared-root> && python3 runtime/hermes/autonomous-learning/scripts/generate_readable_notification.py --run-id <id> --lint-only`。**注意脚本路径**：脚本位于 `runtime/hermes/autonomous-learning/scripts/` 下，不是 shared root 的 `scripts/`。2026-06-04 实测：用 `python3 scripts/generate_readable_notification.py` 会报 `No such file or directory`，用完整路径 `python3 runtime/hermes/autonomous-learning/scripts/generate_readable_notification.py` 通过。
 19. 每轮结束时检查上一轮遗留的高价值未处理项（如 zerolang / agents-best-practices 跨多轮重复出现）。在最终通知的"下一步"中明确提及，而不是静默跳过。pending promotion queue 中的待确认项不要超过 2 个批次才通知用户。
 20. 巡检型 scheduled learning 必须检查状态 desync：对比 delivery-state.json 与 health_alert.log 最新条目，如果前者显示 normal 但后者连续失败 >10 次，标记 desync 并在通知报告中列出。2026-05-30 实测发现另一类 desync：delivery-state.json 显示 normal + consecutive_failures=0，但 health-dashboard.json 已 12 天未刷新（`generated_at` 远早于最新 run 日期），且 pending-promotion-queue.json 计数与 dashboard `pending_promotion.awaiting_user_approval` 不一致。巡检必须交叉验证三个文件的时间戳和计数，不能只看 delivery-state。详见 `references/runtime-state-desync-patterns.md`。
 21. scheduled learning 若加载辅助 skill 时遇到本地与 shared 重名歧义（例如 `console-style-progress-report` 同时存在于 `/root/.hermes/skills` 与 shared capabilities），不要把它当成本轮学习失败；应继续执行核心 runtime-only 巡检，在最终报告的“执行情况/风险”中短句标记“skill 重名歧义”，并把后续处理列为可选清理项。不要在 cron 内自动删除、重命名或合并 skills。
 22. scheduled learning 若本轮没有新的当日学习输入（例如当天 `inbox/openclaw/daily/YYYY-MM-DD.md` 与 `inbox/hermes/daily/YYYY-MM-DD.md` 均不存在），不要为了填充报告重复制造上一轮 GitHub/日报主题。应降级为 runtime-only 输入新鲜度 + health/guard/verify_bridge/delivery/pending queue 巡检；明确标注"无新日报输入"，不写 curated，不把旧 raw 数据升级为新事实，并在通知里把 pending promotion queue 作为需要用户拍板项。详见 `references/2026-05-28-no-new-input-scheduled-learning.md`。**必须做三步验证后才能宣称"无新输入"**：(a) `test -f` 检查文件是否存在；(b) `stat` 检查 mtime 是否在本轮 run 时间窗口内；(c) 如文件存在，至少读取前 10 行确认非空。2026-05-30 实测：12:00 run 声称"无新日报输入"，但 openclaw daily 的 mtime 为 08:33（在 run 之前 3.5 小时），内容为完整的 GitHub 热门项目日报。仅检查文件存在性不够，还必须检查 mtime——因为同名文件可能是昨天的残留。
 24. 新 run 发现上一轮 run 的报告存在事实性错误（如 pending queue 计数错误、错误宣称无输入）时，必须在本轮报告的"📊 结果沉淀"中明确列出纠正项，并在 run-state.json 的 `desync_findings` 或 `notes` 字段中记录。不要静默跳过——用户依赖报告的准确性做决策，错误未纠正会导致 pending promotion 候选被遗忘或错误降级。
-27. `execute_code` 在 cron 模式下被安全策略阻止（`approvals.cron_mode` 限制）。cron run 中处理 JSON 数据不能用 `execute_code`，也不能用 `cat file | python3`（教训 9）。可用方式：(a) `read_file` 读取后在回复中人工解析；(b) `terminal` 调用独立 python 脚本文件（非管道）；(c) `terminal` 用 `python3 -c "import json; ..."` 内联（无管道）。2026-06-01 实测：`execute_code` 返回 `BLOCKED: execute_code runs arbitrary local Python... Cron jobs run without a user present`。
+27. `execute_code` 在 cron 模式下被安全策略阻止（`approvals.cron_mode` 限制）。cron run 中处理 JSON 数据不能用 `execute_code`，也不能用 `cat file | python3`（教训 9）。可用方式（按可靠性排序）：(a) **首选** `read_file` 读取后在回复中人工解析——零安全风险，不触发 tirith，不依赖 terminal；(b) `terminal` 调用独立 python 脚本文件（非管道）；(c) `terminal` 用 `python3 -c "import json; ..."` 内联（无管道）。2026-06-01 实测：`execute_code` 返回 `BLOCKED: execute_code runs arbitrary local Python... Cron jobs run without a user present`。2026-06-04 实测：`read_file` 读取 pending-promotion-queue.json 后手动逐行解析 items 列表，零报错、零安全拦截——是最可靠的 cron 模式 JSON 处理路径。
 28. 跨 run 事实纠正的措辞必须区分"当时正确 vs 现在错误"。当后续 run 发现前一 run 的结论因时序差异而不成立时（如 00:05 run 声称"无新输入"但文件在 08:36 才写入），desync_findings 应写："00:05 run was correct AT THAT TIME (file didn't exist yet), but 12:00 run has fresh input"。不要写成"00:05 run 错误宣称无输入"——这不公平，因为当时确实没有。同理，WeChat push guard 文件（`weixin-push-guard.json`）是 rate-limiting 状态的权威来源，优先于 run notes 中的推断。如果 run notes 声称"85+ consecutive failures"但 guard 文件显示 `last_push_at` 为近期且无 rate limit，以 guard 文件为准。
+29. **晋升决策必须按系统价值，不按分数（2026-06-04 用户明确要求）**。用户原话："不是看评分，应该是看整个的价值，对应项目对我们现在的系统的价值是什么？有它没它会有什么影响，它能带来的作用是什么？"。向用户展示候选时，用三档（高/中/低价值）+ "有/没它的影响" 列，而不是按分数降序排列。同项目多个候选只保留最高分那个，其余归档。
+30. **学习系统必须自我进化（2026-06-04 用户明确要求）**。用户原话："学习应该要会自我进步的，每次学习完后，应该想想后续要怎么学习才会更好"、"每次学习都当做一次经验，这样才能让自我学习变得更好"。实现方式：每次学习闭环末尾加 `reflect_and_evolve()` 步骤，分析趋势/扣分项/高频问题，生成进化建议写入 JSON，明日指令生成时读取建议自动融入。闭环：学习 → 审计 → 反思 → 进化建议 → 明日指令 → 学习。反思不只在失败时执行——通过时也要反思"哪些收获最大、哪些浪费时间"。
 
 ## 参考资料
 
