@@ -7,12 +7,24 @@
 
 import argparse
 import json
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-DEFAULT_SHARED_ROOT = Path('/home/vany/agent/shared')
+def default_shared_root() -> Path:
+    env_root = os.environ.get('SHARED_HUB_ROOT') or os.environ.get('AGENTS_SHARED_ROOT')
+    if env_root:
+        return Path(env_root).expanduser()
+    script = Path(__file__).resolve()
+    for parent in script.parents:
+        if (parent / 'manifest.yaml').is_file() and (parent / 'AGENTS.md').is_file():
+            return parent
+    return Path.home() / 'agent' / 'shared'
+
+
+DEFAULT_SHARED_ROOT = default_shared_root()
 PIPELINE = 'github-hot-project-learning'
 TZ = timezone(timedelta(hours=8))
 TEMPLATE_PATH = 'capabilities/skills/research/github-hot-project-learning/templates/daily-instruction.md'

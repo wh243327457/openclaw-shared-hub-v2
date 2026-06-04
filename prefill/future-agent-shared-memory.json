@@ -2,6 +2,9 @@
   "version": 1,
   "agent": "future-agent",
   "purpose": "Shared Hub v2 canonical context prefill for future-agent onboarding.",
+  "canonical_host_root": "~/agent/shared",
+  "root_env": "SHARED_HUB_ROOT",
+  "root_policy": "The shared hub root is not runtime/. runtime/ is only machine-local artifacts under the shared root.",
   "read_order": [
     "manifest.yaml",
     "AGENTS.md",

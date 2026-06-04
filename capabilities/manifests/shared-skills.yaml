@@ -92,6 +92,20 @@ shared_skills:
     reference_policy: class-level-only
     future_agent_readable: true
     description: 配置类任务先识别目标系统，避免把 Hermes / OpenClaw / shared 中台配置混用
+  - id: foundation/path-portability
+    path: foundation/path-portability
+    version: 1.0.0
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: '2026-06-02'
+    scope: governance
+    reference_policy: class-level-only
+    future_agent_readable: true
+    description: 共享中台 v2 的可迁移路径契约。所有运行时代码通过 scripts/resolve_shared_root.py 解析宿主根，禁止硬编码绝对路径；manifest.yaml 的 deployment 段定义解析顺序与跨机器搬运最小保留集。
   - id: autonomous-learning/orchestrator-protocol
     path: autonomous-learning/orchestrator-protocol
     version: '1.0'
