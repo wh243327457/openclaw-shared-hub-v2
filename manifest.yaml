@@ -146,6 +146,40 @@ layers:
     files:
       hermes: prefill/hermes-shared-memory.json
       future-agent: prefill/future-agent-shared-memory.json
+core_systems:
+  cron_manager:
+    description: 自动化任务管理，shared hub 为唯一真相源
+    truth_source: config/cron-jobs.json
+    tool: scripts/cron_manager.py
+    operations:
+      - list: 列出所有 job
+      - add: 新增 job（自动同步到 agent）
+      - remove: 删除 job（需确认）
+      - sync: 同步到 agent 本地
+      - diff: 查看差异
+    doc: config/cron-manifest.md
+  reflection_engine:
+    description: 通用自我反思引擎，跨领域复用
+    code: scripts/reflection_engine.py
+    skill: capabilities/skills/autonomous-learning/self-reflection-engine/
+    operations:
+      - reflect: 单领域反思
+      - summary: 跨领域汇总
+      - dashboard: 完整面板
+      - guardian: 自动扫描未接入反思的 cron job
+    guardian_schedule: "0 6 * * *"
+  bootstrap:
+    description: 一键接入/同步/导出
+    tool: scripts/bootstrap.py
+    operations:
+      - init: 新环境首次接入
+      - sync: 已有环境同步更新
+      - export: 导出配置备份
+      - check: 环境完整性检查
+  shared_skills:
+    description: 跨 agent 共享 skills
+    path: capabilities/skills/
+    manifest: capabilities/manifests/shared-skills.yaml
 policies:
   stable_truth: Only curated/memory is the cross-agent truth source.
   raw_writes: New raw agent notes belong in inbox/<agent>/daily.

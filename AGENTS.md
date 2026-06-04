@@ -63,6 +63,37 @@ shared/
     └── hermes-shared-memory.json
 ```
 
+## 核心系统
+
+接入共享中台的 agent **必须**了解以下系统：
+
+### 1. Cron 任务管理
+- **真相源**: `config/cron-jobs.json`（唯一权威定义）
+- **管理工具**: `scripts/cron_manager.py`
+- **新增**: `python3 scripts/cron_manager.py add --name X --schedule Y --prompt Z`
+- **删除**: `python3 scripts/cron_manager.py remove --id <id>`（需确认）
+- **同步**: `python3 scripts/cron_manager.py sync`（自动推到 agent 本地）
+- **查看**: `python3 scripts/cron_manager.py list` / `diff`
+- **文档**: `config/cron-manifest.md`
+
+### 2. 自我反思引擎
+- **代码**: `scripts/reflection_engine.py`
+- **Skill**: `capabilities/skills/autonomous-learning/self-reflection-engine/`
+- **用途**: 任何"执行→反馈→反思→进化"闭环
+- **CLI**: `python3 scripts/reflection_engine.py {reflect|summary|dashboard|guardian}`
+- **Guardian**: 每天 06:00 自动扫描未接入反思的 cron job
+
+### 3. 一键接入
+- **首次**: `python3 scripts/bootstrap.py init`
+- **同步**: `python3 scripts/bootstrap.py sync`
+- **检查**: `python3 scripts/bootstrap.py check`
+- **导出**: `python3 scripts/bootstrap.py export`
+
+### 4. 共享 Skills
+- **路径**: `capabilities/skills/`
+- **Manifest**: `capabilities/manifests/shared-skills.yaml`
+- 所有跨 agent 复用的 skill 都在这里，新 agent 自动获取
+
 ## 读写规范
 
 ### 1) Curated：长期稳定真相
