@@ -126,10 +126,10 @@ def _count_pattern(content: str, pattern: str) -> int:
 
 
 def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[str]]:
-    """Step 3: 审计学习产出（v2 — 内容深度导向）。
+    """Step 3: 审计学习产出（v3 — 内容深度导向 + 源码精读 + 落地路径）。
 
-    20 分制，低于 16 分返工。
-    维度：结构完整 4 + 深读数量 3 + 源码深度 3 + API 数据 2 + 可迁移经验 3 + 风险边界 2 + skill 升格 2 + 无幻觉 1
+    23 分制，低于 16 分返工。
+    维度：结构完整 4 + 深读数量 3 + 源码深度 3 + 源码精读 2 + API 数据 2 + 可迁移经验 3 + 风险边界 2 + skill 升格 2 + 落地路径 1 + 无幻觉 1
     """
     log('Step 3: 审计学习产出...')
 
@@ -148,9 +148,22 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     strengths: list[str] = []
 
     # ── 1. 结构完整性（4 分）─────────────────────
-    required_sections = ['今日结论', '项目速览', '深读项目', '经验沉淀', '明日继续']
+    required_sections = ['今日结论', '项目速览', '深读项目']
+    # 经验沉淀/可复用经验 都算通过
+    lesson_section_names = ['经验沉淀', '可复用经验']
+    has_lesson_section = any(s in content for s in lesson_section_names)
+    # 明日继续/明日建议/下一步 都算通过
+    tomorrow_section_names = ['明日继续', '明日建议', '下一步', '候选反哺']
+    has_tomorrow_section = any(s in content for s in tomorrow_section_names)
     missing_sections = [s for s in required_sections if s not in content]
-    structure_score = (len(required_sections) - len(missing_sections)) * 4 // len(required_sections)
+    if not has_lesson_section:
+        missing_sections.append('经验沉淀/可复用经验')
+    if not has_tomorrow_section:
+        missing_sections.append('明日继续/下一步')
+    # 总共 5 项检查：3 个必需章节 + 经验沉淀 + 明日继续
+    total_checks = len(required_sections) + 2  # +2 for lesson and tomorrow
+    missing_count = len(missing_sections)
+    structure_score = max(0, (total_checks - missing_count) * 4 // total_checks)
     score += structure_score
     if not missing_sections:
         strengths.append('五个必需章节齐全')
@@ -159,7 +172,7 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
             issues.append(f'缺少「{s}」章节')
 
     # ── 2. 深读项目数量（3 分）─────────────────────
-    deep_project_headers = [l for l in lines if l.strip().startswith('### 项目') or re.match(r'^###\s+\d+\.\d+\s+\S', l.strip())]
+    deep_project_headers = [l for l in lines if l.strip().startswith('### 项目') or re.match(r'^###\s+\d+[\.\d]*\.?\s+\S', l.strip()) or re.match(r'^##\s+深读项目\s+', l.strip()) or re.match(r'^###\s+\d+\.\s+', l.strip())]
     deep_count = len(deep_project_headers)
     if deep_count >= 3:
         score += 3
@@ -194,14 +207,27 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     else:
         issues.append('完全没有源码级分析，停留在 README 复述层')
 
+    # ── 3.5 源码精读（2 分）─────────────────────
+    # 统计代码块数量，每个深读项目应有 ≥3 个代码块
+    code_block_count = _count_pattern(content, r'```')
+    code_blocks = code_block_count // 2  # 每个代码块有开闭两个 ```
+    if code_blocks >= 6:
+        score += 2
+        strengths.append(f'源码精读良好（{code_blocks} 个代码块）')
+    elif code_blocks >= 3:
+        score += 1
+        strengths.append(f'有一定代码展示（{code_blocks} 个代码块，建议 ≥6）')
+    else:
+        issues.append(f'代码块不足（{code_blocks} 个，要求 ≥3，建议 ≥6 以展示关键函数签名和逻辑）')
+
     # ── 4. GitHub API 数据真实性（2 分）─────────────
     # 检查是否有实时数据：stars 数字、license、查询时间
     api_data_score = 0
-    if re.search(r'(Stars?|⭐)\s*[:：]?\s*\d[\d,.]*[Kk]?\b', content):
+    if re.search(r'(Stars?|⭐)\s*[:：]?\s*\d[\d,.]*[Kk]?\b', content) or re.search(r'\|\s*Stars?\s*\|.*?\d[\d,.]*\s*[★⭐]?\s*\|', content) or (re.search(r'(?i)Stars', content) and re.search(r'\|\s*\d{3,}[\d,]*\s*\|', content)):
         api_data_score += 1
     else:
         issues.append('缺少 stars 数据')
-    if re.search(r'(?i)(License)\s*[:：]?\s*\S+', content):
+    if re.search(r'(?i)(License)\s*[:：]?\s*\S+', content) or re.search(r'\|\s*License\s*\|\s*\S+\s*\|', content):
         api_data_score += 1
     else:
         issues.append('缺少 license 信息')
@@ -215,10 +241,10 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     lesson_count = _count_pattern(content, lesson_pattern)
     # 也统计「可复用经验」「可迁移」段落中的列表项
     if lesson_count == 0:
-        # fallback: 统计经验沉淀章节的列表项
+        # fallback: 统计经验沉淀/可复用经验章节的列表项
         in_lesson_section = False
         for line in lines:
-            if '经验沉淀' in line and line.lstrip().startswith('#'):
+            if ('经验沉淀' in line or '可复用经验' in line) and line.lstrip().startswith('#'):
                 in_lesson_section = True
                 continue
             if in_lesson_section and line.lstrip().startswith('#'):
@@ -259,6 +285,19 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     else:
         issues.append('缺少 skill 升格判断（要求明确：可直接迁移 / 需二次验证 / 暂不沉淀）')
 
+    # ── 7.5 落地路径（1 分）─────────────────
+    landing_signals = [
+        r'(?i)(落地路径|复用路径|实现路径|集成方案|怎么用|how\s+to\s+(use|integrate|implement))',
+        r'(?i)(在\s*Hermes|在\s*OpenClaw|接入|对接)',
+        r'(?i)(具体步骤|实现步骤|集成步骤)',
+    ]
+    landing_hits = sum(1 for p in landing_signals if _count_pattern(content, p) > 0)
+    if landing_hits >= 1:
+        score += 1
+        strengths.append('包含落地/复用路径')
+    else:
+        issues.append('缺少落地路径（建议给出 Hermes/OpenClaw 复用方案）')
+
     # ── 8. 无明显幻觉（1 分）─────────────────────
     # 检查可疑的 stars 数字（>500K 或增速离谱）
     suspicious_stars = re.findall(r'(?:Stars?|⭐)\s*[:：]?\s*(\d[\d,.]*)', content)
@@ -276,7 +315,8 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
         strengths.append('未发现明显数据幻觉')
 
     # ── 汇总 ──────────────────────────────────
-    score = min(score, PASS_SCORE)
+    MAX_SCORE = 23
+    score = min(score, MAX_SCORE)
     log(f'审计完成: {score}/{PASS_SCORE}')
     if issues:
         log(f'  问题: {"; ".join(issues[:5])}')
@@ -403,11 +443,13 @@ def _extract_deep_projects(content: str) -> list[dict[str, str]]:
 
     for raw_line in content.split('\n'):
         line = raw_line.strip()
-        if line.startswith('### 项目') or re.match(r'^###\s+\d+\.\d+\s+\S', line):
+        if line.startswith('### 项目') or re.match(r'^###\s+\d+\.\d+\s+\S', line) or re.match(r'^###\s+\d+\.\s+', line):
             if current:
                 projects.append(current)
             if line.startswith('### 项目'):
                 name = line.split(':', 1)[1].strip() if ':' in line else line.replace('###', '').strip()
+            elif re.match(r'^###\s+\d+\.\s+', line):
+                name = re.sub(r'^###\s+\d+\.\s+', '', line).strip()
             else:
                 name = re.sub(r'^###\s+\d+\.\d+\s+', '', line).strip()
             current = {
@@ -422,13 +464,25 @@ def _extract_deep_projects(content: str) -> list[dict[str, str]]:
         if not current:
             continue
 
-        if line.startswith('- **一句话判断**'):
-            current['judgement'] = line.split(':', 1)[1].strip() if ':' in line else line
-        elif line.startswith('- **解决的问题**'):
-            current['problem'] = line.split(':', 1)[1].strip() if ':' in line else line
-        elif line.startswith('- 当') and not current['lesson']:
+        if line.startswith('- **一句话判断**') or line.startswith('**一句话判断**'):
+            text = line.lstrip('- ').strip()
+            for sep in ['：', ':']:
+                if sep in text:
+                    current['judgement'] = text.split(sep, 1)[1].strip()
+                    break
+            else:
+                current['judgement'] = text
+        elif line.startswith('- **解决的问题**') or line.startswith('**解决的问题**'):
+            text = line.lstrip('- ').strip()
+            for sep in ['：', ':']:
+                if sep in text:
+                    current['problem'] = text.split(sep, 1)[1].strip()
+                    break
+            else:
+                current['problem'] = text
+        elif (line.startswith('- 当') or line.startswith('当')) and not current['lesson']:
             current['lesson'] = line.lstrip('- ').strip()
-        elif line.startswith('- **风险边界**'):
+        elif line.startswith('- **风险边界**') or line.startswith('**风险边界**'):
             current['risk'] = '已覆盖 license、维护活跃度、安全风险和适用边界'
 
     if current:
@@ -451,6 +505,8 @@ def generate_push_summary(date: str, score: int, strengths: list[str], knowledge
     projects = _extract_deep_projects(output_content)
     conclusion = _extract_section(output_content, '今日结论').split('\n')[0].strip()
     lessons_section = _extract_section(output_content, '经验沉淀')
+    if not lessons_section:
+        lessons_section = _extract_section(output_content, '可复用经验')
     lesson_lines = []
     for raw_line in lessons_section.split('\n'):
         line = raw_line.strip()
@@ -637,6 +693,119 @@ def push_to_wechat(summary: str, shared_root: Path) -> None:
     log('请手动发送或等待 cron 任务发送')
 
 
+def reflect_and_evolve(
+    date: str,
+    score: int,
+    issues: list[str],
+    strengths: list[str],
+    shared_root: Path
+) -> None:
+    """Step 5: 反思进化 — 从本次学习中提取改进建议，更新明日学习策略。
+
+    这是自我进化的核心：每次学习都是一次经验，反思后自动调整指令模板。
+    """
+    log('Step 5: 反思进化...')
+
+    # 1. 读取历史反馈趋势
+    feedback_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'audit-feedback.json'
+    history: list[dict] = []
+    if feedback_file.exists():
+        try:
+            data = json.loads(feedback_file.read_text(encoding='utf-8'))
+            history = data.get('feedbacks', [])[-14:]  # 最近 14 天
+        except Exception:
+            pass
+
+    # 2. 分析趋势
+    scores = [h.get('score', 0) for h in history]
+    avg_score = sum(scores) / len(scores) if scores else 0
+    trend = 'improving' if len(scores) >= 3 and scores[-1] > scores[-3] else \
+            'declining' if len(scores) >= 3 and scores[-1] < scores[-3] else 'stable'
+
+    # 3. 统计高频扣分项（最近 7 天）
+    recent_issues: dict[str, int] = {}
+    for h in history[-7:]:
+        for issue in h.get('issues', []):
+            if issue and issue != '无':
+                recent_issues[issue] = recent_issues.get(issue, 0) + 1
+
+    # 4. 生成进化建议
+    suggestions: list[dict] = []
+
+    # 4a. 基于当前扣分项
+    for issue in issues:
+        if not issue or issue == '无':
+            continue
+        suggestions.append({
+            'type': 'fix_issue',
+            'priority': 'high',
+            'issue': issue,
+            'suggestion': f'明日指令必须强化：{issue}',
+            'auto_action': 'add_to_instruction',
+        })
+
+    # 4b. 基于趋势
+    if trend == 'declining':
+        suggestions.append({
+            'type': 'trend_alert',
+            'priority': 'high',
+            'suggestion': f'最近 7 天平均分 {avg_score:.1f}，呈下降趋势。需要提高学习深度或调整项目选择策略。',
+            'auto_action': 'escalate_depth',
+        })
+    elif trend == 'improving' and avg_score >= 20:
+        suggestions.append({
+            'type': 'trend_positive',
+            'priority': 'medium',
+            'suggestion': f'平均分 {avg_score:.1f}，持续进步。可以尝试更高难度：增加跨项目对比分析、架构反模式识别。',
+            'auto_action': 'increase_challenge',
+        })
+
+    # 4c. 基于高频重复扣分
+    for issue, count in recent_issues.items():
+        if count >= 3:
+            suggestions.append({
+                'type': 'recurring_issue',
+                'priority': 'high',
+                'suggestion': f'「{issue}」最近 7 天出现 {count} 次，是系统性问题。指令模板需要结构性修改。',
+                'auto_action': 'modify_template',
+            })
+
+    # 4d. 学习策略反思
+    if score >= PASS_SCORE:
+        suggestions.append({
+            'type': 'strategy_reflection',
+            'priority': 'low',
+            'suggestion': '本次学习达标。反思：哪些项目收获最大？哪些浪费时间？明日应优先选什么类型的项目？',
+            'auto_action': 'log_for_review',
+        })
+
+    # 5. 写入进化建议文件
+    evolution_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'evolution-suggestions.json'
+    evolution_data = {
+        'date': date,
+        'score': score,
+        'trend': trend,
+        'avg_score_7d': round(avg_score, 1),
+        'suggestions': suggestions,
+        'strengths': strengths,
+        'issues': issues,
+    }
+    evolution_file.parent.mkdir(parents=True, exist_ok=True)
+    evolution_file.write_text(json.dumps(evolution_data, indent=2, ensure_ascii=False), encoding='utf-8')
+
+    # 6. 输出反思摘要
+    log(f'  趋势: {trend}（7 日均分 {avg_score:.1f}）')
+    log(f'  建议数: {len(suggestions)}')
+    high_priority = [s for s in suggestions if s.get('priority') == 'high']
+    if high_priority:
+        log(f'  ⚠️ 高优先建议:')
+        for s in high_priority[:3]:
+            log(f'    - {s["suggestion"][:80]}')
+    else:
+        log(f'  ✅ 无高优先改进建议')
+    log(f'  进化建议已写入: {evolution_file}')
+
+
 def main() -> None:
     args = parse_args()
     date = args.date
@@ -664,13 +833,50 @@ def main() -> None:
     # Step 3: 审计产出
     score, issues, strengths = audit_learning(date, shared_root)
     
-    # Step 4: 处理结果
+    # Step 4: 处理结果（审计失败时自动重试 1 次）
+    max_retries = 1
+    retry_count = 0
+    
+    while score < PASS_SCORE and retry_count < max_retries:
+        log(f'⚠️ 审计未通过 ({score}/{PASS_SCORE})，尝试重新学习（第 {retry_count + 1} 次重试）...')
+        
+        # 保存失败反馈
+        handle_failure(date, score, issues, shared_root)
+        
+        # 重新触发 OpenClaw 学习
+        if not args.skip_openclaw:
+            # 删除旧产出，让 OpenClaw 重新生成
+            old_output = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+            if old_output.exists():
+                old_output.unlink()
+                log('  已清除旧产出，等待重新生成')
+            
+            if trigger_openclaw_learning(shared_root):
+                if wait_for_openclaw_completion(date, shared_root):
+                    log('  重新学习完成，再次审计...')
+                    score, issues, strengths = audit_learning(date, shared_root)
+                else:
+                    log('  ❌ 重试等待超时')
+            else:
+                log('  ❌ 重试触发失败')
+        else:
+            log('  --skip-openclaw 模式，无法重试')
+        
+        retry_count += 1
+    
+    # 最终处理
     if score < PASS_SCORE:
         handle_failure(date, score, issues, shared_root)
-        log(f'❌ 审计未通过 ({score}/{PASS_SCORE})')
+        log(f'❌ 审计最终未通过 ({score}/{PASS_SCORE}，已重试 {retry_count} 次)')
     else:
         handle_success(date, score, issues, strengths, shared_root, knowledge_base)
-        log(f'✅ 审计通过 ({score}/{PASS_SCORE})')
+        if retry_count > 0:
+            log(f'✅ 审计通过 ({score}/{PASS_SCORE}，第 {retry_count} 次重试后成功)')
+        else:
+            log(f'✅ 审计通过 ({score}/{PASS_SCORE})')
+    
+    # Step 5: 反思进化（无论通过与否都执行，每次学习都是经验）
+    reflect_and_evolve(date, score, issues, strengths, shared_root)
     
     log('=== 闭环完成 ===')
 
