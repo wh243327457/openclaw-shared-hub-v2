@@ -65,21 +65,21 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-06-01T06:00:02+08:00`
+- 生成时间: `2026-06-04T06:00:02+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 18
 - projects 文件数: 7
 - 最近 daily 文件:
-  - `inbox/hermes/daily/2026-05-31.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-05-31.md` (inbox/openclaw/daily)
-  - `inbox/openclaw/daily/2026-05-30.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-05-30.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-05-29.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-06-03.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-06-03.md` (inbox/openclaw/daily)
+  - `inbox/openclaw/daily/2026-06-02.md` (inbox/openclaw/daily)
+  - `inbox/hermes/daily/2026-06-02.md` (inbox/hermes/daily)
+  - `inbox/openclaw/daily/2026-06-01.md` (inbox/openclaw/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 38
-  - `openclaw`: 50
+  - `hermes`: 41
+  - `openclaw`: 41
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
@@ -148,6 +148,16 @@
 - **✅ 已完成产出** [score=0.842 recalls=0 avg=0.620 source=memory/2026-05-16.md:22-22]
 <!-- openclaw-memory-promotion:memory:memory/2026-05-16.md:6:7 -->
 - run_ts: '1778891706299' needs_hermes_audit: true [score=0.832 recalls=0 avg=0.620 source=memory/2026-05-16.md:6-7]
+
+## Promoted From Pending Queue (2026-06-04)
+
+- **opensquilla-agent-runtime-architecture**: Hermes 竞品 OpenSquilla 的微内核架构分析，含 ML 模型路由、Dream 记忆压缩、per-session 锁。→ `facts/opensquilla-agent-runtime-architecture.md`
+- **anthropic-multi-agent-engineering**: Anthropic 多 agent 研究系统工程实践，token 用量 15x 换质量，验证 orchestrator-worker 模式。→ `facts/anthropic-multi-agent-engineering.md`
+- **antirez-ds4-local-inference**: antirez 的 ds4 本地推理引擎，Disk KV Cache 跨 session 复用 + 不对称 MoE 量化。→ `facts/antirez-ds4-local-inference.md`
+- **claude-code-engineering-practices**: Claude Code 工程模式：验证优先、权限先于自主权、project rules 作为可执行上下文。→ `facts/claude-code-engineering-practices.md`
+
+
+
 
 
 

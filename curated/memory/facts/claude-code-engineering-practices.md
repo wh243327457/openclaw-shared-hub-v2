@@ -1,43 +1,20 @@
 ---
-fact_id: claude-code-engineering-practices
+topic: Claude Code 工程实践模式提取
+category: agent-engineering
 status: active
-freshness_class: slow_changing
-scope: cross-agent
-subject: agent-workflow / engineering-practices
-attribute: best-practices
-value_summary: "Claude Code 官方工程实践的 8 个可迁移模式：项目级 CLAUDE.md、验证优先、先探索后修改、技能封装、headless 自动化、MCP 适配层、幂等 hooks、渐进授权"
-created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
-source_refs:
-  - https://www.anthropic.com/engineering/claude-code-best-practices
-  - https://docs.anthropic.com/en/docs/claude-code/overview
-  - runtime/hermes/autonomous-learning/agent-outputs/non-github-learning-2026-05-17-claude-code-engineering-practices.md
-conflict: null
-supersedes: null
-superseded_by: null
-confidence: high
-authority: hermes-autonomous-learning
-secret_checked: true
+source: autonomous-learning/pending-promotion
+date: 2026-05-17
+score: 18/20
 ---
 
-# Claude Code 官方工程实践 — 可迁移模式
+# Claude Code 工程实践模式提取
 
-## 核心模式
+Claude Code 的核心理念是将 AI coding agent 从聊天助手转变为可配置、可验证、可自动化的工程执行环境。关键架构分层：上下文层（CLAUDE.md、memory、skills）、执行层（shell/CLI 工具、测试、截图、预期输出、非交互模式）、集成层（MCP、hooks、permissions）、自动化层（headless mode + JSON/streaming JSON）。
 
-1. **项目级 CLAUDE.md**：agent 可读的项目规则文件，区分稳定规则/项目状态/笔记/日志
-2. **验证优先**：定义成功标准（tests/screenshots/expected outputs）再行动
-3. **先探索后修改**：explore first, modify second
-4. **技能封装**：可复用工作流打包为 skills/commands
-5. **Headless 自动化**：非交互模式 + JSON/streaming JSON 用于 CI 和定时任务
-6. **MCP 适配层**：MCP 作为集成边界，不是 prompt stuffing
-7. **幂等 hooks**：生命周期自动化但需日志和关闭开关
-8. **渐进授权**：先定义权限和危险门，再扩大自治
+三个最高杠杆的工程模式：(1) Verification-first——先定义成功标准再行动，用测试/截图/预期输出做验证，是减少自动化幻觉和返工的最高杠杆动作；(2) Permissions-before-autonomy——先定义权限和危险门控再扩展自治度，对无人值守 cron agent 尤其关键；(3) Project rules 作为可执行上下文——在 CLAUDE.md 中写 agent 可读的项目规则，而非仅靠 system prompt。
 
-## 与我们系统的关联
+可复用模式：探索优先于修改；将重复工作流打包为 skills/commands；hook 保持幂等和可观测；MCP 作为适配器边界而非 prompt stuffing。
 
-- Hermes 的 SKILL.md ≈ Claude Code 的 skills
-- shared hub 的 AGENTS.md ≈ 项目级 CLAUDE.md
-- self-healing-agent 的先 plan 再 apply ≈ 验证优先
-- cron jobs ≈ headless 自动化
+## 证据来源
+- 质量评审: `reviews/non-github-learning-2026-05-17-claude-code-engineering-practices-quality-review.md` (18/20)
+- 原始链接: https://www.anthropic.com/engineering/claude-code-best-practices
