@@ -1,0 +1,181 @@
+[
+  {
+    "id": "30f1e866979f",
+    "name": "OMC Insights → 跨 Agent 同步",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 9 * * *",
+      "display": "0 9 * * *"
+    },
+    "prompt": "Run /root/.hermes/scripts/omc-insights-distributor.py\n\nStep-by-step:\n1. Execute: python3 /root/.hermes/scripts/omc-insights-distributor.py\n2. If the script exits with \"[SKIP] Insights unchanged\", just log: omc-insights-distributor: no change, skipped\n3. If the script pushes to GitHub and syncs, log: omc-insights-distributor: synced insights-derived-rules to GitHub + Codex + Cursor · [hash from output]\n4. If there is an error, log: omc-insights-distributor ERROR: [brief error summary]\n\nThis is a monitoring/sync task. The script handles all the complexity internally.",
+    "deliver": "local",
+    "enabled": true,
+    "skills": [
+      "shared-hub-v2-ops"
+    ]
+  },
+  {
+    "id": "317429b78e81",
+    "name": "AI 工具 Skills & 规则周监听",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 8 * * 1",
+      "display": "0 8 * * 1"
+    },
+    "prompt": "Run /root/.hermes/scripts/ai-tools-watcher.py\n\nStep-by-step:\n1. Execute: python3 /root/.hermes/scripts/ai-tools-watcher.py\n2. Log the summary line (e.g. \"ai-tools-watcher: X skills across Y tools · changes: N\")\n3. If it reports \"no changes\", just log that.\n4. If there are changes, log the tool names that had changes.",
+    "deliver": "local",
+    "enabled": true,
+    "skills": [
+      "shared-hub-v2-ops"
+    ]
+  },
+  {
+    "id": "02deab1030e3",
+    "name": "Hermes Gateway 健康检查",
+    "schedule": {
+      "kind": "cron",
+      "expr": "*/30 * * * *",
+      "display": "*/30 * * * *"
+    },
+    "prompt": "Run /root/.hermes/scripts/hermes-health-checker.py\n\nStep-by-step:\n1. Execute: python3 /root/.hermes/scripts/hermes-health-checker.py\n2. If output contains \"OK\", log: hermes-health: OK\n3. If output contains \"WARN\", log: hermes-health: WARN — [consecutive_failures count from output]\n4. If output contains \"RESTART\", log: hermes-health: RESTART attempted\n5. If error, log: hermes-health ERROR: [brief error]",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "4b86a72713e3",
+    "name": "Hermes 每日工作日志",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 21 * * *",
+      "display": "0 21 * * *"
+    },
+    "prompt": "Run /root/.hermes/scripts/hermes-daily-logger.py\n\nStep-by-step:\n1. Execute: python3 /root/.hermes/scripts/hermes-daily-logger.py\n2. If output starts with \"[SKIP]\", log: hermes-daily-logger: no new summary needed\n3. If output starts with \"[DONE]\", log: hermes-daily-logger: daily summary written\n4. If error, log: hermes-daily-logger ERROR: [brief error]",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "169aeeb4cf6d",
+    "name": "知识库周健康检查",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 8 * * 1",
+      "display": "0 8 * * 1"
+    },
+    "prompt": "Run /root/.hermes/scripts/weekly-knowledge-review.py\n\nStep-by-step:\n1. Execute: python3 /root/.hermes/scripts/weekly-knowledge-review.py\n2. Parse the summary output (Facts: X healthy / Y stale, Projects: X healthy / Y stale, etc.)\n3. Log: weekly-review: Facts=X healthy/Y stale, Projects=X/Y, Inbox=N total, Skills broken=Y\n4. If top suggestion exists, include it in the log line\n5. If error, log: weekly-review ERROR: [brief error]",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "dcbda4326bb2",
+    "name": "每日23点-采集与复盘",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 23 * * *",
+      "display": "0 23 * * *"
+    },
+    "prompt": "运行每日汇总脚本生成复盘。\n\nStep-by-step:\n1. 执行命令: python3 /mnt/d/system/selfSystem/06-知识合成引擎/scripts/daily-collect.py\n2. 检查输出: /mnt/d/system/selfSystem/06-知识合成引擎/compiled/YYYY-MM-DD.md 是否生成成功\n3. 如果成功，读取文件内容，整理一份今日复盘摘要\n4. 输出\"今日复盘已生成，共 N 条 Claude Code 消息，N 条 Codex 消息，N 次 Chrome 访问\"\n\n不要发送微信，只做采集和生成。",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "34cef6b8d089",
+    "name": "周五23点-生成周总结",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 23 * * 5",
+      "display": "0 23 * * 5"
+    },
+    "prompt": "生成本周工作周总结。\n\nStep-by-step:\n1. 收集本周一到周五的所有 compiled/*.md 文件\n2. 汇总所有每日复盘内容\n3. 用 Claude Code 生成一份周总结，包含：\n   - 本周主要做了什么\n   - 本周沉淀的最佳实践/踩坑\n   - 下周可以继续的方向\n4. 输出保存到 /mnt/d/system/selfSystem/06-知识合成引擎/compiled/YYYY-Www-summary.md\n5. 输出\"周总结已生成\"",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "407ad5e43aed",
+    "name": "每日8点-推送复盘微信",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 8 * * *",
+      "display": "0 8 * * *"
+    },
+    "prompt": "发送每日复盘到微信。\n\nStep-by-step:\n1. 确定昨天的日期（如今天 2026-04-23，则昨天是 2026-04-22）\n2. 检查复盘文件是否存在: /mnt/d/system/selfSystem/06-知识合成引擎/compiled/YYYY-MM-DD.md\n3. 如果文件不存在，输出\"无复盘数据\"并结束\n4. 如果存在，执行发送脚本:\n   python3 /mnt/d/system/selfSystem/06-知识合成引擎/scripts/send-wechat.py --date YYYY-MM-DD\n5. 观察输出，如果看到\"发送成功\"则输出\"✅ 微信推送成功\"，否则输出具体错误信息",
+    "deliver": "local",
+    "enabled": true
+  },
+  {
+    "id": "941e69299fe8",
+    "name": "GitHub 学习：每日闭环执行",
+    "schedule": {
+      "kind": "cron",
+      "expr": "30 7 * * *",
+      "display": "30 7 * * *"
+    },
+    "prompt": "执行 GitHub 热门项目每日学习闭环。\n\nStep-by-step:\n1. 执行编排脚本: python3 /home/vany/agent/shared/scripts/github_learning_orchestrator.py\n2. 检查输出，确认各步骤完成\n3. 如果审计成功，使用 send_message 工具发送微信消息:\n   - 读取推送文件: shared/runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt\n   - 使用 send_message(action='send', target='weixin', message=内容) 发送\n4. 如有错误，记录并报告\n\n预期: 学习指令已生成 → OpenClaw 已学习 → 审计已完成 → 知识库已更新 → 微信已推送",
+    "deliver": "local,weixin",
+    "enabled": true
+  },
+  {
+    "id": "10ba8b1b7574",
+    "name": "autonomous-learning-daily-hardened",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 */12 * * *",
+      "display": "0 */12 * * *"
+    },
+    "prompt": "你是自主学习系统的 hardened scheduled learning 执行 agent。目标：完成一轮低风险组合学习，并输出微信可扫读报告。\n\n【必须先做的 preflight】\n在 shared 层执行前，先确认共享中台路径与运行态没有破坏：\n1. 检查 /home/vany/agent/shared/manifest.yaml 是否存在\n2. 检查 /home/vany/agent/shared/AGENTS.md 是否存在\n3. 检查 /home/vany/agent/shared/curated/memory/MEMORY.md 是否存在\n4. 检查 /home/vany/agent/shared/skills 是否可读\n5. 若 preflight 失败，只写入运行时说明，不修改 curated\n\n【执行步骤】\n1. 读取 shared 里的当天学习相关输入\n2. 根据当前可用材料做低风险学习、归纳和风险识别\n3. 生成结构化输出，保留可复扫的短段落\n4. 若发现新稳定事实，先写 runtime，不要直接晋升 curated\n5. 最终输出微信可扫读报告\n\n【约束】\n- 不自动修复高风险问题\n- 不修改 Hermes 主配置\n- 不写明文 secret\n- 不发送微信以外的副作用动作\n- 以 runtime-only 方式完成巡检\n",
+    "deliver": "local",
+    "enabled": true,
+    "skills": [
+      "autonomous-learning/orchestrator-protocol"
+    ]
+  },
+  {
+    "id": "1b67fb47c644",
+    "name": "Self-Healing Agent 试运行巡检",
+    "schedule": {
+      "kind": "cron",
+      "expr": "15 5 * * *",
+      "display": "15 5 * * *"
+    },
+    "prompt": "你是 Self-Healing Agent 的试运行巡检任务。\n\n目标：每天执行一次 runtime-only 自动巡检，不自动修复高风险项，不写 curated memory。\n\n执行步骤：\n1. 运行命令：python3 /home/vany/agent/shared/runtime/hermes/self-healing-agent/scripts/trial_cron_runner.py\n2. 检查输出，确认 validation 全部为 true\n3. 读取 todo-list.json，检查是否有 overdue 项（overdue_count > 0）\n\n输出要求：\n- 状态正常：输出简短 OK 状态\n- 有 overdue 项：输出 overdue 待办清单（ID、标题、priority、due_at），提醒需要处理\n- 脚本失败：输出错误信息和最后几行输出",
+    "deliver": "local,weixin",
+    "enabled": true
+  },
+  {
+    "id": "020aabffd76f",
+    "name": "Shared Hub 安全自动提交",
+    "schedule": {
+      "kind": "cron",
+      "expr": "17 * * * *",
+      "display": "17 * * * *"
+    },
+    "deliver": "local",
+    "enabled": true,
+    "script": "shared_git_autocommit.sh",
+    "no_agent": true
+  },
+  {
+    "id": "5f96d89b9c97",
+    "name": "读书计划：每日一章",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 9 * * *",
+      "display": "0 9 * * *"
+    },
+    "prompt": "执行每日读书计划。\n\n## 步骤\n\n1. 运行读书编排器获取今日指令：\n   `python3 /home/vany/agent/shared/scripts/reading_plan_orchestrator.py`\n2. 读取生成的指令文件：`/home/vany/agent/shared/runtime/hermes/reading-plan/today-instruction.md`\n3. 按照指令完成今日章节阅读，输出：\n   - 3 个核心要点（用自己的话）\n   - 1 个可复用行动\n   - 1 个与已有知识的关联\n   - 今日反思：最有收获的一点 + 还不熟练的地方\n4. 将阅读笔记保存到 Obsidian：`/mnt/d/system/selfSystem/03-学习/读书笔记/`\n5. 生成微信推送摘要（3-5 句话，突出核心洞察和行动项）\n6. 执行反思（评估本次阅读质量）：\n   `python3 /home/vany/agent/shared/scripts/reading_plan_orchestrator.py --reflect --score <0-100> --issues <问题> --strengths <优势>`\n\n## 质量标准\n- 每个要点必须具体，不能泛泛而谈\n- 行动项必须可执行\n- 反思要诚实，不要为了高分而回避问题",
+    "deliver": "local,weixin",
+    "enabled": true
+  },
+  {
+    "id": "a7ccf53ed528",
+    "name": "反思守护者：每日扫描",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 6 * * *",
+      "display": "0 6 * * *"
+    },
+    "deliver": "local",
+    "enabled": true,
+    "script": "cd /home/vany/agent/shared && python3 scripts/reflection_engine.py guardian",
+    "no_agent": true
+  }
+]
