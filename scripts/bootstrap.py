@@ -79,7 +79,7 @@ def cmd_init(shared_root: Path, hermes_home: Path) -> None:
 # ── 2. Sync: 已有环境同步更新 ─────────────────────────────────
 
 def cmd_sync(shared_root: Path, hermes_home: Path) -> None:
-    """拉取最新 + 同步 skills + cron。"""
+    """拉取最新 + 同步 skills + cron + 自动导出变化。"""
     log('🔄 同步更新...')
 
     # 1. git pull
@@ -94,6 +94,9 @@ def cmd_sync(shared_root: Path, hermes_home: Path) -> None:
 
     # 3. 同步 cron jobs
     _sync_cron(shared_root, hermes_home)
+
+    # 4. 检测本地 cron 变化 → 自动导出到 config/
+    _export_cron_if_changed(shared_root, hermes_home)
 
     log('✅ 同步完成')
 
@@ -268,6 +271,64 @@ def _build_env_summary(shared_root: Path, hermes_home: Path) -> dict:
         'cron_jobs': len(json.loads((hermes_home / 'cron' / 'jobs.json').read_text()).get('jobs', [])) if (hermes_home / 'cron' / 'jobs.json').exists() else 0,
         'curated_facts': len(list((shared_root / 'curated' / 'memory' / 'facts').glob('*.md'))) if (shared_root / 'curated' / 'memory' / 'facts').exists() else 0,
     }
+
+
+def _export_cron_if_changed(shared_root: Path, hermes_home: Path) -> None:
+    """检测本地 cron 变化，自动导出到 config/cron-jobs.json。"""
+    local_cron = hermes_home / 'cron' / 'jobs.json'
+    shared_cron = shared_root / 'config' / 'cron-jobs.json'
+
+    if not local_cron.exists():
+        return
+
+    # 读取本地 cron jobs（清理为可移植格式）
+    raw = json.loads(local_cron.read_text(encoding='utf-8'))
+    local_jobs = raw.get('jobs', [])
+    portable = []
+    for j in local_jobs:
+        clean = {
+            'id': j.get('id', j.get('job_id')),
+            'name': j.get('name', ''),
+            'schedule': j.get('schedule', ''),
+            'prompt': j.get('prompt', ''),
+            'deliver': j.get('deliver', ''),
+            'enabled': j.get('enabled', True),
+            'skills': j.get('skills', []),
+            'script': j.get('script', ''),
+            'no_agent': j.get('no_agent', False),
+            'workdir': j.get('workdir', ''),
+        }
+        clean = {k: v for k, v in clean.items() if v}
+        portable.append(clean)
+
+    # 比较是否有变化
+    if shared_cron.exists():
+        try:
+            existing = json.loads(shared_cron.read_text(encoding='utf-8'))
+            # 比较 id 集合和 prompt 内容
+            existing_ids = {j.get('id') for j in existing}
+            local_ids = {j.get('id') for j in portable}
+            if existing_ids == local_ids:
+                # 检查 prompt 是否变化
+                existing_prompts = {j.get('id'): j.get('prompt', '') for j in existing}
+                local_prompts = {j.get('id'): j.get('prompt', '') for j in portable}
+                if existing_prompts == local_prompts:
+                    return  # 无变化
+        except Exception:
+            pass
+
+    # 有变化，导出
+    shared_cron.parent.mkdir(parents=True, exist_ok=True)
+    shared_cron.write_text(
+        json.dumps(portable, indent=2, ensure_ascii=False),
+        encoding='utf-8',
+    )
+    log(f'   📋 cron 变化已导出 → config/cron-jobs.json ({len(portable)} 个 job)')
+
+    # 自动 git add（不 commit，留给 auto-commit 脚本）
+    result = run('git add config/cron-jobs.json', cwd=shared_root)
+    if result.returncode == 0:
+        log('   ✅ 已 git add')
 
 
 def _env_check(shared_root: Path, hermes_home: Path) -> None:
