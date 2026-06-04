@@ -120,3 +120,17 @@ shared_skills:
     reference_policy: bounded-class-level
     future_agent_readable: true
     description: 自主学习系统编排协议 — 状态机驱动的多 agent 学习任务编排，含 review gates、fallback、approval 闸门
+  - id: autonomous-learning/self-reflection-engine
+    path: autonomous-learning/self-reflection-engine
+    version: '1.0'
+    status: active
+    agents:
+      - hermes
+      - openclaw
+      - future-agent
+    owner: shared-hub
+    last_reviewed: '2026-06-04'
+    scope: reflection-engine
+    reference_policy: class-level-only
+    future_agent_readable: true
+    description: 通用自我反思引擎 — 跨领域反馈记录、趋势分析、进化建议、Guardian 自动发现。适用 GitHub 学习/读书计划/日常巡检/代码审查等任意"执行→反馈→反思→进化"闭环。
