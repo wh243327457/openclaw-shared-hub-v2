@@ -1,0 +1,1 @@
+[2026-06-08T04:00:54Z] hermes-health: WARN — 262 consecutive failures; weixin_guard=push_guard_rate_limited (since 2026-05-31); RESTART skipped (issue is not service/process-level)
