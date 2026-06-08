@@ -1,6 +1,6 @@
 {
   "currentBook": 1,
-  "currentChapter": 1,
+  "currentChapter": 2,
   "books": [
     {"id": "antifragile", "title": "反脆弱", "author": "Nassim Taleb", "chapters": ["反脆弱性", "现代化与反脆弱", "非预测性的世界观", "可选择性", "杠铃策略", "否定法", "脆弱性与反脆弱性"], "domain": "思维模型"},
     {"id": "thinking-in-systems", "title": "系统之美", "author": "Donella Meadows", "chapters": ["系统之基础", "系统大观园", "系统为什么会出问题", "系统与我们", "系统杠杆点"], "domain": "思维模型"},
