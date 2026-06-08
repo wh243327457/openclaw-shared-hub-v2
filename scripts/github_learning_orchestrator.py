@@ -172,7 +172,19 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
             issues.append(f'缺少「{s}」章节')
 
     # ── 2. 深读项目数量（3 分）─────────────────────
-    deep_project_headers = [l for l in lines if l.strip().startswith('### 项目') or re.match(r'^###\s+\d+[\.\d]*\.?\s+\S', l.strip()) or re.match(r'^##\s+深读项目\s+', l.strip()) or re.match(r'^###\s+\d+\.\s+', l.strip())]
+    # 匹配多种格式：标题格式 + 表格格式
+    deep_project_headers = []
+    for i, l in enumerate(lines):
+        stripped = l.strip()
+        # 标题格式：### 项目、## 深读项目 X、### 数字.
+        if (stripped.startswith('### 项目') or
+            re.match(r'^###\s+\d+[\.\d]*\.?\s+\S', stripped) or
+            re.match(r'^##\s+深读项目\s+', stripped) or
+            re.match(r'^###\s+\d+\.\s+', stripped)):
+            deep_project_headers.append(l)
+        # 表格格式：| org/repo | 数字 | ... |（跳过表头行）
+        elif re.match(r'^\|\s*\S+/\S+\s*\|\s*\d[\d,]*\s*\|', stripped):
+            deep_project_headers.append(l)
     deep_count = len(deep_project_headers)
     if deep_count >= 3:
         score += 3
