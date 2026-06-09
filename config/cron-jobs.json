@@ -166,5 +166,17 @@
     "enabled": true,
     "script": "cd /home/vany/agent/shared && python3 scripts/reflection_engine.py guardian",
     "no_agent": true
+  },
+  {
+    "id": "765f2f64936e",
+    "name": "教程学习：每周二四采集",
+    "schedule": {
+      "kind": "cron",
+      "expr": "0 10 * * 2,4",
+      "display": "0 10 * * 2,4"
+    },
+    "prompt": "执行教程学习编排器。\n\nStep-by-step:\n1. 运行命令: python3 /home/vany/agent/shared/scripts/tutorial_learning_orchestrator.py\n2. 检查输出，确认各步骤完成\n3. 如果审计通过（得分 ≥12），读取生成的教程学习卡并输出摘要\n4. 如果审计未通过，输出问题列表\n5. 最终输出包含：候选数、深读数、审计得分、关键发现",
+    "deliver": "local,weixin",
+    "enabled": true
   }
 ]

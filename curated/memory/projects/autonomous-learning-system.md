@@ -2,8 +2,8 @@
 
 - 项目：Autonomous Learning System
 - 版本：v0.1
-- 状态：IMPLEMENTATION_STARTED
-- 更新时间：`2026-05-15T01:08:17+08:00`
+- 状态：RUNNING_PARTIAL
+- 更新时间：`2026-06-09T12:30:00+08:00`
 - 真相源路径：`shared/curated/memory/projects/autonomous-learning-system.md`
 - runtime 工作区：`shared/runtime/hermes/autonomous-learning/`
 
@@ -398,3 +398,33 @@ OpenSquilla 是本轮自主学习系统非常值得保留的工程参考：它�
 1. 让执行 agent 深挖 Agent memory / skill self-evolution 的关键源码与机制。
 2. 对 shared hub 兼容入口做一次独立审计，形成必须项清单。
 3. 做 runtime-only HTML 输出面 POC，验证微信和 Obsidian 可读性。
+
+## 21. RUNNING_PARTIAL 状态说明（2026-06-09）
+
+### 实际运行的 cron 闭环
+
+| cron job | 频率 | 状态 | 功能 |
+|----------|------|------|------|
+| GitHub 学习：每日闭环执行 | 每天 07:30 | ✅ | OpenClaw 采集 → Hermes 审计 → 知识库更新 → 微信推送 |
+| autonomous-learning-daily-hardened | 每 12h | ✅ | 共享中台 preflight + 学习巡检 + runtime 报告 |
+| Self-Healing Agent 试运行巡检 | 每天 05:15 | ✅ | 系统自检 + todo overdue + 反思守护者状态 |
+| 读书计划：每日一章 | 每天 09:00 | ✅ | 每日一章 AI 提炼 + 微信推送 |
+| 反思守护者：每日扫描 | 每天 06:00 | ✅ | cron job 反思覆盖检查 |
+
+### 架构文档与实际的差距
+
+| 架构设计（v0.1） | 实际状态 | 差距说明 |
+|-----------------|---------|---------|
+| 6 类学习源（GitHub/书籍/教程/论文/复盘/趋势） | 仅 GitHub + 书籍 | 教程/论文/趋势/复盘未接入 |
+| 双闭环（学习 + 自我改进） | 仅学习闭环 | 模板反馈/能力调整未自动化 |
+| 10 步状态机 | 简化为 3 步（采集→审计→沉淀） | 路由/规格审查/晋升决策人工介入 |
+| 10 项健康度指标 | 仅 cron 成功率 | 缺 promotion_count / stale_backlog 等 |
+| 4 agent 协作（Hermes/Claude Code/OpenClaw/future-agent） | 2 agent（Hermes + OpenClaw） | Claude Code 深读仅在 OpenClaw 失败时 fallback |
+
+### 状态变更理由
+
+- `IMPLEMENTATION_STARTED`（05-15）→ `RUNNING_PARTIAL`（06-09）
+- 原因：核心 GitHub 学习闭环已稳定运行 3+ 周，5 个 cron 持续产出，知识库 25 facts + 11 projects
+- "PARTIAL"：仅覆盖 GitHub + 书籍，缺少架构设计中的多源、自我改进闭环和完整状态机
+- 不建议降级为"停滞"：产出一直在增长，只是覆盖面窄于设计
+- 下一步优先级：扩大到"教程学习源"而非"完善状态机"——先跑起来再优化流程
