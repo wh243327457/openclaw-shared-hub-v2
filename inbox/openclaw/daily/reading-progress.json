@@ -1,6 +1,6 @@
 {
   "currentBook": 1,
-  "currentChapter": 3,
+  "currentChapter": 4,
   "books": [
     {"id": "antifragile", "title": "反脆弱", "author": "Nassim Taleb", "chapters": ["反脆弱性", "现代化与反脆弱", "非预测性的世界观", "可选择性", "杠铃策略", "否定法", "脆弱性与反脆弱性"], "domain": "思维模型"},
     {"id": "thinking-in-systems", "title": "系统之美", "author": "Donella Meadows", "chapters": ["系统之基础", "系统大观园", "系统为什么会出问题", "系统与我们", "系统杠杆点"], "domain": "思维模型"},
@@ -31,16 +31,14 @@
     }
   ],
   "lastRead": {
-    "date": "2026-06-09",
+    "date": "2026-06-10",
     "bookId": "thinking-in-systems",
-    "chapterIndex": 1,
-    "chapterTitle": "系统大观园",
+    "chapterIndex": 2,
+    "chapterTitle": "系统为什么会出问题",
     "frameworksExtracted": [
-      "存量-流量-反馈回路模型 (Stocks-Flows-Feedback)",
-      "系统三要件模型 (Elements-Connections-Purpose)",
-      "主导回路识别 (Dominant Loop)",
-      "时间延迟意识 (Delay Awareness)",
-      "系统思考缺乏症五症状 (5 Symptoms of Systems Thinking Deficiency)"
+      "8大系统陷阱与对策 (政策阻力/公地悲剧/目标侵蚀/竞争升级/富者愈富/转嫁负担/规避规则/目标错位)",
+      "陷阱诊断四步法 (绘图-对照-匹配对策-检查延迟)",
+      "对策本身可能成为新陷阱的元陷阱意识"
     ]
   },
   "note": "与 Hermes reading-plan-pipeline 书单去重，不覆盖：思考快与慢、穷查理宝典、原则、清醒思考的艺术"
