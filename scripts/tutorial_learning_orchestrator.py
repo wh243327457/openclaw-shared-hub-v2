@@ -163,10 +163,10 @@ def search_github_tutorials(min_stars: int, limit: int = 15) -> list[dict]:
             seen_repos.add(repo)
             candidates.append({
                 'source': 'GitHub',
-                'title': item.get('description', '')[:80] or repo,
+                'title': (item.get('description') or '')[:80] or repo,
                 'url': item['html_url'],
                 'stars': item['stargazers_count'],
-                'language': item.get('language', ''),
+                'language': item.get('language') or '',
                 'date': item.get('created_at', '')[:10],
                 'repo': repo,
             })
