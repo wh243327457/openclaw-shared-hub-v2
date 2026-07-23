@@ -31,6 +31,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--shared-root', type=Path, default=DEFAULT_SHARED_ROOT)
     parser.add_argument('--book-id', help='指定读哪本书（跳过队列选择）')
     parser.add_argument('--chapter', type=int, help='指定读第几章')
+    parser.add_argument('--complete-chapter', type=int, help='确认章节笔记已落盘后推进队列')
     parser.add_argument('--list', action='store_true', help='列出书单')
     parser.add_argument('--reflect', action='store_true', help='执行反思（阅读完成后调用）')
     parser.add_argument('--score', type=float, help='本次阅读质量评分')
@@ -71,6 +72,32 @@ def get_current_book(queue: dict) -> dict | None:
         return None
     pending.sort(key=lambda b: b.get('priority', 99))
     return pending[0]
+
+
+def complete_chapter(queue: dict, shared_root: Path, book: dict, chapter: int, date: str) -> None:
+    """确认笔记存在后推进章节，避免编排阶段提前写坏进度。"""
+    title = book.get('title_cn') or book['title']
+    notes = sorted(NOTES_DIR.glob(f'*-{title}-第{chapter}章.md'))
+    if not notes:
+        log(f'❌ 第 {chapter} 章笔记不存在，拒绝推进队列')
+        sys.exit(1)
+
+    current = book.get('current_chapter', 0)
+    if chapter < current:
+        log(f'✅ 第 {chapter} 章已完成，当前队列已在第 {current} 章')
+        return
+    if chapter > current + 1:
+        log(f'❌ 章节不连续：当前第 {current} 章，不能直接完成第 {chapter} 章')
+        sys.exit(1)
+
+    book['status'] = 'reading'
+    book['current_chapter'] = chapter
+    queue['current_book'] = book['id']
+    if chapter >= book.get('chapters', chapter):
+        book['status'] = 'completed'
+        book['completed_at'] = date
+    save_queue(queue, shared_root)
+    log(f'✅ 已确认《{title}》第 {chapter} 章完成: {notes[-1]}')
 
 
 def generate_chapter_prompt(book: dict, chapter_num: int) -> str:
@@ -240,6 +267,10 @@ def main() -> None:
         log('✅ 所有书都读完了！')
         return
 
+    if args.complete_chapter is not None:
+        complete_chapter(queue, shared_root, book, args.complete_chapter, args.date)
+        return
+
     # 确定章节
     chapter = args.chapter or (book.get('current_chapter', 0) + 1)
     total_chapters = book.get('chapters', 999)
@@ -271,12 +302,6 @@ def main() -> None:
 
         save_queue(queue, shared_root)
         return
-
-    # 更新状态
-    book['status'] = 'reading'
-    book['current_chapter'] = chapter
-    queue['current_book'] = book['id']
-    save_queue(queue, shared_root)
 
     title = book.get('title_cn') or book['title']
     log(f'📖 今日读书：《{title}》第 {chapter} 章')

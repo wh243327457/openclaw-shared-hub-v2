@@ -38,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--date', default=today_cst(), help='目标日期 YYYY-MM-DD')
     parser.add_argument('--shared-root', type=Path, default=DEFAULT_SHARED_ROOT)
+    parser.add_argument('--runner', choices=['hermes', 'openclaw'], default='hermes', help='执行学习的 agent')
     parser.add_argument('--dry-run', action='store_true', help='仅预览，不写文件')
     return parser.parse_args()
 
@@ -153,6 +154,7 @@ def generate_daily_goals(date: str, failures: list[dict]) -> str:
 
 def generate_instruction_template(
     date: str,
+    runner: str,
     goals: str,
     tech_stack: list[str],
     domains: list[str],
@@ -162,6 +164,14 @@ def generate_instruction_template(
     enhanced_instructions: str
 ) -> str:
     """生成完整的指令模板。"""
+    report_file = (
+        f'shared/inbox/hermes/daily/{date}-github-learning.md'
+        if runner == 'hermes'
+        else f'shared/inbox/openclaw/daily/{date}.md'
+    )
+    project_file = f'shared/runtime/{runner}/github-learning/projects/owner-repo.md'
+    lessons_file = f'shared/runtime/{runner}/github-learning/lessons.md'
+    runner_name = 'Hermes' if runner == 'hermes' else 'OpenClaw'
     template = f'''# GitHub 热门项目每日学习指令
 
 **生成时间**: {date}
@@ -198,7 +208,7 @@ def generate_instruction_template(
 
 ### 1. 学习报告
 
-**文件**: `shared/inbox/openclaw/daily/{date}.md`
+**文件**: `{report_file}`
 
 必须包含：
 - **今日结论**（一句话总结今日学习主线）
@@ -222,7 +232,7 @@ def generate_instruction_template(
 
 ### 2. 项目卡片
 
-**文件**: `shared/runtime/openclaw/github-learning/projects/owner-repo.md`
+**文件**: `{project_file}`
 
 必须包含：
 - 基本信息（链接、Stars、Forks、License、语言、最近更新）
@@ -233,7 +243,7 @@ def generate_instruction_template(
 
 ### 3. 经验沉淀
 
-**文件**: `shared/runtime/openclaw/github-learning/lessons.md`
+**文件**: `{lessons_file}`
 
 按日期追加，每条经验需具体可操作。
 
@@ -344,7 +354,7 @@ def generate_instruction_template(
 
 ## 使用说明
 
-### OpenClaw 学习流程
+### {runner_name} 学习流程
 
 1. **读取本指令**: 确认今日学习目标和范围
 2. **执行学习**: 按照产出要求完成学习
@@ -353,7 +363,7 @@ def generate_instruction_template(
 
 ### Hermes 审计流程
 
-1. **读取产出**: 检查 OpenClaw 的学习产出
+1. **读取产出**: 检查 {runner_name} 的学习产出
 2. **评分**: 按照质量标准评分（20 分制）
 3. **反馈**: 写入审计反馈区
 4. **强化**: 更新强化指令
@@ -433,6 +443,7 @@ def main() -> None:
     args = parse_args()
     date = args.date
     shared_root = args.shared_root
+    runner = args.runner
     
     print(f'生成 {date} 学习指令...')
     
@@ -470,11 +481,13 @@ def main() -> None:
     ])
     
     # 8. 必读项目（默认为空，由 Hermes 或用户指定）
-    required_projects = '今日无指定必读项目，由 OpenClaw 自主发现热门项目。'
+    runner_name = 'Hermes' if runner == 'hermes' else 'OpenClaw'
+    required_projects = f'今日无指定必读项目，由 {runner_name} 自主发现热门项目。'
     
     # 9. 生成指令模板
     instruction = generate_instruction_template(
         date=date,
+        runner=runner,
         goals=goals,
         tech_stack=tech_stack,
         domains=domains,

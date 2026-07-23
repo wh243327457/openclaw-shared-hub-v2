@@ -3,7 +3,7 @@
 
 单一任务执行整个学习闭环：
 1. 生成今日学习指令
-2. 触发 OpenClaw 学习
+2. 由 Hermes 直接学习（保留 OpenClaw 兼容模式）
 3. 等待学习完成
 4. 审计产出
 5. 失败 → 反思 + 更新模板
@@ -38,6 +38,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--date', default=today_cst(), help='目标日期')
     parser.add_argument('--shared-root', type=Path, default=DEFAULT_SHARED_ROOT)
     parser.add_argument('--knowledge-base', type=Path, default=DEFAULT_KNOWLEDGE_BASE)
+    parser.add_argument('--runner', choices=['hermes', 'openclaw'], default='hermes', help='学习执行器')
+    parser.add_argument('--prepare-only', action='store_true', help='只生成学习指令，由当前 Hermes agent 执行研究')
+    parser.add_argument('--audit-only', action='store_true', help='只审计已生成的学习产出')
     parser.add_argument('--skip-openclaw', action='store_true', help='跳过 OpenClaw 学习步骤')
     parser.add_argument('--dry-run', action='store_true')
     return parser.parse_args()
@@ -48,7 +51,14 @@ def log(message: str) -> None:
     print(f'[{ts}] {message}')
 
 
-def generate_instruction(date: str, shared_root: Path) -> bool:
+def learning_output_path(date: str, shared_root: Path, runner: str) -> Path:
+    """返回指定执行器的学习报告路径。"""
+    if runner == 'hermes':
+        return shared_root / 'inbox' / 'hermes' / 'daily' / f'{date}-github-learning.md'
+    return shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+
+
+def generate_instruction(date: str, shared_root: Path, runner: str) -> bool:
     """Step 1: 生成今日学习指令。"""
     log('Step 1: 生成今日学习指令...')
     
@@ -58,7 +68,10 @@ def generate_instruction(date: str, shared_root: Path) -> bool:
         return False
     
     result = subprocess.run(
-        ['python3', str(script), '--date', date, '--shared-root', str(shared_root)],
+        [
+            'python3', str(script), '--date', date, '--shared-root', str(shared_root),
+            '--runner', runner,
+        ],
         capture_output=True,
         text=True
     )
@@ -125,7 +138,7 @@ def _count_pattern(content: str, pattern: str) -> int:
     return len(re.findall(pattern, content, re.IGNORECASE))
 
 
-def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[str]]:
+def audit_learning(date: str, shared_root: Path, runner: str = 'hermes') -> tuple[int, list[str], list[str]]:
     """Step 3: 审计学习产出（v3 — 内容深度导向 + 源码精读 + 落地路径）。
 
     23 分制，低于 16 分返工。
@@ -133,7 +146,7 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     """
     log('Step 3: 审计学习产出...')
 
-    output_file = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+    output_file = learning_output_path(date, shared_root, runner)
 
     if not output_file.exists():
         log('❌ 学习产出不存在')
@@ -235,7 +248,7 @@ def audit_learning(date: str, shared_root: Path) -> tuple[int, list[str], list[s
     # ── 4. GitHub API 数据真实性（2 分）─────────────
     # 检查是否有实时数据：stars 数字、license、查询时间
     api_data_score = 0
-    if re.search(r'(Stars?|⭐)\s*[:：]?\s*\d[\d,.]*[Kk]?\b', content) or re.search(r'\|\s*Stars?\s*\|.*?\d[\d,.]*\s*[★⭐]?\s*\|', content) or (re.search(r'(?i)Stars', content) and re.search(r'\|\s*\d{3,}[\d,]*\s*\|', content)):
+    if re.search(r'(Stars?|⭐)\s*[:：]?\s*\d[\d,.]*[Kk]?\b', content) or re.search(r'\|\s*Stars?\s*\|.*?\d[\d,.]*\s*[★⭐]?\s*\|', content) or (re.search(r'(?i)Stars', content) and re.search(r'\|\s*(?:\d{1,3}(?:,\d{3})+|\d{3,})\s*\|', content)):
         api_data_score += 1
     else:
         issues.append('缺少 stars 数据')
@@ -376,16 +389,17 @@ def handle_success(
     issues: list[str],
     strengths: list[str],
     shared_root: Path,
-    knowledge_base: Path
+    knowledge_base: Path,
+    runner: str = 'hermes',
 ) -> None:
     """Step 4B: 审计成功 → 更新知识库 + 推送微信。"""
     log('Step 4B: 处理审计成功...')
     
     # 1. 更新知识库
-    update_knowledge_base(date, shared_root, knowledge_base)
+    update_knowledge_base(date, shared_root, knowledge_base, runner)
     
     # 2. 生成推送摘要
-    summary = generate_push_summary(date, score, strengths, knowledge_base, shared_root)
+    summary = generate_push_summary(date, score, strengths, knowledge_base, shared_root, runner)
     
     # 3. 推送微信
     push_to_wechat(summary, shared_root)
@@ -407,7 +421,8 @@ def handle_success(
 def update_knowledge_base(
     date: str,
     shared_root: Path,
-    knowledge_base: Path
+    knowledge_base: Path,
+    runner: str = 'hermes',
 ) -> None:
     """更新个人知识库。"""
     log('更新知识库...')
@@ -419,7 +434,7 @@ def update_knowledge_base(
     audit_dir.mkdir(parents=True, exist_ok=True)
     
     # 复制学习日报
-    output_file = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+    output_file = learning_output_path(date, shared_root, runner)
     if output_file.exists():
         import shutil
         dest = daily_dir / f'{date}-GitHub热门项目学习日报.md'
@@ -509,11 +524,19 @@ def _shorten(text: str, limit: int = 52) -> str:
     return text if len(text) <= limit else text[:limit - 1] + '…'
 
 
-def generate_push_summary(date: str, score: int, strengths: list[str], knowledge_base: Path, shared_root: Path) -> str:
+def generate_push_summary(
+    date: str,
+    score: int,
+    strengths: list[str],
+    knowledge_base: Path,
+    shared_root: Path,
+    runner: str = 'hermes',
+) -> str:
     """生成微信推送摘要（v3 学习复盘版）。"""
 
-    output_file = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+    output_file = learning_output_path(date, shared_root, runner)
     output_content = output_file.read_text(encoding='utf-8') if output_file.exists() else ""
+    runner_name = 'Hermes' if runner == 'hermes' else 'OpenClaw'
     projects = _extract_deep_projects(output_content)
     conclusion = _extract_section(output_content, '今日结论').split('\n')[0].strip()
     lessons_section = _extract_section(output_content, '经验沉淀')
@@ -536,15 +559,15 @@ def generate_push_summary(date: str, score: int, strengths: list[str], knowledge
 
     if actual_count >= expected_count and len(lesson_lines) >= 3 and pass_status:
         execution_verdict = "✅ 达标，而且这次不是纯扫 README"
-        execution_commentary = "OpenClaw 今天算认真干活了，尤其可迁移经验部分比较实，给个 👍"
+        execution_commentary = f"{runner_name} 今天执行到位，尤其可迁移经验部分比较实，给个 👍"
     elif actual_count >= expected_count:
         execution_verdict = "⚠️ 数量达标，但质量还要看细节"
         execution_commentary = "项目数量够了，但我会继续盯技术深度，避免变成 README 压缩包。"
     else:
         execution_verdict = "❌ 不达标"
-        execution_commentary = f"只深读了 {actual_count} 个项目，OpenClaw 今天有点糊弄，明天需要加压 😤"
+        execution_commentary = f"只深读了 {actual_count} 个项目，{runner_name} 今天执行不足，明天需要加压 😤"
 
-    daily_theme = conclusion or "今天的学习主线还不够清晰，需要明天让 OpenClaw 明确提炼共同主题。"
+    daily_theme = conclusion or f"今天的学习主线还不够清晰，需要明天让 {runner_name} 明确提炼共同主题。"
     focus_names = '、'.join(p['name'] for p in projects[:2]) if projects else '暂无重点项目'
     why_focus = "它们能直接影响我们的 Agent 持续上下文、工具链效率或本地模型工作流。"
 
@@ -588,7 +611,7 @@ def generate_push_summary(date: str, score: int, strengths: list[str], knowledge
         sediment_rows.append(f"| {_shorten(mode, 24)} | {decision} | {_shorten(reason, 34)} |")
     sediment_table = "| 模式 | 判断 | 原因 |\n|---|---|---|\n" + ('\n'.join(sediment_rows) if sediment_rows else '| 暂无 | ❌ 暂不沉淀 | 今日报告未提炼出足够清晰的模式 |')
 
-    surprise = "这里有个小惊喜：今天的学习结果已经能反哺我们的长期系统设计，不只是看看热门项目。" if pass_status and lesson_lines else "今天没有明显惊喜，明天需要 OpenClaw 更具体地拆源码和落地路径。"
+    surprise = "这里有个小惊喜：今天的学习结果已经能反哺我们的长期系统设计，不只是看看热门项目。" if pass_status and lesson_lines else f"今天没有明显惊喜，明天需要 {runner_name} 更具体地拆源码和落地路径。"
     audit_result = '通过' if pass_status else '不通过'
     weakness = '项目源码层面的关键文件拆解还可以更深一点，明天继续加压。' if pass_status else '整体质量未过线，需要补齐来源、深度和可迁移经验。'
     subjective = (
@@ -596,7 +619,7 @@ def generate_push_summary(date: str, score: int, strengths: list[str], knowledge
         "Agent 要靠显式记忆长期成长，工具链替换要先兼容旧入口，本地模型能力要被封装成简单入口。\n\n"
         "这几个点都能迁移回我们的 Hermes / OpenClaw / shared hub 体系。"
     )
-    pressure = "OpenClaw 今天整体表现不错；但明天我会继续要求它点名关键源码文件，避免停在 README 复述层。"
+    pressure = f"{runner_name} 今天整体表现不错；但明天仍要点名关键源码文件，避免停在 README 复述层。"
 
     return f"""📚 GitHub 热门项目学习日报 · v3
 📅 {date}
@@ -624,7 +647,7 @@ Hermes 原计划：
 ▸ 重点：AI Agent / DevOps / 工具链
 ▸ 标准：必须提炼可迁移经验
 
-OpenClaw 实际：
+{runner_name} 实际：
 ▸ 深读：{actual_count} 个项目
 ▸ 产出：{len(lesson_lines)} 条经验沉淀
 ▸ 报告：{line_count} 行
@@ -743,47 +766,70 @@ def reflect_and_evolve(
         log(f'   ⚠️ 反思引擎异常: {e}')
 
 
+def write_pipeline_status(
+    date: str,
+    runner: str,
+    score: int,
+    passed: bool,
+    shared_root: Path,
+) -> None:
+    """写入当前 GitHub 学习闭环状态。"""
+    status_file = shared_root / 'runtime' / 'hermes' / 'github-hot-project-learning' / 'status.json'
+    status_file.parent.mkdir(parents=True, exist_ok=True)
+    status = {
+        'date': date,
+        'pipeline': 'github-hot-project-learning',
+        'runner': runner,
+        'output_path': str(learning_output_path(date, shared_root, runner)),
+        'audit_score': score,
+        'pass_score': PASS_SCORE,
+        'overall_status': 'completed' if passed else 'audit_failed',
+        'updated_at': datetime.now(TZ).isoformat(timespec='seconds'),
+    }
+    status_file.write_text(json.dumps(status, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+
+
 def main() -> None:
     args = parse_args()
     date = args.date
     shared_root = args.shared_root
     knowledge_base = args.knowledge_base
+    runner = args.runner
     
     log(f'=== GitHub 热门项目学习闭环 - {date} ===')
     
     # Step 1: 生成学习指令
-    if not generate_instruction(date, shared_root):
+    if not args.audit_only and not generate_instruction(date, shared_root, runner):
         log('❌ Step 1 失败，终止')
         sys.exit(1)
+
+    if args.prepare_only:
+        log('✅ 准备阶段完成，请当前 Hermes agent 按 instruction.md 执行研究并写入报告')
+        return
     
-    # Step 2: 触发 OpenClaw 学习
-    if not args.skip_openclaw:
+    # Step 2: OpenClaw 仅保留为兼容执行器；Hermes 模式由当前 cron agent 直接学习
+    if runner == 'openclaw' and not args.skip_openclaw:
         if not trigger_openclaw_learning(shared_root):
             log('❌ Step 2 失败，终止')
             sys.exit(1)
         
-        # 等待学习完成
         if not wait_for_openclaw_completion(date, shared_root):
             log('❌ 等待超时，跳过审计')
             sys.exit(1)
     
     # Step 3: 审计产出
-    score, issues, strengths = audit_learning(date, shared_root)
+    score, issues, strengths = audit_learning(date, shared_root, runner)
     
-    # Step 4: 处理结果（审计失败时自动重试 1 次）
+    # Step 4: 处理结果（OpenClaw 兼容模式可自动重试 1 次）
     max_retries = 1
     retry_count = 0
     
     while score < PASS_SCORE and retry_count < max_retries:
         log(f'⚠️ 审计未通过 ({score}/{PASS_SCORE})，尝试重新学习（第 {retry_count + 1} 次重试）...')
-        
-        # 保存失败反馈
         handle_failure(date, score, issues, shared_root)
         
-        # 重新触发 OpenClaw 学习
-        if not args.skip_openclaw:
-            # 删除旧产出，让 OpenClaw 重新生成
-            old_output = shared_root / 'inbox' / 'openclaw' / 'daily' / f'{date}.md'
+        if runner == 'openclaw' and not args.skip_openclaw:
+            old_output = learning_output_path(date, shared_root, runner)
             if old_output.exists():
                 old_output.unlink()
                 log('  已清除旧产出，等待重新生成')
@@ -791,30 +837,29 @@ def main() -> None:
             if trigger_openclaw_learning(shared_root):
                 if wait_for_openclaw_completion(date, shared_root):
                     log('  重新学习完成，再次审计...')
-                    score, issues, strengths = audit_learning(date, shared_root)
+                    score, issues, strengths = audit_learning(date, shared_root, runner)
                 else:
                     log('  ❌ 重试等待超时')
             else:
                 log('  ❌ 重试触发失败')
         else:
-            log('  --skip-openclaw 模式，无法重试')
+            log(f'  {runner} 模式不在脚本内自动重试，请执行 agent 根据审计反馈返工')
         
         retry_count += 1
     
-    # 最终处理
     if score < PASS_SCORE:
         handle_failure(date, score, issues, shared_root)
+        write_pipeline_status(date, runner, score, False, shared_root)
         log(f'❌ 审计最终未通过 ({score}/{PASS_SCORE}，已重试 {retry_count} 次)')
     else:
-        handle_success(date, score, issues, strengths, shared_root, knowledge_base)
+        handle_success(date, score, issues, strengths, shared_root, knowledge_base, runner)
+        write_pipeline_status(date, runner, score, True, shared_root)
         if retry_count > 0:
             log(f'✅ 审计通过 ({score}/{PASS_SCORE}，第 {retry_count} 次重试后成功)')
         else:
             log(f'✅ 审计通过 ({score}/{PASS_SCORE})')
     
-    # Step 5: 反思进化（无论通过与否都执行，每次学习都是经验）
     reflect_and_evolve(date, score, issues, strengths, shared_root)
-    
     log('=== 闭环完成 ===')
 
 

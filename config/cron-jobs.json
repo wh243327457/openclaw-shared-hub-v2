@@ -100,9 +100,10 @@
       "kind": "cron",
       "expr": "30 7 * * *"
     },
-    "prompt": "执行 GitHub 热门项目每日学习闭环。\n\nStep-by-step:\n1. 执行编排脚本: python3 /home/vany/agent/shared/scripts/github_learning_orchestrator.py\n2. 检查输出，确认各步骤完成\n3. 如果审计成功，使用 send_message 工具发送微信消息:\n   - 读取推送文件: shared/runtime/hermes/github-hot-project-learning/wechat-push-YYYY-MM-DD.txt\n   - 使用 send_message(action='send', target='weixin', message=内容) 发送\n4. 如有错误，记录并报告\n\n预期: 学习指令已生成 → OpenClaw 已学习 → 审计已完成 → 知识库已更新 → 微信已推送",
-    "deliver": "feishu:oc_74b6cbefc07e6c1f221b77658c5e590e",
-    "enabled": true
+    "prompt": "你是 GitHub 热门项目每日学习闭环的 Hermes 执行 agent。当前 OpenClaw 运行时不存在，本任务必须由 Hermes 直接完成，禁止调用 OpenClaw、禁止编造来源或数据。\n\n工作目录：/home/vany/agent/shared\n\n执行步骤：\n1. 在工作目录运行：python3 scripts/github_learning_orchestrator.py --runner hermes --prepare-only\n2. 读取 runtime/hermes/github-hot-project-learning/instruction.md，严格按其中的质量标准执行当日研究。\n3. 使用 terminal 的 gh api、curl、git 等真实读取 GitHub API、README、docs、release/issues 与关键源码。所有 stars、license、更新时间、文件路径和代码结论必须来自真实工具输出；无法核验的内容标注“待核验”。\n4. 将完整报告写入 instruction.md 指定的 Hermes inbox 路径，即 inbox/hermes/daily/YYYY-MM-DD-github-learning.md。必须包含今日结论、项目速览、至少 2 个深读项目、repo tree、关键源码文件、至少 3 个代码块、stars+license、至少 3 条“当……时，应优先……”经验、风险边界、Skill 升格判断、Hermes/shared hub 落地路径、明日继续和候选反哺。\n5. 运行：python3 scripts/github_learning_orchestrator.py --runner hermes --audit-only\n6. 读取命令输出及 runtime/hermes/github-hot-project-learning/status.json。若 audit_score < 16，按审计问题修订同一报告后再次运行 audit-only，最多返工 2 次；不得通过伪造关键词骗分。\n7. 只有 status.json 的 overall_status=completed 才算成功。最终只汇报日期、实际研究项目、真实审计分、报告路径、知识库路径和剩余风险。不要调用消息发送工具，交付由 cron 处理。",
+    "deliver": "local",
+    "enabled": true,
+    "workdir": "/home/vany/agent/shared"
   },
   {
     "id": "10ba8b1b7574",
@@ -162,10 +163,11 @@
       "kind": "cron",
       "expr": "0 6 * * *"
     },
-    "deliver": "feishu:oc_74b6cbefc07e6c1f221b77658c5e590e",
+    "deliver": "local",
     "enabled": true,
-    "script": "cd /home/vany/agent/shared && python3 scripts/reflection_engine.py guardian",
-    "no_agent": true
+    "script": "reflection_guardian.sh",
+    "no_agent": true,
+    "workdir": "/home/vany/agent/shared"
   },
   {
     "id": "765f2f64936e",
