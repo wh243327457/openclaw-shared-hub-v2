@@ -197,17 +197,26 @@ def filter_candidates(hn: list[dict], gh: list[dict], top_n: int) -> list[dict]:
         c['score'] = c.get('stars', 0) * 0.1 * (1 + relevance * 0.5)
         all_candidates.append(c)
 
-    # 去重（同域名）
-    seen_domains: set[str] = set()
+    # GitHub 按仓库去重；其他来源按 URL 域名去重，避免一个 github.com 链接吞掉全部仓库候选。
+    seen_keys: set[str] = set()
     unique: list[dict] = []
     for c in all_candidates:
         domain = urllib.parse.urlparse(c['url']).netloc
-        if domain not in seen_domains:
-            seen_domains.add(domain)
+        key = f'github:{c.get("repo", c["url"])}' if c['source'] == 'GitHub' else f'web:{domain}'
+        if key not in seen_keys:
+            seen_keys.add(key)
             unique.append(c)
 
     unique.sort(key=lambda x: x['score'], reverse=True)
     selected = unique[:top_n]
+
+    # 排名分数的量纲不同（GitHub stars 远大于 HN points），需显式保留来源多样性。
+    for source in ('HN', 'GitHub'):
+        if any(c['source'] == source for c in selected):
+            continue
+        replacement = next((c for c in unique if c['source'] == source), None)
+        if replacement:
+            selected[-1] = replacement
 
     log(f'  筛选出 {len(selected)} 个候选:')
     for i, c in enumerate(selected, 1):

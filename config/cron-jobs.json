@@ -112,12 +112,9 @@
       "kind": "cron",
       "expr": "0 */12 * * *"
     },
-    "prompt": "你是自主学习系统的 hardened scheduled learning 执行 agent。目标：完成一轮低风险组合学习，并输出飞书可扫读报告。\n\n【语言硬规则】\n- 全文必须纯中文，禁止出现英文单词、英文标题、英文术语（除非是项目名/专有名词如 GitHub、Python 等不可避免的）。\n- 技术术语一律用中文翻译 + 括号标注原词，例如：\"约束（Guardrails）\"、\"事后审查（Post-hoc Review）\"。\n- section header、表格列名、bullet 标题全部中文。\n\n【排版硬规则 — 飞书卡片格式】\n报告必须用以下固定结构，每个 section header 必须粗体包裹：\n\n📚 **自主学习系统 — 本轮学习报告**\n时间 + 一句话结论（✅ 正常 / ⚠️ 降级 / ❌ 失败）\n\n**📋 本轮学了什么**\n表格：类型 | 主题 | 为什么学\n\n**🤖 执行情况**\n表格：学习项 | 执行方 | 状态 | 备注\n\n**🔍 审计结果**\n表格：学习项 | 规格审查 | 质量审查 | 晋升建议\n\n**📊 结果沉淀**\n3 条以内，每条一行：产出 / 决策 / 风险\n\n**💡 对你有用的收获**\n3 条以内，每条\"短标题：一句可复用结论\"\n\n**🎯 下一步**\n2 条以内，每条一行\n\n**需要你决策**\n无决策时写\"暂无需要你决策的事项\"；有决策时用表格\n\n**产出文件**\n最多 5 条相对路径\n\n排版要求：\n- 每个 bullet 尽量 1 行，禁止 5 行以上长段落\n- 文件路径统一后置，最多 5 条\n- 失败/降级用一句人话说明影响，不贴状态机\n- 决策事项不能混在\"下一步\"或\"收获\"里\n- 不要把内部状态机、cron 机制、脚本路径推给用户\n\n【必须先做的 preflight】\n在 shared 层执行前，先确认共享中台路径与运行态没有破坏：\n1. 检查 /home/vany/agent/shared/manifest.yaml 是否存在\n2. 检查 /home/vany/agent/shared/AGENTS.md 是否存在\n3. 检查 /home/vany/agent/shared/curated/memory/MEMORY.md 是否存在\n4. 检查 /home/vany/agent/shared/skills 是否可读\n5. 若 preflight 失败，只写入运行时说明，不修改 curated\n\n【执行步骤】\n1. 读取 shared 里的当天学习相关输入\n2. 根据当前可用材料做低风险学习、归纳和风险识别\n3. 生成结构化输出，保留可复扫的短段落\n4. 若发现新稳定事实，先写 runtime，不要直接晋升 curated\n5. 最终输出飞书可扫读报告（严格遵循上方排版模板）\n\n【约束】\n- 不自动修复高风险问题\n- 不修改 Hermes 主配置\n- 不写明文 secret\n- 不发送微信以外的副作用动作\n- 以 runtime-only 方式完成巡检\n",
-    "deliver": "feishu:oc_74b6cbefc07e6c1f221b77658c5e590e",
+    "prompt": "你是自主学习系统的 hardened scheduled learning 执行 agent。工作目录：/home/vany/agent/shared。任务必须 runtime-only，不写 curated，不改 Hermes/OpenClaw 配置，不调度 cron，不发送消息，不输出 secret。\n\n执行：\n1. 确认 manifest.yaml、AGENTS.md、curated/memory/MEMORY.md、skills 均存在且可读；运行 python3 runtime/hermes/autonomous-learning/scripts/cron_hardening_guard.py --mode preflight。失败则只把失败报告写入 runtime/hermes/autonomous-learning/daily-scan/YYYY-MM-DD.md。\n2. 读取当天真实输入：inbox/hermes/daily/YYYY-MM-DD-github-learning.md、YYYY-MM-DD-tutorial-learning.md，以及最新读书笔记；不存在时明确写缺失，不复用旧内容冒充今日输入。\n3. 读取 state.json、learning-backlog.json、pending-promotion-queue.json、delivery-state.json 与 health-dashboard.json，检查状态新鲜度和计数是否脱节。\n4. 对当天输入做低风险综合学习：提炼最多 3 条对系统有用的模式、证据与边界；只写 runtime/hermes/autonomous-learning/daily-scan/YYYY-MM-DD.md，不自动晋升 curated。不得调用 OpenClaw 或 Claude Code。\n5. 报告必须包含：本轮学了什么、执行情况、审计结果、结果沉淀、对用户有用的收获、下一步、需要用户决策、产出文件。全文中文，短段落，明确 Spec PASS/FAIL 与 20 分质量评分。\n6. 运行 python3 runtime/hermes/autonomous-learning/scripts/generate_health_dashboard.py；验证 daily-scan 文件非空。若 health dashboard 的生成时间、agent 状态或 pending 计数过期/脱节，标记“降级”，不要声称全绿。\n7. 最终回复只给报告摘要与 daily-scan 路径。",
+    "deliver": "local",
     "enabled": true,
-    "skills": [
-      "autonomous-learning/orchestrator-protocol"
-    ],
     "workdir": "/home/vany/agent/shared"
   },
   {
@@ -152,9 +149,13 @@
       "kind": "cron",
       "expr": "0 9 * * *"
     },
-    "prompt": "执行每日读书计划。\n\n## 步骤\n\n1. 运行读书编排器获取今日指令：\n   `python3 /home/vany/agent/shared/scripts/reading_plan_orchestrator.py`\n2. 读取生成的指令文件：`/home/vany/agent/shared/runtime/hermes/reading-plan/today-instruction.md`\n3. 按照指令完成今日章节阅读，输出：\n   - 3 个核心要点（用自己的话）\n   - 1 个可复用行动\n   - 1 个与已有知识的关联\n   - 今日反思：最有收获的一点 + 还不熟练的地方\n4. 将阅读笔记保存到 Obsidian：`/mnt/d/system/selfSystem/03-学习/读书笔记/`\n5. 生成微信推送摘要（3-5 句话，突出核心洞察和行动项）\n6. 执行反思（评估本次阅读质量）：\n   `python3 /home/vany/agent/shared/scripts/reading_plan_orchestrator.py --reflect --score <0-100> --issues <问题> --strengths <优势>`\n\n## 质量标准\n- 每个要点必须具体，不能泛泛而谈\n- 行动项必须可执行\n- 反思要诚实，不要为了高分而回避问题",
-    "deliver": "feishu:oc_74b6cbefc07e6c1f221b77658c5e590e",
-    "enabled": true
+    "prompt": "执行每日读书计划。工作目录：/home/vany/agent/shared。\n\n1. 读取 runtime/hermes/reading-plan/book-queue.json 的 current_book、current_chapter 与 parts，并检查 /mnt/d/system/selfSystem/03-学习/读书笔记/ 中最近真实笔记；若队列章节与真实笔记不一致，以真实笔记为准，禁止跳章。\n2. 读取当前书的章节对照 reference；《思考，快与慢》使用 reading-plan-pipeline 的 references/thinking-fast-and-slow-chapter-map.md。若标题未确认，先用 Google Books 目录/书内检索或其他可靠来源核对，禁止把推断写成事实。\n3. 运行 python3 scripts/reading_plan_orchestrator.py 生成今日指令。此命令只生成指令，不推进 current_chapter。\n4. 至少读取前一章笔记前 30 行，按现有格式生成完整中文笔记，保存至 /mnt/d/system/selfSystem/03-学习/读书笔记/YYYY-MM-DD-书名-第N章.md，并更新 00-读书笔记索引.md。\n5. 只有笔记写入并验证非空后，运行 python3 scripts/reading_plan_orchestrator.py --complete-chapter N，确认推进队列。\n6. 运行 --reflect，诚实记录来源限制、标题不确定性和实验细节验证边界。\n7. 最终只汇报章节、核心洞察、队列进度、笔记路径及风险。不要发送微信，交付由 cron 处理。",
+    "deliver": "local",
+    "enabled": true,
+    "skills": [
+      "reading-plan-pipeline"
+    ],
+    "workdir": "/home/vany/agent/shared"
   },
   {
     "id": "a7ccf53ed528",
@@ -177,8 +178,12 @@
       "expr": "0 10 * * 2,4",
       "display": "0 10 * * 2,4"
     },
-    "prompt": "执行教程学习编排器。\n\nStep-by-step:\n1. 运行命令: python3 /home/vany/agent/shared/scripts/tutorial_learning_orchestrator.py\n2. 检查输出，确认各步骤完成\n3. 如果审计通过（得分 ≥12），读取生成的教程学习卡并输出摘要\n4. 如果审计未通过，输出问题列表\n5. 最终输出包含：候选数、深读数、审计得分、关键发现",
-    "deliver": "feishu:oc_74b6cbefc07e6c1f221b77658c5e590e",
-    "enabled": true
+    "prompt": "执行教程学习编排器。工作目录：/home/vany/agent/shared。\n\n1. 运行 python3 scripts/tutorial_learning_orchestrator.py\n2. 检查输出，要求候选数至少 3、HN 与 GitHub 来源均存在、审计得分必须达到 12/12。\n3. 验证 inbox/hermes/daily/YYYY-MM-DD-tutorial-learning.md 与 /mnt/d/system/selfSystem/03-学习/技术实践/每日学习/YYYY-MM-DD-教程学习卡.md 均存在且非空。\n4. 若未通过，报告候选选择、来源多样性、网络或审计问题；禁止伪造候选或指标。\n5. 最终只汇报候选数、来源、审计得分、关键候选和产物路径。不要调用消息发送工具。",
+    "deliver": "local",
+    "enabled": true,
+    "skills": [
+      "research/tutorial-learning-pipeline"
+    ],
+    "workdir": "/home/vany/agent/shared"
   }
 ]

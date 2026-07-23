@@ -77,7 +77,11 @@ def get_current_book(queue: dict) -> dict | None:
 def complete_chapter(queue: dict, shared_root: Path, book: dict, chapter: int, date: str) -> None:
     """确认笔记存在后推进章节，避免编排阶段提前写坏进度。"""
     title = book.get('title_cn') or book['title']
-    notes = sorted(NOTES_DIR.glob(f'*-{title}-第{chapter}章.md'))
+    filename_title = ''.join(char for char in title if char.isalnum())
+    notes = sorted({
+        *NOTES_DIR.glob(f'*-{title}-第{chapter}章.md'),
+        *NOTES_DIR.glob(f'*-{filename_title}-第{chapter}章.md'),
+    })
     if not notes:
         log(f'❌ 第 {chapter} 章笔记不存在，拒绝推进队列')
         sys.exit(1)
