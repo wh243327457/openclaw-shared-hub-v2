@@ -37,6 +37,23 @@ def load_cron_jobs():
         return data
 
 
+def normalize_schedule(schedule):
+    """把 Hermes cron 的字符串或结构化 schedule 统一为可检查文本。"""
+    if isinstance(schedule, dict):
+        return str(schedule.get("expr") or schedule.get("at") or schedule.get("every") or "")
+    return str(schedule or "")
+
+
+def delivery_error_matches_current_target(deliver, error):
+    """判断投递错误是否属于当前目标，忽略改目标后遗留的历史错误。"""
+    if not error:
+        return False
+    if not deliver or deliver in {"local", "origin", "all"}:
+        return True
+    current_targets = [target.strip() for target in deliver.split(",") if ":" in target]
+    return not current_targets or any(target in str(error) for target in current_targets)
+
+
 def check_cron_config():
     """检查 cron job 配置完整性"""
     jobs = load_cron_jobs()
@@ -47,10 +64,11 @@ def check_cron_config():
         job_id = job.get("id", job.get("job_id", "?"))
         name = job.get("name", "未命名")
         enabled = job.get("enabled", False)
-        schedule = job.get("schedule", "")
+        schedule = normalize_schedule(job.get("schedule", ""))
         deliver = job.get("deliver", "")
         last_run_at = job.get("last_run_at")
         last_status = job.get("last_status")
+        last_delivery_error = job.get("last_delivery_error")
         prompt = job.get("prompt", job.get("prompt_preview", ""))
 
         if not enabled:
@@ -66,20 +84,30 @@ def check_cron_config():
                 "detail": f"schedule={schedule}",
             })
 
-        # 检查 2: 名称含推送关键词但 deliver 缺 weixin
+        # 检查 2: 名称明确要求推送时，scheduler 不能只保存到 local。
+        # 具体渠道可以是飞书、微信或其他 gateway 平台，不再写死 weixin。
         name_lower = name.lower()
-        prompt_lower = (prompt or "").lower()
-        needs_weixin = any(
-            kw in name_lower or kw in prompt_lower
-            for kw in ["推送", "微信", "weixin", "wechat", "通知"]
+        needs_external_delivery = any(
+            kw in name_lower
+            for kw in ["推送", "通知", "push"]
         )
-        if needs_weixin and deliver and "weixin" not in deliver:
+        if needs_external_delivery and (not deliver or deliver == "local"):
             findings.append({
                 "level": "🔴",
-                "type": "deliver 缺 weixin",
+                "type": "缺少外部投递",
                 "job_id": job_id,
                 "name": name,
                 "detail": f"当前 deliver={deliver}",
+            })
+
+        # last_status=ok 只代表 agent 执行成功，不代表消息成功送达。
+        if delivery_error_matches_current_target(deliver, last_delivery_error):
+            findings.append({
+                "level": "🔴",
+                "type": "上次投递失败",
+                "job_id": job_id,
+                "name": name,
+                "detail": str(last_delivery_error)[:160],
             })
 
         # 检查 3: 连续失败
@@ -122,7 +150,6 @@ def check_services():
     
     # 检查 Hermes gateway
     try:
-        import subprocess
         result = subprocess.run(
             ["pgrep", "-f", "hermes.*gateway"],
             capture_output=True, timeout=5
@@ -142,15 +169,21 @@ def check_services():
             "detail": str(e),
         })
 
-    # 检查 Docker 容器（OpenClaw 相关）
-    try:
-        result = subprocess.run(
-            ["docker", "ps", "--format", "{{.Names}}"],
-            capture_output=True, text=True, timeout=10
-        )
-        if result.returncode == 0:
-            containers = result.stdout.strip().split("\n")
-            expected = ["openclaw", "sub2api"]
+    # 容器是可选依赖；只有显式配置为必需时才检查。
+    expected = [
+        name.strip()
+        for name in os.getenv("SYSTEM_SELF_CHECK_REQUIRED_CONTAINERS", "").split(",")
+        if name.strip()
+    ]
+    if expected:
+        try:
+            result = subprocess.run(
+                ["docker", "ps", "--format", "{{.Names}}"],
+                capture_output=True, text=True, timeout=10
+            )
+            if result.returncode != 0:
+                raise RuntimeError(result.stderr.strip() or "docker ps failed")
+            containers = result.stdout.strip().splitlines()
             for name in expected:
                 if name not in containers:
                     findings.append({
@@ -159,13 +192,13 @@ def check_services():
                         "name": name,
                         "detail": f"未在 docker ps 中找到",
                     })
-    except Exception as e:
-        findings.append({
-            "level": "⚠️",
-            "type": "检查失败",
-            "name": "Docker 容器",
-            "detail": str(e),
-        })
+        except Exception as e:
+            findings.append({
+                "level": "⚠️",
+                "type": "检查失败",
+                "name": "Docker 容器",
+                "detail": str(e),
+            })
 
     return {"check": "services", "findings": findings}
 
