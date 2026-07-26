@@ -65,20 +65,20 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-07-26T06:00:06+08:00`
+- 生成时间: `2026-07-27T06:00:08+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 26
 - projects 文件数: 11
 - 最近 daily 文件:
+  - `inbox/hermes/daily/2026-07-26.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-07-26-github-learning.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-07-25.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-07-25-github-learning.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-07-24.md` (inbox/hermes/daily)
-  - `inbox/hermes/daily/2026-07-24-github-learning.md` (inbox/hermes/daily)
-  - `inbox/hermes/daily/2026-07-23.md` (inbox/hermes/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 77
+  - `hermes`: 79
   - `openclaw`: 79
 <!-- SHARED-BRIDGE-STATE:END -->
 
@@ -155,6 +155,7 @@
 - **anthropic-multi-agent-engineering**: Anthropic 多 agent 研究系统工程实践，token 用量 15x 换质量，验证 orchestrator-worker 模式。→ `facts/anthropic-multi-agent-engineering.md`
 - **antirez-ds4-local-inference**: antirez 的 ds4 本地推理引擎，Disk KV Cache 跨 session 复用 + 不对称 MoE 量化。→ `facts/antirez-ds4-local-inference.md`
 - **claude-code-engineering-practices**: Claude Code 工程模式：验证优先、权限先于自主权、project rules 作为可执行上下文。→ `facts/claude-code-engineering-practices.md`
+
 
 
 
