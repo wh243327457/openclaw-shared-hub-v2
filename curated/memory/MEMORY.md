@@ -96,4 +96,3 @@
 
 - 旧自动 promoted 明细已迁出：`curated/memory/archives/promoted-legacy-2026-05.md`
 - 主索引只保留稳定入口和当前状态；长期事实请沉淀到 `facts/` 或 `projects/`。
-
