@@ -295,9 +295,17 @@ def verify_openclaw_config(config_path: Path, paths: dict[str, Path]) -> tuple[d
         return record, workspace_base
 
     extra_dirs = payload.get("skills", {}).get("load", {}).get("extraDirs", [])
+    # 容器场景下 OpenClaw 只能写容器内路径（如 /home/node/.openclaw/shared/skills），
+    # 该路径经 docker mount 映射到宿主 shared 根；比较时需同时接受容器前缀的等价路径。
+    container_shared_prefix = "/home/node/.openclaw/shared"
+    expected_refs = list(expected_extra_dirs)
+    for ref in expected_extra_dirs:
+        if ref.startswith("/home/") and "/shared" in ref:
+            suffix = ref.split("/shared", 1)[1]  # e.g. /skills 或 /capabilities/skills
+            expected_refs.append(container_shared_prefix + suffix)
     record["extra_dirs"] = extra_dirs
     record["expected_extra_dirs"] = expected_extra_dirs
-    record["has_expected_extra_dir"] = any(ref in extra_dirs for ref in expected_extra_dirs)
+    record["has_expected_extra_dir"] = any(ref in extra_dirs for ref in expected_refs)
     record["ok"] = record["has_expected_extra_dir"]
     return record, workspace_base
 
