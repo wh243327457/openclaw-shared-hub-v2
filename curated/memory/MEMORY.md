@@ -43,6 +43,9 @@
 - **ds4 推理优化长期事实**：`curated/memory/facts/autonomous-learning-ds4-inference-patterns.md`
 - **旧 OpenClaw daily 兼容视图**：`compat/daily/`（可通过 `memory/daily/` 访问）
 - **agent 原始写入**：`inbox/<agent>/daily/`
+- **个人认知资产库（人类向）**：`/mnt/d/system/selfSystem/`（Obsidian 知识库，面向人类阅读与图谱；
+  学习沉淀、读书笔记、调研文档的人类侧归宿。新模型进入先读其根目录 `AGENTS.md`；
+  详见 `curated/memory/facts/personal-kb-selfsystem-layout.md`）
 - **运行时产物**：`runtime/<agent>/`
 
 ## 写入规则
@@ -72,24 +75,25 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-06-04T23:53:40+08:00`
-- 共享根目录: `/home/ubuntu/openclaw-shared-hub-v2`
-- runtime 位置提示: `/home/ubuntu/openclaw-shared-hub-v2/runtime`
-- facts 文件数: 22
-- projects 文件数: 7
+- 生成时间: `2026-08-24T21:40:13+08:00`
+- 共享根目录: `/home/vany/agent/shared`
+- runtime 位置提示: `/home/vany/agent/shared/runtime`
+- facts 文件数: 27
+- projects 文件数: 11
 - 最近 daily 文件:
-  - `inbox/openclaw/daily/2026-06-04.md` (inbox/openclaw/daily)
-  - `inbox/openclaw/daily/2026-06-04-v3.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-06-04.md` (inbox/hermes/daily)
-  - `inbox/openclaw/daily/2026-06-03.md` (inbox/openclaw/daily)
-  - `inbox/hermes/daily/2026-06-03.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-24.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-24-github-learning.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-23.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-23-github-learning.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-22.md` (inbox/hermes/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 42
-  - `openclaw`: 43
+  - `hermes`: 128
+  - `openclaw`: 64
 <!-- SHARED-BRIDGE-STATE:END -->
 
 ## 历史 promoted 归档
 
 - 旧自动 promoted 明细已迁出：`curated/memory/archives/promoted-legacy-2026-05.md`
 - 主索引只保留稳定入口和当前状态；长期事实请沉淀到 `facts/` 或 `projects/`。
+
