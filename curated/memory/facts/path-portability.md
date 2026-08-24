@@ -29,6 +29,12 @@ review_status: approved
 review_after: 2026-09-02
 supersedes: []
 superseded_by: []
+subject: agent-system-portability
+attribute: workflow-rule
+value_summary: "共享中台禁止硬编码宿主绝对路径，运行时必须经 resolve_shared_root.py 解析根目录"
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
 ---
 
 # Path Portability — 共享中台 v2 的可迁移路径契约

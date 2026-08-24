@@ -1,3 +1,25 @@
+---
+fact_id: autonomous-learning-skill-as-contract-pattern
+status: active
+freshness_class: slow_changing
+scope: cross-agent
+subject: autonomous-learning
+attribute: skill-design-patterns
+value_summary: "Skill-as-Contract 模式与 Subagent 四状态协议（pending/running/review/done）约束 agent 行为"
+created_at: 2026-05-18
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+source_refs:
+  - runtime/hermes/autonomous-learning/agent-outputs/
+conflict: null
+supersedes: null
+superseded_by: null
+confidence: high
+authority: hermes-autonomous-learning
+secret_checked: true
+---
+
 # Skill-as-Contract 与 Subagent 四状态协议
 
 - 晋升时间：`2026-05-18T12:07:05+08:00`

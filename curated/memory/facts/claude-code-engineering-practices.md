@@ -1,10 +1,23 @@
 ---
+fact_id: claude-code-engineering-practices
 topic: Claude Code 工程实践模式提取
 category: agent-engineering
 status: active
 source: autonomous-learning/pending-promotion
 date: 2026-05-17
+created_at: 2026-05-17
 score: 18/20
+fact_id: claude-code-engineering-practices
+freshness_class: slow_changing
+scope: cross-agent
+subject: agent-engineering
+attribute: engineering-practices
+value_summary: "Claude Code 工程模式：验证优先、权限先于自主权、project rules 作为可执行上下文"
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+confidence: high
+secret_checked: true
 ---
 
 # Claude Code 工程实践模式提取

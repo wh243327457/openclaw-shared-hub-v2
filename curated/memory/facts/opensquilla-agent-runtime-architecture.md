@@ -1,10 +1,23 @@
 ---
+fact_id: opensquilla-agent-runtime-architecture
 topic: OpenSquilla 微内核 AI Agent 运行时架构分析
 category: competitive-intelligence
 status: active
 source: autonomous-learning/pending-promotion
 date: 2026-05-17
+created_at: 2026-05-17
 score: 20/20
+fact_id: opensquilla-agent-runtime-architecture
+freshness_class: slow_changing
+scope: cross-agent
+subject: agent-runtime-architecture
+attribute: competitive-analysis
+value_summary: "OpenSquilla 微内核 Agent 运行时：ML 路由、Dream 记忆压缩、per-session 锁"
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+confidence: high
+secret_checked: true
 ---
 
 # OpenSquilla 微内核 AI Agent 运行时架构分析

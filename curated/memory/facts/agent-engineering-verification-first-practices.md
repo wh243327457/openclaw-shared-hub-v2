@@ -1,3 +1,25 @@
+---
+fact_id: agent-engineering-verification-first-practices
+status: active
+freshness_class: slow_changing
+scope: cross-agent
+subject: agent-engineering
+attribute: engineering-practice-patterns
+value_summary: "Agent 工程应采用 Verification-first：先定义可验证成功标准再实现，验证产物而非意图"
+created_at: 2026-05-18
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+source_refs:
+  - runtime/hermes/autonomous-learning/agent-outputs/
+conflict: null
+supersedes: null
+superseded_by: null
+confidence: high
+authority: hermes-autonomous-learning
+secret_checked: true
+---
+
 # Agent 工程 Verification-first 实践
 
 - 晋升时间：`2026-05-18T12:07:05+08:00`

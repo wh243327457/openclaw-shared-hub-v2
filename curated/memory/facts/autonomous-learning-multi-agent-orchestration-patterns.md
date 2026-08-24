@@ -1,3 +1,25 @@
+---
+fact_id: autonomous-learning-multi-agent-orchestration-patterns
+status: active
+freshness_class: slow_changing
+scope: cross-agent
+subject: autonomous-learning
+attribute: orchestration-patterns
+value_summary: "自主学习系统多 agent 编排模式：orchestrator 分解任务、worker 执行、review gate 把关"
+created_at: 2026-05-18
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+source_refs:
+  - runtime/hermes/autonomous-learning/agent-outputs/
+conflict: null
+supersedes: null
+superseded_by: null
+confidence: high
+authority: hermes-autonomous-learning
+secret_checked: true
+---
+
 # 自主学习多 Agent 编排模式
 
 - 晋升时间：`2026-05-18T12:07:05+08:00`

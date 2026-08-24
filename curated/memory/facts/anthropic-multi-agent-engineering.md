@@ -1,10 +1,23 @@
 ---
+fact_id: anthropic-multi-agent-engineering
 topic: Anthropic 多 Agent 研究系统的工程实践
 category: industry-trends
 status: active
 source: autonomous-learning/pending-promotion
 date: 2026-05-17
+created_at: 2026-05-17
 score: 18/20
+fact_id: anthropic-multi-agent-engineering
+freshness_class: slow_changing
+scope: cross-agent
+subject: multi-agent-systems
+attribute: engineering-practices
+value_summary: "Anthropic 多 agent 研究系统工程实践：orchestrator-worker 模式，15x token 换质量"
+updated_at: 2026-08-24
+last_verified_at: 2026-08-24
+review_due_at: 2026-11-24
+confidence: high
+secret_checked: true
 ---
 
 # Anthropic 多 Agent 研究系统的工程实践
