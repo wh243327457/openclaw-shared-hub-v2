@@ -1,23 +1,32 @@
 ---
 fact_id: claude-code-engineering-practices
-topic: Claude Code 工程实践模式提取
-category: agent-engineering
+claim_id: claude-code-engineering-practices
+claim_type: workflow_rule
 status: active
-source: autonomous-learning/pending-promotion
-date: 2026-05-17
-created_at: 2026-05-17
-score: 18/20
-fact_id: claude-code-engineering-practices
+confidence: 0.9
 freshness_class: slow_changing
-scope: cross-agent
-subject: agent-engineering
-attribute: engineering-practices
-value_summary: "Claude Code 工程模式：验证优先、权限先于自主权、project rules 作为可执行上下文"
-updated_at: 2026-08-24
-last_verified_at: 2026-08-24
-review_due_at: 2026-11-24
-confidence: high
+scope: agent-system
+lens: world
+subject: claude_code
+attribute: engineering_practices
+value_summary: "Claude Code practices emphasize verification-first execution, permissions-before-autonomy, project rules as executable context, observable hooks, and skills for repeatable workflows."
+topic: agent_engineering.claude_code
+source_agent: hermes
+source_paths:
+  - reviews/non-github-learning-2026-05-17-claude-code-engineering-practices-quality-review.md
+evidence_refs:
+  - reviews/non-github-learning-2026-05-17-claude-code-engineering-practices-quality-review.md
+  - https://www.anthropic.com/engineering/claude-code-best-practices
+sensitivity: low
 secret_checked: true
+created_at: 2026-05-17T00:00:00+08:00
+updated_at: 2026-06-04T23:53:40+08:00
+last_verified_at: 2026-06-04T23:53:40+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
 ---
 
 # Claude Code 工程实践模式提取

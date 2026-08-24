@@ -1,4 +1,0 @@
-# Local-only compatibility bulk
-
-This directory may contain legacy OpenClaw dreaming exports kept for local compatibility.
-Do not add these generated/runtime files to Git.

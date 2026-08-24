@@ -1,23 +1,32 @@
 ---
 fact_id: opensquilla-agent-runtime-architecture
-topic: OpenSquilla 微内核 AI Agent 运行时架构分析
-category: competitive-intelligence
+claim_id: opensquilla-agent-runtime-architecture
+claim_type: agent_system
 status: active
-source: autonomous-learning/pending-promotion
-date: 2026-05-17
-created_at: 2026-05-17
-score: 20/20
-fact_id: opensquilla-agent-runtime-architecture
+confidence: 0.9
 freshness_class: slow_changing
-scope: cross-agent
-subject: agent-runtime-architecture
-attribute: competitive-analysis
-value_summary: "OpenSquilla 微内核 Agent 运行时：ML 路由、Dream 记忆压缩、per-session 锁"
-updated_at: 2026-08-24
-last_verified_at: 2026-08-24
-review_due_at: 2026-11-24
-confidence: high
+scope: agent-system
+lens: world
+subject: opensquilla
+attribute: runtime_architecture
+value_summary: "OpenSquilla offers TurnRunner, provider-neutral routing, skill hub, memory snapshots, optional vector recall, and sandbox tool-envelope patterns relevant to Hermes/shared hub design."
+topic: agent_runtime.opensquilla
+source_agent: hermes
+source_paths:
+  - agent-outputs/delegate-task/opensquilla-deep-read-2026-05-17.md
+evidence_refs:
+  - agent-outputs/delegate-task/opensquilla-deep-read-2026-05-17.md
+  - https://github.com/opensquilla/opensquilla
+sensitivity: low
 secret_checked: true
+created_at: 2026-05-17T00:00:00+08:00
+updated_at: 2026-06-04T23:53:40+08:00
+last_verified_at: 2026-06-04T23:53:40+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
 ---
 
 # OpenSquilla 微内核 AI Agent 运行时架构分析

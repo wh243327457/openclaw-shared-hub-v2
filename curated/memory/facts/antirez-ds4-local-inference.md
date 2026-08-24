@@ -1,23 +1,32 @@
 ---
 fact_id: antirez-ds4-local-inference
-topic: antirez/ds4 DeepSeek V4 Flash 本地推理引擎
-category: inference-engineering
+claim_id: antirez-ds4-local-inference
+claim_type: technical_pattern
 status: active
-source: autonomous-learning/pending-promotion
-date: 2026-05-17
-created_at: 2026-05-17
-score: 20/20
-fact_id: antirez-ds4-local-inference
+confidence: 0.95
 freshness_class: slow_changing
-scope: cross-agent
-subject: local-inference
-attribute: architecture-patterns
-value_summary: "ds4 本地推理引擎：Disk KV Cache 跨 session 复用 + 不对称 MoE 量化"
-updated_at: 2026-08-24
-last_verified_at: 2026-08-24
-review_due_at: 2026-11-24
-confidence: high
+scope: mlops
+lens: world
+subject: antirez.ds4
+attribute: local_inference_patterns
+value_summary: "ds4 demonstrates model-specific local inference optimization, disk KV cache, exact tool-call replay, and asymmetric MoE quantization patterns."
+topic: mlops.inference.ds4
+source_agent: hermes
+source_paths:
+  - reviews/2026-05-17-ds4-quality-review.md
+evidence_refs:
+  - reviews/2026-05-17-ds4-quality-review.md
+  - https://github.com/antirez/ds4
+sensitivity: low
 secret_checked: true
+created_at: 2026-05-17T00:00:00+08:00
+updated_at: 2026-06-04T23:53:40+08:00
+last_verified_at: 2026-06-04T23:53:40+08:00
+review_due_at: 2026-09-04
+review_status: approved
+review_after: 2026-09-04
+supersedes: []
+superseded_by: []
 ---
 
 # antirez/ds4 DeepSeek V4 Flash 本地推理引擎
