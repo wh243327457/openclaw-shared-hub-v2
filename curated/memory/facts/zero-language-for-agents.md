@@ -7,9 +7,9 @@ subject: agent-tooling / programming-language
 attribute: design-patterns
 value_summary: "Vercel Labs Zero 语言的 5 个 agent-first 设计模式：结构化编译器输出、能力对象、Agent 自修复、自举编译器、诊断码分类"
 created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/vercel-labs/zero
   - runtime/hermes/autonomous-learning/agent-outputs/delegate-task/2026-05-17-zero-deep-analysis.md

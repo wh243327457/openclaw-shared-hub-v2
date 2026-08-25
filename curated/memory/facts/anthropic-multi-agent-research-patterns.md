@@ -7,9 +7,9 @@ subject: multi-agent / orchestration
 attribute: production-patterns
 value_summary: "Anthropic 官方多 Agent 研究系统的 7 个生产级模式：token scaling、并行工具调用、委托模板、搜索策略、工具描述自优化、LLM-as-judge、Rainbow 部署"
 created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://www.anthropic.com/engineering/built-multi-agent-research-system
   - runtime/hermes/autonomous-learning/agent-outputs/hermes/2026-05-17-anthropic-multi-agent-research.md

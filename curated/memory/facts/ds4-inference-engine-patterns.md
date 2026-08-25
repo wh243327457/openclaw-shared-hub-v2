@@ -7,9 +7,9 @@ subject: local-inference / model-serving
 attribute: reusable-engineering-patterns
 value_summary: "antirez/ds4 的 5 个可复用推理工程模式：非对称 MoE 量化、磁盘 KV Cache、Tool-call exact replay、单一模型深度绑定、AI辅助+人类主导"
 created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/antirez/ds4
   - runtime/hermes/autonomous-learning/agent-outputs/2026-05-17-antirez-ds4-analysis.md

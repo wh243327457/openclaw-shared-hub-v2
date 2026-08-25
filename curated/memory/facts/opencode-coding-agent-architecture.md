@@ -7,9 +7,9 @@ subject: coding-agent / architecture
 attribute: engineering-patterns
 value_summary: "anomalyco/opencode 的 5 个工程模式：client/server 分离、provider-neutral LLM 层、角色化 agent、统一工具注册、上下文压缩一级子系统"
 created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/anomalyco/opencode
   - runtime/hermes/autonomous-learning/agent-outputs/github-growth-2026-05-17-opencode.md

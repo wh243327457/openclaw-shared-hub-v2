@@ -7,9 +7,9 @@ subject: toolchain_migration
 attribute: compatibility_strategy
 value_summary: "Toolchain migrations should keep legacy entrypoints thin and working while moving new writes to canonical paths."
 created_at: 2026-05-19T12:30:00+08:00
-updated_at: 2026-05-19T12:30:00+08:00
-last_verified_at: 2026-05-19T12:30:00+08:00
-review_due_at: 2026-08-19T12:30:00+08:00
+updated_at: 2026-08-25T12:30:00+08:00
+last_verified_at: 2026-08-25T12:30:00+08:00
+review_due_at: 2027-02-21
 source_refs:
   - /mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案/每日学习/2026-05-14-GitHub热门项目学习日报.md
   - /mnt/d/system/selfSystem/03-学习/技术实践/GitHub 热门项目学习档案/每日学习/2026-05-19-GitHub热门项目学习日报.md

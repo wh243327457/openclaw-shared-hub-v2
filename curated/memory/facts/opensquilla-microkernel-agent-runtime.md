@@ -7,9 +7,9 @@ subject: agent-runtime / model-routing
 attribute: architecture-comparison
 value_summary: "OpenSquilla 微内核 agent runtime 的可借鉴模式：TurnRunner 统一入口、ML 模型路由、Dream 记忆压缩、SKILL.md 多源加载"
 created_at: 2026-05-17
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/opensquilla/opensquilla
   - runtime/hermes/autonomous-learning/agent-outputs/delegate-task/opensquilla-deep-read-2026-05-17.md

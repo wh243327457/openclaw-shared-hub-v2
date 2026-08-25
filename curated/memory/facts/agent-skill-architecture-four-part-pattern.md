@@ -7,9 +7,9 @@ subject: agent-engineering
 attribute: architecture-pattern
 value_summary: "Agent Skill 标准四件套架构：SKILL.md 入口 + system-prompt.md 方法论 + references/ 平台映射 + built-in-skills/ 专项能力"
 created_at: 2026-06-09
-updated_at: 2026-06-09
-last_verified_at: 2026-06-09
-review_due_at: 2026-07-09
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/JimLiu/baoyu-design
   - daily-report: 2026-06-09-GitHub热门项目学习日报.md

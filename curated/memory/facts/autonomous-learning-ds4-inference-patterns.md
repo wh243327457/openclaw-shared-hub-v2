@@ -7,9 +7,9 @@ subject: autonomous-learning.ds4
 attribute: inference_and_memory_patterns
 value_summary: "ds4 提供了可迁移的推理优化样本：非对称 MoE 量化、磁盘 KV cache、tool-call replay，适合做 agent 推理与上下文复用的长期参考"
 created_at: 2026-05-18T12:07:05+08:00
-updated_at: 2026-05-18T12:07:05+08:00
-last_verified_at: 2026-05-18T12:07:05+08:00
-review_due_at: 2026-08-18T12:07:05+08:00
+updated_at: 2026-08-25T12:07:05+08:00
+last_verified_at: 2026-08-25T12:07:05+08:00
+review_due_at: 2027-02-21
 source_refs:
   - runtime/hermes/autonomous-learning/agent-outputs/2026-05-17-antirez-ds4-analysis.md
   - runtime/hermes/autonomous-learning/reviews/2026-05-17-ds4-spec-review.md

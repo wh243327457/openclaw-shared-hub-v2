@@ -7,9 +7,9 @@ subject: ai-code-quality
 attribute: failure-pattern-catalog
 value_summary: "AI 生成代码的 6 大系统性失败模式：catch-all 吞错误、硬编码成功返回、幻觉 API、过度抽象、注释污染、copy-from-similar"
 created_at: 2026-06-09
-updated_at: 2026-06-09
-last_verified_at: 2026-06-09
-review_due_at: 2026-07-09
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/amElnagdy/guard-skills
   - daily-report: 2026-06-09-GitHub热门项目学习日报.md

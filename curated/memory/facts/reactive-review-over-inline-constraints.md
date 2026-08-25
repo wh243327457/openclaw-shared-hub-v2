@@ -7,9 +7,9 @@ subject: agent-code-review
 attribute: design-pattern
 value_summary: "给 Agent 加质量门禁应优先用 reactive review（事后审查）而非 inline constraints（行内约束），不干扰生成过程且捕获率更高"
 created_at: 2026-06-09
-updated_at: 2026-06-09
-last_verified_at: 2026-06-09
-review_due_at: 2026-07-09
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/amElnagdy/guard-skills
   - https://github.com/JimLiu/baoyu-design

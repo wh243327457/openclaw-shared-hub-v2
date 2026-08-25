@@ -7,9 +7,9 @@ subject: agent-tooling / compiler-design
 attribute: design-principles
 value_summary: "Zero 语言的 agent-first 编译器设计原则：结构化输出、能力对象、Agent 修复闭环、自举、诊断码标准化"
 created_at: 2026-05-18
-updated_at: 2026-05-31
-last_verified_at: 2026-05-31
-review_due_at: 2026-06-30
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/vercel-labs/zero
   - runtime/hermes/autonomous-learning/agent-outputs/github-growth-2026-05-18-zero.md

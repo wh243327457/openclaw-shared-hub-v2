@@ -7,9 +7,9 @@ subject: agent-engineering
 attribute: engineering-principle
 value_summary: "Agent 可靠性应通过约束（guardrails、状态机、分阶段工具空间）提升，而非依赖更大模型"
 created_at: 2026-06-09
-updated_at: 2026-06-09
-last_verified_at: 2026-06-09
-review_due_at: 2026-07-09
+updated_at: 2026-08-25
+last_verified_at: 2026-08-25
+review_due_at: 2026-11-23
 source_refs:
   - https://github.com/antoinezambelli/forge
   - https://github.com/statewright/statewright

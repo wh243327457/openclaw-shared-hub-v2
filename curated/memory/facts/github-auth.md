@@ -19,9 +19,9 @@ evidence_refs:
   - /root/.config/gh/hosts.yml
 sensitivity: low
 created_at: 2026-05-16T02:58:05+08:00
-updated_at: 2026-05-16T02:58:05+08:00
-last_verified_at: 2026-05-16T02:58:05+08:00
-review_due_at: 2026-06-16T02:58:05+08:00
+updated_at: 2026-08-25T02:58:05+08:00
+last_verified_at: 2026-08-25T02:58:05+08:00
+review_due_at: 2026-09-24
 source_refs:
   - /root/.gitconfig
   - /root/.config/gh/hosts.yml
