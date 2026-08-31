@@ -75,20 +75,20 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-08-31T06:00:04+08:00`
+- 生成时间: `2026-09-01T06:00:08+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 27
 - projects 文件数: 11
 - 最近 daily 文件:
+  - `inbox/hermes/daily/2026-08-31.md` (inbox/hermes/daily)
+  - `inbox/hermes/daily/2026-08-31-github-learning.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-08-30.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-08-30-github-learning.md` (inbox/hermes/daily)
   - `inbox/hermes/daily/2026-08-29.md` (inbox/hermes/daily)
-  - `inbox/hermes/daily/2026-08-29-github-learning.md` (inbox/hermes/daily)
-  - `inbox/hermes/daily/2026-08-28-knowledge-synthesis.md` (inbox/hermes/daily)
 - inbox 各 agent 文件计数:
   - `future-agent`: 0
-  - `hermes`: 143
+  - `hermes`: 145
   - `openclaw`: 64
 <!-- SHARED-BRIDGE-STATE:END -->
 
@@ -96,6 +96,7 @@
 
 - 旧自动 promoted 明细已迁出：`curated/memory/archives/promoted-legacy-2026-05.md`
 - 主索引只保留稳定入口和当前状态；长期事实请沉淀到 `facts/` 或 `projects/`。
+
 
 
 
