@@ -75,7 +75,7 @@
 <!-- SHARED-BRIDGE-STATE:START -->
 ## 自动生成的共享桥状态块
 
-- 生成时间: `2026-09-27T06:00:09+08:00`
+- 生成时间: `2026-09-28T06:00:10+08:00`
 - 共享根目录: `/home/vany/agent/shared`
 - runtime 位置提示: `/home/vany/agent/shared/runtime`
 - facts 文件数: 27
@@ -96,6 +96,7 @@
 
 - 旧自动 promoted 明细已迁出：`curated/memory/archives/promoted-legacy-2026-05.md`
 - 主索引只保留稳定入口和当前状态；长期事实请沉淀到 `facts/` 或 `projects/`。
+
 
 
 
